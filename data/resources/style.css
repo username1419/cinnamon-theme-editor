@@ -1,0 +1,12 @@
+.sidebar {
+    background-color: white;
+}
+
+.tool-bar {
+    padding: 6px;
+}
+
+.split-button {
+    border-width: 2px;
+    padding: 0px;
+}
