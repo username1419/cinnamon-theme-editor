@@ -1,21 +1,18 @@
 use log::error;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::{env, fs};
 
 use super::parse::StyleSheet;
 
-pub fn create_as_edit(mut name: String) -> StyleSheet {
-    if name.is_empty() {
-        let mut count = 0;
-        loop {
-            name = format!("./.cinnamon({}) - edit.css", count);
-            if !fs::exists(&name).expect("File access denied") {
-                error!("File does not exist");
-                break;
-            }
-            count += 1;
-        }
+/// Creates a theme in $HOME/.themes/, importing `default` as the fallback.
+///
+/// # Panic
+/// The function panics if the `default` path provided is a relative path, or an error is
+/// encountered in the process of creating theme.
+pub fn create_as_edit(name: String, default: PathBuf) -> StyleSheet {
+    if default.is_relative() {
+        panic!("default theme path cannot be relative");
     }
 
     let mut file_path = env::home_dir().expect("Failed to find user's home directory.");
@@ -26,8 +23,10 @@ pub fn create_as_edit(mut name: String) -> StyleSheet {
     fs::create_dir_all(&file_path).ok();
     file_path.push(Path::new("cinnamon.css"));
 
-    fs::copy("/usr/share/cinnamon/theme/cinnamon.css", &file_path)
-        .expect("Failed to copy default theme");
+    fs::write(
+        &file_path,
+        format!("@import(\"{}\");\n", default.as_os_str().to_str().unwrap()),
+    );
 
     let raw = fs::read_to_string(&file_path).expect("Failed to read created file");
 

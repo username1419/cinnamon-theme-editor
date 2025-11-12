@@ -1,12 +1,14 @@
+use std::path::Path;
+
 use adw::{
-    Application, ApplicationWindow, NavigationPage, Window, prelude::NavigationPageExt,
-    subclass::window,
+    Application, ApplicationWindow, MessageDialog, NavigationPage, builders::MessageDialogBuilder,
+    prelude::NavigationPageExt,
 };
 use gtk::{
     FileChooserDialog, ResponseType,
     gio::{SimpleAction, prelude::ActionMapExt},
-    glib::{Variant, object::CastNone},
-    prelude::{GtkWindowExt, WidgetExt},
+    glib::{MainContext, Variant, object::CastNone},
+    prelude::{DialogExtManual, FileChooserExt, GtkWindowExt},
 };
 use log::{debug, trace};
 
@@ -43,6 +45,18 @@ impl<'a> ActionBuilder<'a> {
         self
     }
 
+    pub fn on_activate_async<F, Fut>(mut self, on_activate: F) -> Self
+    where
+        F: Fn(Option<Variant>) -> Fut + 'static,
+        Fut: Future<Output = ()> + 'static,
+    {
+        self.on_activate = Box::new(move |_, variant| {
+            let variant = variant.cloned();
+            MainContext::default().spawn_local(on_activate(variant));
+        });
+        self
+    }
+
     pub fn build(self) -> SimpleAction {
         let action = SimpleAction::new(self.name, None);
         action.connect_activate(self.on_activate);
@@ -76,12 +90,38 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
     let window_rc_create_new = window.clone();
     ActionBuilder::new()
         .name("create-new")
-        .on_activate(move |_, _| {
+        .on_activate_async(move |_| {
             let window_rc = window_rc_create_new.clone();
-            let on_submit = move |name: &str| {
+            async move {
+                let file_chooser_dialog = FileChooserDialog::new(
+                    Some("Choose default theme"),
+                    Some(&window_rc),
+                    gtk::FileChooserAction::SelectFolder,
+                    &[
+                        ("Cancel", ResponseType::Cancel),
+                        ("Choose theme", ResponseType::Ok),
+                    ],
+                );
+                let response = file_chooser_dialog.run_future().await;
+                debug!(
+                    "Submit default fallback theme {:#?}",
+                    file_chooser_dialog.file()
+                );
+                file_chooser_dialog.destroy();
+                if matches!(response, ResponseType::Cancel) {
+                    return;
+                }
+                let name =
+                    TextEntryDialog::new(window_rc.as_ref(), "Enter new theme name", "Theme name")
+                        .await
+                        .unwrap();
+                if name.is_empty() {
+                    return;
+                }
+
                 debug!("Submit new theme creation name with name: {}", name);
 
-                let file = read::create_as_edit(name.to_string());
+                let file = read::create_as_edit(name.to_string(), Path::new(".").to_path_buf());
 
                 let binding = window_rc
                     .child()
@@ -98,9 +138,7 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
                 // this is only 4 nested layers
 
                 sidebar.populate(file);
-            };
-
-            TextEntryDialog::new(window_rc_create_new.as_ref(), on_submit);
+            }
         })
         .add_to(&app);
 }
