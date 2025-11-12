@@ -102,7 +102,7 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
                         ("Choose theme", ResponseType::Ok),
                     ],
                 );
-                let response = file_chooser_dialog.run_future().await;
+                let response = file_chooser_dialog.run_future().await; // test
                 debug!(
                     "Submit default fallback theme {:#?}",
                     file_chooser_dialog.file()
