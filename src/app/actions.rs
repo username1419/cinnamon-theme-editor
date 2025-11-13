@@ -5,8 +5,12 @@ use adw::{
     prelude::NavigationPageExt,
 };
 use gtk::{
-    FileChooserDialog, ResponseType,
-    gio::{SimpleAction, prelude::ActionMapExt},
+    FileChooserDialog, FileDialog, FileFilter, ResponseType,
+    ffi::GtkFileDialog,
+    gio::{
+        File, SimpleAction,
+        prelude::{ActionMapExt, FileExt},
+    },
     glib::{MainContext, Variant, object::CastNone},
     prelude::{DialogExtManual, FileChooserExt, GtkWindowExt},
 };
@@ -77,6 +81,7 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
     ActionBuilder::new()
         .name("open-existing")
         .on_activate(move |_, _| {
+            // WARN: deprecated ui element
             FileChooserDialog::new(
                 Some("Open theme"),
                 Some(&window_rc_open_exist),
@@ -93,33 +98,29 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
         .on_activate_async(move |_| {
             let window_rc = window_rc_create_new.clone();
             async move {
-                let file_chooser_dialog = FileChooserDialog::new(
-                    Some("Choose default theme"),
-                    Some(&window_rc),
-                    gtk::FileChooserAction::SelectFolder,
-                    &[
-                        ("Cancel", ResponseType::Cancel),
-                        ("Choose theme", ResponseType::Ok),
-                    ],
-                );
-                let response = file_chooser_dialog.run_future().await; // test
-                debug!(
-                    "Submit default fallback theme {:#?}",
-                    file_chooser_dialog.file()
-                );
-                file_chooser_dialog.destroy();
-                if matches!(response, ResponseType::Cancel) {
+                trace!("Creating theme chooser FileDialog...");
+                let file_dialog = FileDialog::builder()
+                    .title("Choose default theme")
+                    .accept_label("Choose theme")
+                    .initial_folder(&File::for_path("/usr/share/themes/"))
+                    .build();
+
+                let response = file_dialog.select_folder_future(Some(&window_rc)).await;
+                if response.is_err() {
                     return;
                 }
+                debug!(
+                    "Submit default fallback theme {:#?}",
+                    response.unwrap().path()
+                );
                 let name =
                     TextEntryDialog::new(window_rc.as_ref(), "Enter new theme name", "Theme name")
                         .await
                         .unwrap();
+                debug!("Submit new theme creation name with name: {}", name);
                 if name.is_empty() {
                     return;
                 }
-
-                debug!("Submit new theme creation name with name: {}", name);
 
                 let file = read::create_as_edit(name.to_string(), Path::new(".").to_path_buf());
 

@@ -26,7 +26,8 @@ pub fn create_as_edit(name: String, default: PathBuf) -> StyleSheet {
     fs::write(
         &file_path,
         format!("@import(\"{}\");\n", default.as_os_str().to_str().unwrap()),
-    );
+    )
+    .ok();
 
     let raw = fs::read_to_string(&file_path).expect("Failed to read created file");
 

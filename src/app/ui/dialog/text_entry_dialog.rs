@@ -5,8 +5,9 @@ use adw::{
 };
 use gtk::{
     Entry, Window, glib,
-    prelude::{EntryExt, GtkWindowExt},
+    prelude::{EditableExt, EntryExt, GtkWindowExt},
 };
+use log::trace;
 
 pub struct TextEntryDialog {}
 impl TextEntryDialog {
@@ -16,6 +17,7 @@ impl TextEntryDialog {
     /// Returns a `JoinHandle<GString>` containing the submitted response. The reponse may be
     /// empty.
     pub fn new(window: &Window, title: &str, placeholder: &str) -> JoinHandle<GString> {
+        trace!("Creating MessageDialog with title \"{}\"...", title);
         let dialog = adw::MessageDialog::builder()
             .transient_for(window)
             .modal(true)
@@ -38,12 +40,20 @@ impl TextEntryDialog {
 
         dialog.present();
         glib::MainContext::default().spawn_local(async move {
+            // TODO: error when typing in Entry:
+            // g_variant_iter_loop: assertion 'g_variant_is_of_type (GVSI(iter)->value, G_VARIANT_TYPE_ARRAY)' failed
+            // idk why this is happening bc im stupid so
+            // but the dialog still works so its fine for now
+            // def still needs fixing in the future though
+            trace!("Listening to user input response...");
             let response = dialog_rc.choose_future().await;
-            if matches!(response.as_str(), "ok") || entry.text_length() != 0 {
+            trace!("User reponse type \"{}\"", response);
+            trace!("User entry content \"{}\"", entry.text());
+            if matches!(response.as_str(), "cancel") || entry.text_length() == 0 {
                 return GString::new();
             }
 
-            response
+            entry.text()
         })
     }
 }
