@@ -25,7 +25,10 @@ pub fn create_as_edit(name: String, default: PathBuf) -> StyleSheet {
 
     fs::write(
         &file_path,
-        format!("@import(\"{}\");\n", default.as_os_str().to_str().unwrap()),
+        format!(
+            "@import url(\"{}\");\n",
+            default.as_os_str().to_str().unwrap()
+        ),
     )
     .ok();
 
