@@ -109,10 +109,8 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
                 if response.is_err() {
                     return;
                 }
-                debug!(
-                    "Submit default fallback theme {:#?}",
-                    response.unwrap().path()
-                );
+                let default_theme_path = response.unwrap().path().expect("Failed to unwrap path");
+                debug!("Submit default fallback theme {:#?}", default_theme_path);
                 let name =
                     TextEntryDialog::new(window_rc.as_ref(), "Enter new theme name", "Theme name")
                         .await
@@ -122,7 +120,7 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
                     return;
                 }
 
-                let file = read::create_as_edit(name.to_string(), Path::new(".").to_path_buf());
+                let file = read::create_as_edit(name.to_string(), default_theme_path);
 
                 let binding = window_rc
                     .child()
