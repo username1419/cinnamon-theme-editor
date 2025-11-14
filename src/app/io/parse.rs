@@ -4,6 +4,7 @@ use std::{
     str::FromStr,
 };
 
+use log::debug;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -30,6 +31,7 @@ impl StyleSheet {
     pub fn parse(source: PathBuf, raw: String) -> Self {
         // import statement
         let mut import = None;
+        let mut raw = raw;
         if raw.starts_with("@import") {
             let import_str = raw
                 .chars()
@@ -42,6 +44,11 @@ impl StyleSheet {
                 PathBuf::from_str(import_str.as_str())
                     .expect(format!("Failed convert Path from String \"{}\"", import_str).as_str()),
             );
+            raw = raw
+                .chars()
+                .skip_while(|c| ';'.ne(c))
+                .skip(1)
+                .collect::<String>();
         }
 
         // remove all comments
@@ -49,6 +56,8 @@ impl StyleSheet {
 
         let mut rulesets_iter = raw.split('}');
         let mut rulesets = HashMap::new();
+
+        debug!("{:?}", rulesets_iter.clone().collect::<Vec<&str>>());
 
         while let Some(ruleset) = rulesets_iter.next().map(|r| r.split('{')).as_mut() {
             // TODO: make actually good error logs

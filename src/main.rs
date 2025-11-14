@@ -4,6 +4,7 @@ use crate::app::application::App;
 use crate::app::window;
 
 pub mod app;
+pub mod helper;
 
 fn main() {
     let args = std::env::args().skip(1);

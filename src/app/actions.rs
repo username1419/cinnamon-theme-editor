@@ -1,26 +1,30 @@
-use std::path::Path;
-
 use adw::{
-    Application, ApplicationWindow, MessageDialog, NavigationPage, builders::MessageDialogBuilder,
-    prelude::NavigationPageExt,
+    Application, ApplicationWindow, NavigationPage, NavigationSplitView,
+    prelude::{AdwApplicationWindowExt, NavigationPageExt},
 };
 use gtk::{
-    FileChooserDialog, FileDialog, FileFilter, ResponseType,
-    ffi::GtkFileDialog,
+    FileChooserDialog, FileDialog, ResponseType,
     gio::{
         File, SimpleAction,
         prelude::{ActionMapExt, FileExt},
     },
-    glib::{MainContext, Variant, object::CastNone},
-    prelude::{DialogExtManual, FileChooserExt, GtkWindowExt},
+    glib::{
+        MainContext, Variant,
+        object::{Cast, CastNone},
+    },
+    prelude::WidgetExt,
 };
 use log::{debug, trace};
 
-use crate::app::{
-    io::read,
-    ui::{
-        dialog::text_entry_dialog::TextEntryDialog, sidebar::components_sidebar::ComponentSideBar,
+use crate::{
+    app::{
+        io::read,
+        ui::{
+            dialog::text_entry_dialog::TextEntryDialog,
+            sidebar::components_sidebar::ComponentSideBar,
+        },
     },
+    helper::Helper,
 };
 
 struct ActionBuilder<'a> {
@@ -122,18 +126,14 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
 
                 let file = read::create_as_edit(name.to_string(), default_theme_path);
 
-                let binding = window_rc
-                    .child()
-                    .and_downcast::<adw::ToolbarView>()
-                    .unwrap()
-                    .content()
-                    .and_downcast::<adw::NavigationSplitView>()
-                    .unwrap()
-                    .sidebar()
-                    .and_downcast::<NavigationPage>()
-                    .unwrap()
-                    .child();
-                let sidebar = binding.and_downcast_ref::<ComponentSideBar>().unwrap(); // what the fuck
+                let toolbar_view = window_rc.content().unwrap();
+                let navigationsplit_view =
+                    Helper::find_descendant(toolbar_view.upcast_ref(), "NavSplitView")
+                        .and_downcast::<NavigationSplitView>()
+                        .unwrap();
+                let nav_page = navigationsplit_view.sidebar().unwrap();
+
+                let sidebar = nav_page.child().and_downcast::<ComponentSideBar>().unwrap(); // what the fuck
                 // this is only 4 nested layers
 
                 sidebar.populate(file);

@@ -18,9 +18,11 @@ impl MainWindow {
         let sidebar = NavigationPage::builder()
             .child(&Self::setup_sidebar())
             .title("Sidebar")
+            .name("SidebarPage")
             .build();
 
         let main_content = NavigationSplitView::builder()
+            .name("NavSplitView")
             .sidebar(&sidebar)
             .content(
                 &NavigationPage::builder()
@@ -32,6 +34,7 @@ impl MainWindow {
 
         let header = Self::setup_top_toolbar();
         let tool_bar = ToolbarView::builder()
+            .name("ToolbarView")
             .top_bar_style(adw::ToolbarStyle::Flat)
             .halign(gtk::Align::Start)
             .hexpand(true)
