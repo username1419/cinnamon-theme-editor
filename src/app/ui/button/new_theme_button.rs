@@ -1,5 +1,5 @@
 use adw::SplitButton;
-use gtk::{Box, Image, Label, gio::Menu, prelude::BoxExt};
+use gtk::{Box, Image, gio::Menu, prelude::BoxExt};
 
 pub fn setup_new_theme_button() -> SplitButton {
     let placeholder =
@@ -11,12 +11,6 @@ pub fn setup_new_theme_button() -> SplitButton {
 
     let label = Box::new(gtk::Orientation::Horizontal, 2);
     label.append(&placeholder);
-    label.append(
-        &Label::builder()
-            .label("New")
-            .valign(gtk::Align::Center)
-            .build(),
-    );
 
     SplitButton::builder()
         .vexpand(true)

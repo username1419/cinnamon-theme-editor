@@ -1,8 +1,8 @@
 use adw::gtk::Label;
 use adw::gtk::prelude::GtkWindowExt;
 use adw::{ApplicationWindow, HeaderBar, NavigationPage, NavigationSplitView, ToolbarView, Window};
-use gtk::Box;
 use gtk::prelude::WidgetExt;
+use gtk::{Box, ListBox};
 
 use super::actions::setup_actions;
 use super::ui::button::new_theme_button::setup_new_theme_button;

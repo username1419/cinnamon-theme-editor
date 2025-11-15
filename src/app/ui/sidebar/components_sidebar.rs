@@ -1,16 +1,21 @@
-use adw::glib;
+use std::cell::RefCell;
+use std::fmt::{Debug, Formatter};
+
 use adw::subclass::prelude::{ObjectImpl, WidgetImpl};
 use adw::subclass::prelude::{ObjectSubclass, ObjectSubclassIsExt};
+use adw::{ActionRow, glib};
+use gtk::glib::Object;
 use gtk::prelude::WidgetExt;
 use gtk::{Label, ListBox, Orientation};
 use log::*;
 
 use crate::app::io::parse::StyleSheet;
+use crate::app::io::parser::selector::SelectorCategory;
 
 mod imp {
     use std::cell::RefCell;
 
-    use gtk::subclass::box_::BoxImpl;
+    use adw::subclass::bin::BinImpl;
 
     use super::*;
 
@@ -23,26 +28,32 @@ mod imp {
     impl ObjectSubclass for ComponentSideBar {
         const NAME: &'static str = "ComponentSideBar";
         type Type = super::ComponentSideBar;
-        type ParentType = gtk::Box;
+        type ParentType = adw::Bin;
     }
 
     impl ObjectImpl for ComponentSideBar {}
     impl WidgetImpl for ComponentSideBar {}
-    impl BoxImpl for ComponentSideBar {}
+    impl BinImpl for ComponentSideBar {}
 }
 
 glib::wrapper! {
     pub struct ComponentSideBar(ObjectSubclass<imp::ComponentSideBar>)
-        @extends gtk::Widget, gtk::Box,
+        @extends gtk::Widget, adw::Bin,
         @implements gtk::Buildable, gtk::ConstraintTarget, gtk::Accessible;
 }
 
 impl ComponentSideBar {
     pub fn new() -> Self {
         trace!("Creating ComponentSideBar");
-        glib::Object::builder()
-            .property("orientation", Orientation::Vertical)
-            .build()
+
+        // TODO: im sure theres a better way to do this but im stupid
+        let list_box = ListBox::builder().visible(true).build();
+        let this = glib::Object::builder::<Self>()
+            .property("child", list_box.clone())
+            .build();
+
+        this.imp().list_box.replace(list_box);
+        this
     }
 
     pub fn clear(&self) {
@@ -55,8 +66,17 @@ impl ComponentSideBar {
 
     pub fn populate(&self, file: StyleSheet) {
         let imp = self.imp();
+        let listbox = imp.list_box.borrow_mut();
 
-        todo!();
+        SelectorCategory::VALUES.into_iter().for_each(|category| {
+            listbox.append(
+                &ActionRow::builder()
+                    .title(format!("{:?}", category))
+                    .visible(true)
+                    .build(),
+            );
+        });
+        // TODO: tabs or smth like that i actually havent thought about it LMAO
 
         //components.iter().for_each(|component| {
         //    imp.list_box

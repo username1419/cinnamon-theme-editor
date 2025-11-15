@@ -27,6 +27,22 @@ static COMMENT_FILTER_REGEX: Lazy<Regex> = Lazy::new(|| {
 });
 
 impl StyleSheet {
+    pub fn get_source(&self) -> &PathBuf {
+        &self.source
+    }
+
+    pub fn get_fallback_source(&self) -> Option<&PathBuf> {
+        self.import.as_ref()
+    }
+
+    pub fn get_declaration(&self, selector: Selector) -> Option<&DeclarationBlock> {
+        self.rulesets.get(&selector)
+    }
+
+    pub fn get_ruleset(&self, selector: Selector) -> Option<(&Selector, &DeclarationBlock)> {
+        self.rulesets.get_key_value(&selector)
+    }
+
     // TODO: using a token parser would be faster but i cant be fucked rn
     pub fn parse(source: PathBuf, raw: String) -> Self {
         // import statement
@@ -56,8 +72,6 @@ impl StyleSheet {
 
         let mut rulesets_iter = raw.split('}');
         let mut rulesets = HashMap::new();
-
-        debug!("{:?}", rulesets_iter.clone().collect::<Vec<&str>>());
 
         while let Some(ruleset) = rulesets_iter.next().map(|r| r.split('{')).as_mut() {
             // TODO: make actually good error logs

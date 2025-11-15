@@ -3,7 +3,7 @@ use adw::{
     prelude::{AdwApplicationWindowExt, NavigationPageExt},
 };
 use gtk::{
-    FileChooserDialog, FileDialog, ResponseType,
+    FileChooserDialog, FileDialog, ListBox, ResponseType,
     gio::{
         File, SimpleAction,
         prelude::{ActionMapExt, FileExt},

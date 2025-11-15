@@ -1,5 +1,3 @@
-use gtk::glib::clone;
-
 use super::basic_selector::BasicSelector;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -20,6 +18,22 @@ pub enum SelectorCategory {
     Sound,
     GroupWindow,
     Other,
+}
+
+impl SelectorCategory {
+    // i hate this
+    // but we already have like 6 deps so we cant just use strum
+    pub const VALUES: [SelectorCategory; 9] = [
+        Self::Panel,
+        Self::Menu,
+        Self::Window,
+        Self::Calendar,
+        Self::Dialog,
+        Self::Entry,
+        Self::Sound,
+        Self::GroupWindow,
+        Self::Other,
+    ];
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]

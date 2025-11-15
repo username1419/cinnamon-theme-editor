@@ -1,6 +1,4 @@
-.sidebar {
-    background-color: darkgray;
-}
+row {}
 
 .tool-bar {
     padding: 6px;
@@ -9,4 +7,8 @@
 .split-button {
     border-width: 2px;
     padding: 0px;
+}
+
+.row {
+    background-color: white;
 }
