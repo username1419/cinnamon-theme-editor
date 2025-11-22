@@ -1,14 +1,15 @@
-row {}
+.sidebar>list>row {
+    border-radius: 12px;
+}
+
+.sidebar>list {
+    padding: 8px;
+}
 
 .tool-bar {
     padding: 6px;
 }
 
-.split-button {
-    border-width: 2px;
+.split-button>* {
     padding: 0px;
-}
-
-.row {
-    background-color: white;
 }

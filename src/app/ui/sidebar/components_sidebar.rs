@@ -1,16 +1,14 @@
-use std::cell::RefCell;
-use std::fmt::{Debug, Formatter};
-
+use adw::prelude::WidgetExt;
 use adw::subclass::prelude::{ObjectImpl, WidgetImpl};
 use adw::subclass::prelude::{ObjectSubclass, ObjectSubclassIsExt};
 use adw::{ActionRow, glib};
-use gtk::glib::Object;
-use gtk::prelude::WidgetExt;
-use gtk::{Label, ListBox, Orientation};
+use gtk::{Label, ListBox, SelectionMode};
 use log::*;
 
 use crate::app::io::parse::StyleSheet;
 use crate::app::io::parser::selector::SelectorCategory;
+
+use super::components_sidebar_item::ComponentSidebarItem;
 
 mod imp {
     use std::cell::RefCell;
@@ -69,12 +67,9 @@ impl ComponentSideBar {
         let listbox = imp.list_box.borrow_mut();
 
         SelectorCategory::VALUES.into_iter().for_each(|category| {
-            listbox.append(
-                &ActionRow::builder()
-                    .title(format!("{:?}", category))
-                    .visible(true)
-                    .build(),
-            );
+            listbox.append(&ComponentSidebarItem::new(Label::new(Some(
+                format!("{:?}", category).as_str(),
+            ))));
         });
         // TODO: tabs or smth like that i actually havent thought about it LMAO
 

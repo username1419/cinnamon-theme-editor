@@ -36,7 +36,7 @@ impl MainWindow {
         let tool_bar = ToolbarView::builder()
             .name("ToolbarView")
             .top_bar_style(adw::ToolbarStyle::Flat)
-            .halign(gtk::Align::Start)
+            .halign(gtk::Align::Fill)
             .hexpand(true)
             .bottom_bar_style(adw::ToolbarStyle::Flat)
             .content(&main_content)
@@ -74,8 +74,6 @@ impl MainWindow {
                     .build(),
             )
             .show_title(true)
-            .halign(gtk::Align::Start)
-            .hexpand(true)
             .build();
 
         header.pack_start(&setup_new_theme_button());
