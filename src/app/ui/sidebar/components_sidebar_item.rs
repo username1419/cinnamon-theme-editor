@@ -1,6 +1,10 @@
+use std::str::FromStr;
+
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::{Label, glib};
 use log::trace;
+
+use crate::app::io::parser::selector::SelectorCategory;
 
 mod imp {
     use std::cell::RefCell;
@@ -13,9 +17,8 @@ mod imp {
 
     use super::*;
 
-    #[derive(Default)]
     pub struct ComponentSidebarItem {
-        pub label: RefCell<Label>,
+        pub category: RefCell<SelectorCategory>,
     }
 
     #[glib::object_subclass]
@@ -23,6 +26,14 @@ mod imp {
         const NAME: &'static str = "ComponentSidebarItem";
         type Type = super::ComponentSidebarItem;
         type ParentType = adw::Bin;
+    }
+
+    impl Default for ComponentSidebarItem {
+        fn default() -> Self {
+            Self {
+                category: RefCell::new(SelectorCategory::Other),
+            }
+        }
     }
 
     impl BinImpl for ComponentSidebarItem {}
@@ -37,14 +48,21 @@ glib::wrapper! {
 }
 
 impl ComponentSidebarItem {
-    pub fn new(label: Label) -> Self {
+    pub fn new(category: SelectorCategory) -> Self {
+        let label = Label::new(Some(
+            match category {
+                SelectorCategory::GroupWindow => String::from_str("Group Window").unwrap(),
+                c => format!("{:?}", c),
+            }
+            .as_str(),
+        ));
         trace!("Creating ComponentSidebarItem with label {}", label.label());
 
         let this = glib::Object::builder::<Self>()
             .property("child", label.clone())
             .build();
 
-        this.imp().label.replace(label);
+        this.imp().category.replace(category);
         this
     }
 }

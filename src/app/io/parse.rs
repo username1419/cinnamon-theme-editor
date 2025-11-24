@@ -1,10 +1,5 @@
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
-use log::debug;
 use once_cell::sync::Lazy;
 use regex::Regex;
 

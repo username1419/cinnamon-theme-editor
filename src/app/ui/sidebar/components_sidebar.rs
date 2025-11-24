@@ -1,8 +1,8 @@
+use adw::glib;
 use adw::prelude::WidgetExt;
 use adw::subclass::prelude::{ObjectImpl, WidgetImpl};
 use adw::subclass::prelude::{ObjectSubclass, ObjectSubclassIsExt};
-use adw::{ActionRow, glib};
-use gtk::{Label, ListBox, SelectionMode};
+use gtk::{Label, ListBox};
 use log::*;
 
 use crate::app::io::parse::StyleSheet;
@@ -67,9 +67,7 @@ impl ComponentSideBar {
         let listbox = imp.list_box.borrow_mut();
 
         SelectorCategory::VALUES.into_iter().for_each(|category| {
-            listbox.append(&ComponentSidebarItem::new(Label::new(Some(
-                format!("{:?}", category).as_str(),
-            ))));
+            listbox.append(&ComponentSidebarItem::new(category));
         });
         // TODO: tabs or smth like that i actually havent thought about it LMAO
 

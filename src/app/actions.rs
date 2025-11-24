@@ -125,6 +125,11 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
                 }
 
                 let file = read::create_as_edit(name.to_string(), default_theme_path);
+                if let Err(error) = file {
+                    log::error!("Error creating theme: {}", error);
+                    panic!();
+                }
+                let file = file.unwrap();
 
                 let toolbar_view = window_rc.content().unwrap();
                 let navigationsplit_view =
