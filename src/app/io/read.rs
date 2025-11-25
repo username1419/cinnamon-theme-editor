@@ -1,4 +1,4 @@
-use log::error;
+use log::trace;
 
 use std::io::Error;
 use std::path::{Path, PathBuf};
@@ -31,13 +31,22 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
             "Theme already exists",
         ));
     }
-    file_path.push("/cinnamon");
+    trace!(
+        "Theme existence check passed. Theme with name \"{}\" does not yet exist.",
+        name
+    );
+    file_path.push("cinnamon");
 
+    trace!(
+        "Creating theme directory at path {:?}.",
+        file_path.as_os_str()
+    );
     if let Err(err) = fs::create_dir_all(&file_path) {
         return Err(err);
     }
     file_path.push(Path::new("cinnamon.css"));
 
+    trace!("Writing cinnamon.css stylesheet for theme \"{}\".", name);
     if let Err(err) = fs::write(
         &file_path,
         format!(
@@ -48,6 +57,10 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
         return Err(err);
     }
 
+    trace!(
+        "Reading back cinnamon.css stylesheet for theme \"{}\".",
+        name
+    );
     let result = fs::read_to_string(&file_path);
 
     result.map(|raw| StyleSheet::parse(file_path.to_path_buf(), raw))
