@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use adw::subclass::prelude::ObjectSubclassIsExt;
-use gtk::{Label, glib};
+use gtk::{Label, glib, prelude::WidgetExt};
 use log::trace;
 
 use crate::app::io::parser::selector::SelectorCategory;
@@ -13,7 +13,7 @@ mod imp {
         bin::BinImpl,
         prelude::{ObjectImpl, ObjectSubclass},
     };
-    use gtk::{Label, subclass::widget::WidgetImpl};
+    use gtk::subclass::widget::WidgetImpl;
 
     use super::*;
 
@@ -49,19 +49,24 @@ glib::wrapper! {
 
 impl ComponentSidebarItem {
     pub fn new(category: SelectorCategory) -> Self {
-        let label = Label::new(Some(
-            match category {
-                SelectorCategory::GroupWindow => String::from_str("Group Window").unwrap(),
-                c => format!("{:?}", c),
-            }
-            .as_str(),
-        ));
+        let label = Label::builder()
+            .label(
+                match category {
+                    SelectorCategory::GroupWindow => String::from_str("Group Window").unwrap(),
+                    c => format!("{:?}", c),
+                }
+                .as_str(),
+            )
+            .halign(gtk::Align::Start)
+            .valign(gtk::Align::Center)
+            .build();
         trace!("Creating ComponentSidebarItem with label {}", label.label());
 
         let this = glib::Object::builder::<Self>()
             .property("child", label.clone())
             .build();
 
+        this.add_css_class("sidebar-item");
         this.imp().category.replace(category);
         this
     }

@@ -1,5 +1,10 @@
 .sidebar>list>row {
-    border-radius: 12px;
+    border-radius: 8px;
+}
+
+.sidebar-item {
+    padding: 4px;
+    padding-left: 8px;
 }
 
 .sidebar>list {
