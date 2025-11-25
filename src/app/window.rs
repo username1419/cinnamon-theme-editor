@@ -1,11 +1,13 @@
 use adw::gtk::Label;
 use adw::gtk::prelude::GtkWindowExt;
 use adw::{ApplicationWindow, HeaderBar, NavigationPage, NavigationSplitView, ToolbarView, Window};
+use gtk::Box;
 use gtk::prelude::WidgetExt;
-use gtk::{Box, ListBox};
 
 use super::actions::setup_actions;
+use super::ui::button::apply_button::setup_apply_button;
 use super::ui::button::new_theme_button::setup_new_theme_button;
+use super::ui::footerbar::FooterBar;
 use super::ui::sidebar::components_sidebar::ComponentSideBar;
 
 #[derive(Debug)]
@@ -33,6 +35,7 @@ impl MainWindow {
             .build();
 
         let header = Self::setup_top_toolbar();
+        let footer = Self::setup_bottom_toolbar();
         let tool_bar = ToolbarView::builder()
             .name("ToolbarView")
             .top_bar_style(adw::ToolbarStyle::Flat)
@@ -42,6 +45,7 @@ impl MainWindow {
             .content(&main_content)
             .build();
         tool_bar.add_top_bar(&header);
+        tool_bar.add_bottom_bar(&footer);
 
         let app_window = ApplicationWindow::builder()
             .application(app)
@@ -79,5 +83,12 @@ impl MainWindow {
         header.pack_start(&setup_new_theme_button());
 
         header
+    }
+
+    pub fn setup_bottom_toolbar() -> FooterBar {
+        let mut footer = FooterBar::new();
+        footer.pack_end(&setup_apply_button());
+
+        footer
     }
 }
