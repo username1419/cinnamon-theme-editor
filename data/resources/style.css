@@ -2,6 +2,10 @@
     border-radius: 8px;
 }
 
+footer>box {
+    margin: 6px;
+}
+
 .sidebar-item {
     padding: 4px;
     padding-left: 8px;

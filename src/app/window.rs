@@ -3,6 +3,7 @@ use adw::gtk::prelude::GtkWindowExt;
 use adw::{ApplicationWindow, HeaderBar, NavigationPage, NavigationSplitView, ToolbarView, Window};
 use gtk::Box;
 use gtk::prelude::WidgetExt;
+use log::trace;
 
 use super::actions::setup_actions;
 use super::ui::button::apply_button::setup_apply_button;
@@ -22,6 +23,7 @@ impl MainWindow {
             .title("Sidebar")
             .name("SidebarPage")
             .build();
+        trace!("Created sidebar widget");
 
         let main_content = NavigationSplitView::builder()
             .name("NavSplitView")
@@ -33,9 +35,8 @@ impl MainWindow {
                     .build(),
             )
             .build();
+        trace!("Created split view container");
 
-        let header = Self::setup_top_toolbar();
-        let footer = Self::setup_bottom_toolbar();
         let tool_bar = ToolbarView::builder()
             .name("ToolbarView")
             .top_bar_style(adw::ToolbarStyle::Flat)
@@ -44,8 +45,13 @@ impl MainWindow {
             .bottom_bar_style(adw::ToolbarStyle::Flat)
             .content(&main_content)
             .build();
+        trace!("Created toolbar container");
+        let header = Self::setup_top_toolbar();
         tool_bar.add_top_bar(&header);
+        trace!("Created header bar");
+        let footer = Self::setup_bottom_toolbar();
         tool_bar.add_bottom_bar(&footer);
+        trace!("Created footer bar");
 
         let app_window = ApplicationWindow::builder()
             .application(app)

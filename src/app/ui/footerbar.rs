@@ -6,6 +6,7 @@ use gtk::{
     glib::{self, object::IsA},
     prelude::{BoxExt, WidgetExt},
 };
+use log::trace;
 
 mod imp {
 
@@ -14,16 +15,11 @@ mod imp {
 
     use super::*;
 
+    #[derive(Default)]
     pub struct FooterBar {
         pub start: RefCell<Box>,
         pub middle: RefCell<Box>,
         pub end: RefCell<Box>,
-    }
-
-    impl Default for FooterBar {
-        fn default() -> Self {
-            Self::new()
-        }
     }
 
     #[glib::object_subclass]
@@ -46,19 +42,31 @@ glib::wrapper! {
 
 impl FooterBar {
     pub fn new() -> Self {
-        let this = glib::Object::builder::<Self>().build();
+        let this = glib::Object::builder::<Self>()
+            .property("css-name", "footer")
+            .build();
         this.add_css_class("footer");
         let imp = this.imp().to_owned();
         imp.start
             .replace(Box::builder().hexpand(true).vexpand(true).build());
         this.append(&imp.start.borrow().clone());
 
-        imp.middle
-            .replace(Box::builder().hexpand(true).vexpand(true).build());
+        imp.middle.replace(
+            Box::builder()
+                .halign(gtk::Align::Center)
+                .hexpand(true)
+                .vexpand(true)
+                .build(),
+        );
         this.append(&imp.middle.borrow().clone());
 
-        imp.end
-            .replace(Box::builder().hexpand(true).vexpand(true).build());
+        imp.end.replace(
+            Box::builder()
+                .halign(gtk::Align::End)
+                .hexpand(true)
+                .vexpand(true)
+                .build(),
+        );
         this.append(&imp.end.borrow().clone());
 
         this
