@@ -1,32 +1,12 @@
-use adw::{
-    Application, ApplicationWindow, NavigationPage, NavigationSplitView,
-    prelude::{AdwApplicationWindowExt, NavigationPageExt},
-};
+use adw::{Application, ApplicationWindow};
 use gtk::{
-    FileChooserDialog, FileDialog, ListBox, ResponseType,
-    gio::{
-        File, SimpleAction,
-        prelude::{ActionMapExt, FileExt},
-    },
-    glib::{
-        MainContext, Variant,
-        object::{Cast, CastNone},
-    },
-    prelude::WidgetExt,
+    FileChooserDialog, ResponseType,
+    gio::{SimpleAction, prelude::ActionMapExt},
+    glib::{MainContext, Variant},
 };
-use log::{debug, trace};
+use log::trace;
 
-use crate::{
-    app::{
-        actions::create_new::create_new,
-        io::read,
-        ui::{
-            dialog::text_entry_dialog::TextEntryDialog,
-            sidebar::components_sidebar::ComponentSideBar,
-        },
-    },
-    helper::Helper,
-};
+use crate::app::actions::create_new::create_new;
 
 struct ActionBuilder<'a> {
     name: &'a str,
@@ -59,6 +39,7 @@ impl<'a> ActionBuilder<'a> {
         F: Fn(Option<Variant>) -> Fut + 'static,
         Fut: Future<Output = ()> + 'static,
     {
+        // theres no `self` because of lifetime issues
         self.on_activate = Box::new(move |_, variant| {
             let variant = variant.cloned();
             MainContext::default().spawn_local(on_activate(variant));
