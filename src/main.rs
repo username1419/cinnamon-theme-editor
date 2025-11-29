@@ -15,8 +15,11 @@ fn main() {
 
     match std::env::var("DESKTOP_SESSION") {
         Ok(value) => {
-            if value == "cinnamon" {
-                panic!("This program is only compatible with the Cinnamon Desktop Environment.");
+            if value != "cinnamon" {
+                panic!(
+                    "This program is only compatible with the Cinnamon Desktop Environment. Current desktop environment: {}.",
+                    value
+                );
             }
         }
         Err(error) => panic!("{}", error),
