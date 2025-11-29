@@ -5,7 +5,7 @@ use gtk::Box;
 use gtk::prelude::WidgetExt;
 use log::trace;
 
-use super::actions::setup_actions;
+use super::action_setup::setup_actions;
 use super::ui::button::apply_button::setup_apply_button;
 use super::ui::button::new_theme_button::setup_new_theme_button;
 use super::ui::footerbar::FooterBar;
@@ -55,8 +55,8 @@ impl MainWindow {
 
         let app_window = ApplicationWindow::builder()
             .application(app)
-            .default_width(350)
-            .default_height(450)
+            .default_width(1150)
+            .default_height(750)
             .title("Cinnamon Dekstop Editor")
             .content(&tool_bar)
             .build();

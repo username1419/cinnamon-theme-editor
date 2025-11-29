@@ -6,7 +6,6 @@ use gtk::{
     glib::{self, object::IsA},
     prelude::{BoxExt, WidgetExt},
 };
-use log::trace;
 
 mod imp {
 

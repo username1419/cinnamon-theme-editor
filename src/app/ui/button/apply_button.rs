@@ -7,5 +7,6 @@ pub fn setup_apply_button() -> Button {
         .halign(gtk::Align::End)
         .valign(gtk::Align::Fill)
         .css_classes(["suggested-action", "apply-button"])
+        .visible(false)
         .build()
 }
