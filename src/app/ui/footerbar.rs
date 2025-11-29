@@ -43,15 +43,22 @@ impl FooterBar {
     pub fn new() -> Self {
         let this = glib::Object::builder::<Self>()
             .property("css-name", "footer")
+            .property("name", "FooterBar")
             .build();
         this.add_css_class("footer");
         let imp = this.imp().to_owned();
-        imp.start
-            .replace(Box::builder().hexpand(true).vexpand(true).build());
+        imp.start.replace(
+            Box::builder()
+                .name("FooterBarStart")
+                .hexpand(true)
+                .vexpand(true)
+                .build(),
+        );
         this.append(&imp.start.borrow().clone());
 
         imp.middle.replace(
             Box::builder()
+                .name("FooterBarMiddle")
                 .halign(gtk::Align::Center)
                 .hexpand(true)
                 .vexpand(true)
@@ -61,6 +68,7 @@ impl FooterBar {
 
         imp.end.replace(
             Box::builder()
+                .name("FooterBarEnd")
                 .halign(gtk::Align::End)
                 .hexpand(true)
                 .vexpand(true)
@@ -84,5 +92,40 @@ impl FooterBar {
     pub fn pack_end(&mut self, widget: &impl IsA<Widget>) {
         let imp = self.imp();
         imp.end.borrow_mut().append(widget);
+    }
+
+    pub fn clear_start(&mut self) {
+        let imp = self.imp();
+        imp.start.replace(
+            Box::builder()
+                .name("FooterBarStart")
+                .hexpand(true)
+                .vexpand(true)
+                .build(),
+        );
+    }
+
+    pub fn clear_middle(&mut self) {
+        let imp = self.imp();
+        imp.middle.replace(
+            Box::builder()
+                .name("FooterBarMiddle")
+                .halign(gtk::Align::Center)
+                .hexpand(true)
+                .vexpand(true)
+                .build(),
+        );
+    }
+
+    pub fn clear_end(&mut self) {
+        let imp = self.imp();
+        imp.end.replace(
+            Box::builder()
+                .name("FooterBarEnd")
+                .halign(gtk::Align::End)
+                .hexpand(true)
+                .vexpand(true)
+                .build(),
+        );
     }
 }

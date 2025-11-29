@@ -1,8 +1,9 @@
 use log::trace;
 
 use adw::{
-    ApplicationWindow, NavigationSplitView,
+    ApplicationWindow, NavigationSplitView, ToolbarView,
     prelude::{AdwApplicationWindowExt, NavigationPageExt},
+    subclass::prelude::ObjectSubclassIsExt,
 };
 use gtk::{
     FileDialog,
@@ -11,6 +12,7 @@ use gtk::{
         Variant,
         object::{Cast, CastNone},
     },
+    prelude::WidgetExt,
 };
 use log::debug;
 
@@ -18,14 +20,14 @@ use crate::{
     app::{
         io::read,
         ui::{
-            dialog::text_entry_dialog::TextEntryDialog,
+            dialog::text_entry_dialog::TextEntryDialog, footerbar::FooterBar,
             sidebar::components_sidebar::ComponentSideBar,
         },
     },
     helper::Helper,
 };
 
-pub fn create_new(window: ApplicationWindow, v: Option<Variant>) -> impl Future<Output = ()> {
+pub fn create_new(window: ApplicationWindow, _v: Option<Variant>) -> impl Future<Output = ()> {
     async move {
         trace!("Creating theme chooser FileDialog...");
         let file_dialog = FileDialog::builder()
@@ -55,7 +57,7 @@ pub fn create_new(window: ApplicationWindow, v: Option<Variant>) -> impl Future<
         }
         let file = file.unwrap();
 
-        let toolbar_view = window.content().unwrap();
+        let toolbar_view = window.content().and_downcast::<ToolbarView>().unwrap();
         let navigationsplit_view =
             Helper::find_descendant(toolbar_view.upcast_ref(), "NavSplitView")
                 .and_downcast::<NavigationSplitView>()
@@ -66,5 +68,19 @@ pub fn create_new(window: ApplicationWindow, v: Option<Variant>) -> impl Future<
         // this is only 4 nested layers
 
         sidebar.populate(file);
+
+        let footer = Helper::find_child_bf(toolbar_view.upcast_ref(), "FooterBar")
+            .and_downcast::<FooterBar>()
+            .unwrap();
+
+        let apply_button = footer
+            .imp()
+            .end
+            .borrow_mut()
+            .first_child()
+            .and_downcast::<gtk::Button>()
+            .unwrap();
+
+        apply_button.set_visible(true);
     }
 }
