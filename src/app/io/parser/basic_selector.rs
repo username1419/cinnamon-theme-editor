@@ -32,6 +32,7 @@ impl PseudoElement {
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
+/// Represents a Pseudo-class inside a selector. Eg. in `StLabel:ltr`, `ltr` is the pseudo-class.
 pub enum PseudoClass {
     /// Matches when cursor hovers over the element
     Hover,
@@ -44,6 +45,7 @@ pub enum PseudoClass {
     Focus,
     /// Matches when a radio, checkbox, or option element is checked
     Checked,
+    /// found in `.applet-box`
     Highlight,
     Ltr,
     Rtl,
@@ -65,6 +67,36 @@ pub enum PseudoClass {
     Current,
     /// Button pseudoclass for something idk
     DestructiveAction,
+    /// found in `.window-list-item-box`
+    GroupFocus,
+    /// found in `.window-list-item-box`
+    Running,
+    /// found in `.item-box`
+    Outlined,
+    /// found in `.item-box`
+    Selected,
+    /// found in `StBoxLayout`
+    FirstChild,
+    /// found in `StBoxLayout`
+    Small,
+    /// found in `.workspace-button`
+    Shaded,
+    /// found in `.tile-hud`
+    Top,
+    /// found in `.tile-hud`
+    Bottom,
+    /// found in `.tile-hud`
+    Left,
+    /// found in `.tile-hud`
+    Right,
+    /// found in `.tile-hud`
+    TopLeft,
+    /// found in `.tile-hud`
+    TopRight,
+    /// found in `.tile-hud`
+    BottomLeft,
+    /// found in `.tile-hud`
+    BottomRight,
 
     Other(String),
 }
