@@ -36,6 +36,12 @@ impl SelectorCategory {
     ];
 }
 
+impl Default for SelectorCategory {
+    fn default() -> Self {
+        Self::Other
+    }
+}
+
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum Combinator {
     NextSibling,

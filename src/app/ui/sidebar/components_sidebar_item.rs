@@ -17,6 +17,7 @@ mod imp {
 
     use super::*;
 
+    #[derive(Default)]
     pub struct ComponentSidebarItem {
         pub category: RefCell<SelectorCategory>,
     }
@@ -26,14 +27,6 @@ mod imp {
         const NAME: &'static str = "ComponentSidebarItem";
         type Type = super::ComponentSidebarItem;
         type ParentType = adw::Bin;
-    }
-
-    impl Default for ComponentSidebarItem {
-        fn default() -> Self {
-            Self {
-                category: RefCell::new(SelectorCategory::Other),
-            }
-        }
     }
 
     impl BinImpl for ComponentSidebarItem {}
