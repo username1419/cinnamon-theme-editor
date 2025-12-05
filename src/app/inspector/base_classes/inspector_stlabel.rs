@@ -2,8 +2,11 @@ use gtk::{glib, prelude::WidgetExt};
 
 mod imp {
 
-    use adw::subclass::prelude::{ObjectImpl, ObjectSubclass};
-    use gtk::subclass::{box_::BoxImpl, widget::WidgetImpl};
+    use adw::subclass::{
+        bin::BinImpl,
+        prelude::{ObjectImpl, ObjectSubclass},
+    };
+    use gtk::subclass::widget::WidgetImpl;
 
     use super::*;
 
@@ -14,17 +17,18 @@ mod imp {
     impl ObjectSubclass for StLabel {
         const NAME: &'static str = "StLabel";
         type Type = super::StLabel;
-        type ParentType = gtk::Box;
+        // closest equivalent is gtk::Label, which is not subclassible
+        type ParentType = adw::Bin;
     }
 
-    impl BoxImpl for StLabel {}
+    impl BinImpl for StLabel {}
     impl ObjectImpl for StLabel {}
     impl WidgetImpl for StLabel {}
 }
 
 glib::wrapper! {
     pub struct StLabel(ObjectSubclass<imp::StLabel>)
-        @extends gtk::Widget, gtk::Box,
+        @extends gtk::Widget, adw::Bin,
         @implements gtk::Buildable, gtk::ConstraintTarget, gtk::Accessible;
 }
 

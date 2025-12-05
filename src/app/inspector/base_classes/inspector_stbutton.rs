@@ -3,7 +3,7 @@ use gtk::{glib, prelude::WidgetExt};
 mod imp {
 
     use adw::subclass::prelude::{ObjectImpl, ObjectSubclass};
-    use gtk::subclass::{box_::BoxImpl, widget::WidgetImpl};
+    use gtk::subclass::{button::ButtonImpl, widget::WidgetImpl};
 
     use super::*;
 
@@ -14,18 +14,18 @@ mod imp {
     impl ObjectSubclass for StButton {
         const NAME: &'static str = "StButton";
         type Type = super::StButton;
-        type ParentType = gtk::Box;
+        type ParentType = gtk::Button;
     }
 
-    impl BoxImpl for StButton {}
+    impl ButtonImpl for StButton {}
     impl ObjectImpl for StButton {}
     impl WidgetImpl for StButton {}
 }
 
 glib::wrapper! {
     pub struct StButton(ObjectSubclass<imp::StButton>)
-        @extends gtk::Widget, gtk::Box,
-        @implements gtk::Buildable, gtk::ConstraintTarget, gtk::Accessible;
+        @extends gtk::Widget, gtk::Button,
+        @implements gtk::Buildable, gtk::ConstraintTarget, gtk::Accessible, gtk::Actionable;
 }
 
 impl StButton {

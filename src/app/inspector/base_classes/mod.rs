@@ -1,4 +1,3 @@
-pub mod inspector_gobject;
 pub mod inspector_stbin;
 pub mod inspector_stboxlayout;
 pub mod inspector_stbutton;

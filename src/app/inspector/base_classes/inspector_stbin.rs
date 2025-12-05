@@ -2,8 +2,11 @@ use gtk::{glib, prelude::WidgetExt};
 
 mod imp {
 
-    use adw::subclass::prelude::{ObjectImpl, ObjectSubclass};
-    use gtk::subclass::{box_::BoxImpl, widget::WidgetImpl};
+    use adw::subclass::{
+        bin::BinImpl,
+        prelude::{ObjectImpl, ObjectSubclass},
+    };
+    use gtk::subclass::widget::WidgetImpl;
 
     use super::*;
 
@@ -14,18 +17,17 @@ mod imp {
     impl ObjectSubclass for StBin {
         const NAME: &'static str = "StBin";
         type Type = super::StBin;
-        // WARN: maybe adw::Bin?
-        type ParentType = gtk::Box;
+        type ParentType = adw::Bin;
     }
 
-    impl BoxImpl for StBin {}
+    impl BinImpl for StBin {}
     impl ObjectImpl for StBin {}
     impl WidgetImpl for StBin {}
 }
 
 glib::wrapper! {
     pub struct StBin(ObjectSubclass<imp::StBin>)
-        @extends gtk::Widget, gtk::Box,
+        @extends gtk::Widget, adw::Bin,
         @implements gtk::Buildable, gtk::ConstraintTarget, gtk::Accessible;
 }
 
