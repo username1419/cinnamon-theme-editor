@@ -75,8 +75,8 @@ impl CinnamonGenericContainerBuilder {
         self
     }
 
-    pub fn with_css_classes(mut self, css_classes: &[String]) -> Self {
-        self.css_classes = css_classes.to_vec();
+    pub fn with_css_classes(mut self, css_classes: &[&str]) -> Self {
+        self.css_classes = css_classes.into_iter().map(|s| s.to_string()).collect();
 
         self
     }
