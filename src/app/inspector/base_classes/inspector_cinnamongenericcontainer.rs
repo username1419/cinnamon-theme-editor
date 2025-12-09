@@ -35,6 +35,7 @@ glib::wrapper! {
 struct CinnamonGenericContainerBuilder {
     valign: Align,
     halign: Align,
+    css_classes: Vec<String>,
 }
 
 impl Default for CinnamonGenericContainerBuilder {
@@ -42,25 +43,42 @@ impl Default for CinnamonGenericContainerBuilder {
         Self {
             valign: Align::Start,
             halign: Align::Start,
+            css_classes: Vec::default(),
         }
     }
 }
 
 impl CinnamonGenericContainerBuilder {
     pub fn build(self) -> CinnamonGenericContainer {
-        glib::Object::builder::<CinnamonGenericContainer>()
+        let this = glib::Object::builder::<CinnamonGenericContainer>()
             .property("css-name", "CinnamonGenericContainer")
             .property("valign", self.valign)
             .property("halign", self.halign)
-            .build()
+            .build();
+        // NOTE: theres probably a better way to do this but im stupid
+        self.css_classes
+            .iter()
+            .for_each(|class| this.add_css_class(&class));
+
+        this
     }
 
-    pub fn with_valign(&mut self, valign: Align) {
+    pub fn with_valign(mut self, valign: Align) -> Self {
         self.valign = valign;
+
+        self
     }
 
-    pub fn with_halign(&mut self, halign: Align) {
+    pub fn with_halign(mut self, halign: Align) -> Self {
         self.halign = halign;
+
+        self
+    }
+
+    pub fn with_css_classes(mut self, css_classes: &[String]) -> Self {
+        self.css_classes = css_classes.to_vec();
+
+        self
     }
 }
 
