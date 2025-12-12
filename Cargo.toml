@@ -8,13 +8,12 @@ log = "0.4.28"
 simple_logger = "5.1.0"
 regex = "1.12.2"
 once_cell = "1.21.3"
+dioxus = { version = "0.7.1", features = [] }
 
-[dependencies.adw]
-package = "libadwaita"
-version = "0.8.0"
-features = ["v1_5"]
+[features]
+default = ["desktop"]
 
-[dependencies.gtk]
-package = "gtk4"
-version = "0.10.1"
-features = ["v4_10"]
+# NOTE: below features wont be used, however excluding them makes rust-analyzer crash so 
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]

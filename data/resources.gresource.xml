@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<gresources>
-    <gresource prefix="/com/usr1419/cinnamon-desktop-editor">
-        <file>resources/icons/200x200.svg</file>
-        <file>resources/style.css</file>
-  </gresource>
-</gresources>
