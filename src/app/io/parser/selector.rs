@@ -8,16 +8,17 @@ pub enum SelectorType {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[repr(i32)]
 pub enum SelectorCategory {
-    Panel,
-    Menu,
-    Window,
-    Calendar,
-    Dialog,
-    Entry,
-    Sound,
-    GroupWindow,
-    Other,
+    Panel = 0,
+    Menu = 1,
+    Window = 2,
+    Calendar = 3,
+    Dialog = 4,
+    Entry = 5,
+    Sound = 6,
+    GroupWindow = 7,
+    Other = 8,
 }
 
 impl SelectorCategory {

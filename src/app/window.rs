@@ -5,6 +5,8 @@ use gtk::Box;
 use gtk::prelude::WidgetExt;
 use log::trace;
 
+use crate::app::inspector::inspector_page::Inspector;
+
 use super::action_setup::setup_actions;
 use super::ui::button::apply_button::setup_apply_button;
 use super::ui::button::new_theme_button::setup_new_theme_button;
@@ -28,12 +30,8 @@ impl MainWindow {
         let main_content = NavigationSplitView::builder()
             .name("NavSplitView")
             .sidebar(&sidebar)
-            .content(
-                &NavigationPage::builder()
-                    .child(&Box::builder().build())
-                    .title("MainContent")
-                    .build(),
-            )
+            // TODO: this should be another NavigationSplitView to modify the css properties themselves
+            .content(&Inspector::new())
             .build();
         trace!("Created split view container");
 

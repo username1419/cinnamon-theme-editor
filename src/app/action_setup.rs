@@ -2,14 +2,15 @@ use adw::{Application, ApplicationWindow};
 use gtk::{
     FileChooserDialog, ResponseType,
     gio::{SimpleAction, prelude::ActionMapExt},
-    glib::{MainContext, Variant},
+    glib::{MainContext, Variant, VariantTy},
 };
 use log::trace;
 
-use crate::app::actions::create_new::create_new;
+use crate::app::actions::{create_new::create_new, switch_inspector::switch_inspector};
 
-struct ActionBuilder<'a> {
+pub struct ActionBuilder<'a> {
     name: &'a str,
+    variant_type: Option<&'a VariantTy>,
     on_activate: Box<dyn Fn(&SimpleAction, Option<&Variant>)>,
 }
 
@@ -17,12 +18,18 @@ impl<'a> ActionBuilder<'a> {
     pub fn new() -> Self {
         Self {
             name: "",
+            variant_type: None,
             on_activate: Box::new(|_, _| todo!()),
         }
     }
 
     pub fn name(mut self, name: &'a str) -> Self {
         self.name = name;
+        self
+    }
+
+    pub fn with_variant(mut self, variant: &'a VariantTy) -> Self {
+        self.variant_type = Some(variant);
         self
     }
 
@@ -39,7 +46,7 @@ impl<'a> ActionBuilder<'a> {
         F: Fn(Option<Variant>) -> Fut + 'static,
         Fut: Future<Output = ()> + 'static,
     {
-        // theres no `self` because of lifetime issues
+        // NOTE: theres no `self` because of lifetime issues
         self.on_activate = Box::new(move |_, variant| {
             let variant = variant.cloned();
             MainContext::default().spawn_local(on_activate(variant));
@@ -48,13 +55,13 @@ impl<'a> ActionBuilder<'a> {
     }
 
     pub fn build(self) -> SimpleAction {
-        let action = SimpleAction::new(self.name, None);
+        let action = SimpleAction::new(self.name, self.variant_type.map(|t| t.as_ref()));
         action.connect_activate(self.on_activate);
 
         action
     }
 
-    pub fn add_to(self, app: &Application) {
+    pub fn add_to(self, app: &impl ActionMapExt) {
         app.add_action(&self.build());
     }
 }
@@ -78,8 +85,16 @@ pub fn setup_actions(app: Application, window: ApplicationWindow) {
         })
         .add_to(&app);
 
+    let w_rc = window.clone();
     ActionBuilder::new()
         .name("create-new")
-        .on_activate_async(move |v| create_new(window.clone(), v))
+        .on_activate_async(move |v| create_new(w_rc.clone(), v))
+        .add_to(&app);
+
+    let w_rc = window.clone();
+    ActionBuilder::new()
+        .name("switch-inspector")
+        .with_variant(&VariantTy::INT32)
+        .on_activate(move |_, v| switch_inspector(w_rc.clone(), v))
         .add_to(&app);
 }

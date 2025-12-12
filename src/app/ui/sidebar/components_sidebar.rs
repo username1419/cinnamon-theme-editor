@@ -2,6 +2,8 @@ use adw::glib;
 use adw::prelude::WidgetExt;
 use adw::subclass::prelude::{ObjectImpl, WidgetImpl};
 use adw::subclass::prelude::{ObjectSubclass, ObjectSubclassIsExt};
+use gtk::glib::object::Cast;
+use gtk::prelude::ListBoxRowExt;
 use gtk::{Label, ListBox};
 use log::*;
 
@@ -50,6 +52,18 @@ impl ComponentSideBar {
             .property("child", list_box.clone())
             .build();
 
+        // WARN: doesnt work
+        list_box.connect_row_activated(move |_, r| {
+            if let Ok(row) = r.child().unwrap().downcast::<ComponentSidebarItem>() {
+                let row = row.imp();
+                r.activate_action(
+                    "app.switch-inspector",
+                    Some(&(*row.category.borrow() as i32).into()),
+                )
+                .ok();
+            }
+        });
+
         this.imp().list_box.replace(list_box);
         this
     }
@@ -70,11 +84,5 @@ impl ComponentSideBar {
             listbox.append(&ComponentSidebarItem::new(category));
         });
         // TODO: tabs or smth like that i actually havent thought about it LMAO
-
-        //components.iter().for_each(|component| {
-        //    imp.list_box
-        //        .borrow_mut()
-        //        .append(&Label::builder().label(component).build())
-        //});
     }
 }

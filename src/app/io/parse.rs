@@ -21,6 +21,16 @@ static COMMENT_FILTER_REGEX: Lazy<Regex> = Lazy::new(|| {
     Regex::new(pattern).expect("Failed to compile regex")
 });
 
+impl Default for StyleSheet {
+    fn default() -> Self {
+        StyleSheet {
+            source: PathBuf::default(),
+            import: None,
+            rulesets: HashMap::default(),
+        }
+    }
+}
+
 impl StyleSheet {
     pub fn get_source(&self) -> &PathBuf {
         &self.source

@@ -1,7 +1,7 @@
 use std::io::Error;
 use std::process::Command;
 
-struct CinnamonSettings {}
+pub struct CinnamonSettings {}
 impl CinnamonSettings {
     /// Retrieves a cinnamon configuration via dconf.
     ///
