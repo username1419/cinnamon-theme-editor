@@ -32,7 +32,7 @@ glib::wrapper! {
         @implements gtk::Buildable, gtk::ConstraintTarget, gtk::Accessible;
 }
 
-struct CinnamonGenericContainerBuilder {
+pub struct CinnamonGenericContainerBuilder {
     valign: Align,
     halign: Align,
     css_classes: Vec<String>,
@@ -87,6 +87,9 @@ impl CinnamonGenericContainer {
         let this = glib::Object::builder::<CinnamonGenericContainer>()
             .property("css-name", "CinnamonGenericContainer")
             .build();
+        for class in this.css_classes() {
+            this.remove_css_class(class.as_str());
+        }
         this.set_css_classes(with_css_classes);
 
         this
