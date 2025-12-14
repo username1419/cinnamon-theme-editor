@@ -1,34 +1,68 @@
-body {
-    background-color: #0f1116;
-    color: #ffffff;
+* {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 20px;
 }
 
-#links {
-    width: 400px;
-    text-align: left;
-    font-size: x-large;
-    color: white;
+body {
+    border-radius: 12px;
+    margin: 0px;
+}
+
+.window {
+    background-color: #ffffff;
+    border-radius: 6px;
+    color: #000000;
     display: flex;
-    flex-direction: column;
 }
 
-#links a {
-    color: white;
-    text-decoration: none;
-    margin-top: 20px;
-    margin: 10px 0px;
-    border: white 1px solid;
-    border-radius: 5px;
-    padding: 10px;
+.titlebar {
+    margin: 4px;
+    display: inline-flex;
+    flex-grow: 1;
 }
 
-#links a:hover {
-    background-color: #1f1f1f;
-    cursor: pointer;
+.titlebar>div {
+    display: inherit;
+    flex-grow: 1;
 }
 
-#header {
-    max-width: 1200px;
+.titlebar-left {
+    margin-right: 4px;
+    justify-content: flex-start;
+}
+
+.titlebar-center {
+    margin-right: 4px;
+    margin-left: 4px;
+    justify-content: center;
+}
+
+.titlebar-right {
+    margin-right: 4px;
+    justify-content: flex-end;
+}
+
+.window-controls {
+    /* align center pretty please */
+    align-items: center;
+    row-gap: 2px;
+}
+
+.window-controls>* {
+    border: solid lightgray 1px;
+    border-radius: 2px;
+}
+
+.wcontrol-minimize {
+    display: inline-flex;
+    background-color: greenyellow;
+}
+
+.wcontrol-maxmize {
+    display: inline-flex;
+    background-color: yellow;
+}
+
+.wcontrol-exit {
+    display: inline-flex;
+    background-color: red;
 }

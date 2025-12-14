@@ -381,6 +381,7 @@ name = "cinnamon-desktop-editor"
 version = "0.1.0"
 dependencies = [
  "dioxus",
+ "dioxus-desktop",
  "log",
  "once_cell",
  "regex",
