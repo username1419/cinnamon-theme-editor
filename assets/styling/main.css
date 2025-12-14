@@ -21,12 +21,13 @@ body {
 
 .titlebar {
     --titlebar-height: 24px;
+    --titlebar-margin: 4px;
 
-    margin: 4px;
+    margin: var(--titlebar-margin);
     display: inline-flex;
     gap: 8px;
     height: var(--titlebar-height);
-    width: 100%;
+    width: calc(100% - var(--titlebar-margin) * 2);
 }
 
 .titlebar>div {
