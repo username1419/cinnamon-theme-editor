@@ -1,23 +1,24 @@
-* {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
 body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     border-radius: 12px;
     margin: 0px;
 }
 
 .window {
-    background-color: #ffffff;
+    background-color: #F6F6F6;
     border-radius: 6px;
     color: #000000;
     display: flex;
 }
 
 .titlebar {
+    --titlebar-height: 24px;
+
     margin: 4px;
     display: inline-flex;
     flex-grow: 1;
+    gap: 8px;
+    height: var(--titlebar-height);
 }
 
 .titlebar>div {
@@ -25,44 +26,52 @@ body {
     flex-grow: 1;
 }
 
+.titlebar span {
+    font-size: 12px;
+    font-weight: 600;
+    align-content: center;
+}
+
 .titlebar-left {
-    margin-right: 4px;
     justify-content: flex-start;
 }
 
 .titlebar-center {
-    margin-right: 4px;
-    margin-left: 4px;
     justify-content: center;
 }
 
 .titlebar-right {
-    margin-right: 4px;
     justify-content: flex-end;
 }
 
 .window-controls {
-    /* align center pretty please */
+    --wcontrol-side: calc(var(--titlebar-height) / 1.5);
+
     align-items: center;
-    row-gap: 2px;
+    display: inline-flex;
+    gap: 4px;
+    padding-right: 4px;
 }
 
 .window-controls>* {
+    display: inline-flex;
+    background-color: #E0E0E0;
     border: solid lightgray 1px;
-    border-radius: 2px;
+    border-radius: 4px;
+    align-self: center;
+    transition-duration: 200ms;
+    width: var(--wcontrol-side);
+    height: var(--wcontrol-side);
 }
 
-.wcontrol-minimize {
-    display: inline-flex;
-    background-color: greenyellow;
+.wcontrol-minimize:hover {
+    background-color: #16C31E;
 }
 
-.wcontrol-maxmize {
-    display: inline-flex;
-    background-color: yellow;
+.wcontrol-maxmize:hover {
+    background-color: #F5DB56;
 }
 
-.wcontrol-exit {
-    display: inline-flex;
+.wcontrol-exit:hover {
     background-color: red;
 }

@@ -1,10 +1,10 @@
 use core::panic;
-use dioxus_desktop::{WindowBuilder, use_window, window};
+use dioxus_desktop::WindowBuilder;
 use simple_logger::SimpleLogger;
-use std::thread::Scope;
 pub mod app;
 pub mod helper;
-use dioxus::{core::LaunchConfig, html::g::cx, prelude::*};
+use crate::app::components::decorations::titlebar::Titlebar;
+use dioxus::prelude::*;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
             if value != "cinnamon" {
                 panic!(
                     "This program is only compatible with the Cinnamon Desktop Environment. Current desktop environment: {}.",
-                    value,
+                    value
                 );
             }
         }
@@ -55,41 +55,6 @@ fn App() -> Element {
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        div {
-
-        class: "window",
-            div { class: "titlebar", "data-tauri-drag-region": "true",
-                div {
-            class: "titlebar-left",
-        }
-        div {
-        class: "titlebar-center",
-
-                span { class: "title", "Cinnamon Theme Editor" }}
-        div {
-            class: "titlebar-right",
-                div { class: "window-controls",
-                    button {
-                        class: "wcontrol-minimize",
-                        onclick: move |_| {
-                            use_window().set_minimized(true);
-                        },
-                    }
-                    button {
-                        class: "wcontrol-maxmize",
-                        onclick: move |_| {
-                            let w = use_window();
-                            w.set_maximized(!w.is_maximized());
-                        },
-                    }
-                    button {
-                        class: "wcontrol-exit",
-                        onclick: move |_| {
-                            use_window().close();
-                        },
-                    }
-                }
-            }
-        }}
+        div { class: "window", Titlebar {} }
     }
 }
