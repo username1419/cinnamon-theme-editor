@@ -1,5 +1,5 @@
 use core::panic;
-use dioxus_desktop::WindowBuilder;
+use dioxus_desktop::{LogicalSize, WindowBuilder};
 use simple_logger::SimpleLogger;
 pub mod app;
 pub mod helper;
@@ -42,6 +42,8 @@ fn main() {
             dioxus_desktop::Config::new().with_window(
                 WindowBuilder::new()
                     .with_decorations(false)
+                    .with_inner_size(LogicalSize::new(1250, 750))
+                    // NOTE: resizing isnt possible currently in dioxus 7.2.0
                     .with_resizable(true)
                     .with_transparent(true),
             ),
