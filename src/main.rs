@@ -3,7 +3,9 @@ use dioxus_desktop::WindowBuilder;
 use simple_logger::SimpleLogger;
 pub mod app;
 pub mod helper;
-use crate::app::components::decorations::titlebar::Titlebar;
+use crate::app::components::{
+    contents::main_contents::MainContent, decorations::titlebar::Titlebar,
+};
 use dioxus::prelude::*;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
@@ -55,6 +57,9 @@ fn App() -> Element {
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        div { class: "window", Titlebar {} }
+        div { class: "window",
+            Titlebar {}
+            MainContent {}
+        }
     }
 }
