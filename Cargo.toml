@@ -1,5 +1,5 @@
 [package]
-name = "cinnamon-desktop-editor"
+name = "cinnamon-theme-editor"
 version = "0.1.0"
 edition = "2024"
 
