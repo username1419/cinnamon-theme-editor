@@ -8,7 +8,7 @@ use crate::app::components::{
 };
 use dioxus::prelude::*;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
-const MAIN_STYLE: Asset = asset!("/assets/styling/main.css");
+const MAIN_CSS: Asset = asset!("/assets/styling/main.scss");
 fn main() {
     if cfg!(windows) {
         panic!("Unsupported on Windows");
@@ -67,7 +67,7 @@ fn main() {
 fn App() -> Element {
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_STYLE }
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
         div { class: "window",
             Titlebar {}
             MainContent {}

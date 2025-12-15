@@ -1,0 +1,102 @@
+html,
+body,
+#main,
+.window {
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 12px;
+  margin: 0px;
+}
+
+.window {
+  background-color: #F6F6F6;
+  border-radius: 6px;
+  color: #000000;
+  display: flex;
+  flex-direction: column;
+}
+
+.titlebar {
+  --titlebar-height: 24px;
+  --titlebar-margin: 4px;
+
+  margin: var(--titlebar-margin);
+  display: inline-flex;
+  gap: 8px;
+  height: var(--titlebar-height);
+  width: calc(100% - var(--titlebar-margin) * 2);
+}
+
+.titlebar>div {
+  display: inherit;
+  width: calc(100% / 3);
+}
+
+.titlebar span {
+  font-size: 12px;
+  font-weight: 600;
+  align-content: center;
+  user-select: none;
+}
+
+.titlebar-left {
+  justify-content: flex-start;
+}
+
+.titlebar-center {
+  justify-content: center;
+}
+
+.titlebar-right {
+  justify-content: flex-end;
+}
+
+.window-controls {
+  --wcontrol-side: calc(var(--titlebar-height) / 1.5);
+
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  padding-right: 4px;
+}
+
+.window-controls>* {
+  display: inline-flex;
+  background-color: #E0E0E0;
+  border: solid lightgray 1px;
+  border-radius: 4px;
+  align-self: center;
+  transition-duration: 200ms;
+  width: var(--wcontrol-side);
+  height: var(--wcontrol-side);
+}
+
+.wcontrol-minimize:hover {
+  background-color: #16C31E;
+}
+
+.wcontrol-maxmize:hover {
+  background-color: #F5DB56;
+}
+
+.wcontrol-exit:hover {
+  background-color: red;
+}
+
+.content {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  flex-grow: 1;
+  border-top: solid darkgray 1px;
+}
+
+.sidebar {
+  width: 33%;
+  flex-grow: 1;
+  background-color: lightgray;
+  border-right: solid darkgray 1px;
+}
