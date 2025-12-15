@@ -8,7 +8,7 @@ use crate::app::components::{
 };
 use dioxus::prelude::*;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
-const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
+const MAIN_STYLE: Asset = asset!("/assets/styling/main.css");
 fn main() {
     if cfg!(windows) {
         panic!("Unsupported on Windows");
@@ -26,16 +26,25 @@ fn main() {
     }
     let args = std::env::args().skip(1);
     let mut unknown_args = Vec::new();
+    let mut is_logger_init = false;
     for arg in args {
         match arg.as_str() {
             "--trace" => {
                 println!("Starting log at trace level");
                 SimpleLogger::new().init().unwrap();
+                is_logger_init = true;
             }
             _ => {
                 unknown_args.push(arg);
             }
         }
+    }
+
+    if !is_logger_init {
+        SimpleLogger::new()
+            .with_level(log::LevelFilter::Info)
+            .init()
+            .unwrap();
     }
     dioxus::LaunchBuilder::desktop()
         .with_cfg(
@@ -58,7 +67,7 @@ fn main() {
 fn App() -> Element {
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS }
+        document::Link { rel: "stylesheet", href: MAIN_STYLE }
         div { class: "window",
             Titlebar {}
             MainContent {}
