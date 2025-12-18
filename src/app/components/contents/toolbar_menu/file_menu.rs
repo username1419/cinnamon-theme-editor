@@ -7,7 +7,7 @@ use dioxus::{
 };
 use tokio::time::sleep;
 
-use crate::app::components::contents::toolbar_menu::menu_button::MenuButton;
+use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
 
 fn on_create_new() {
     todo!("uhhhhhhh");
@@ -56,11 +56,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                     onclick: move |_| {
                         on_create_new();
                     },
-                    shortcut_trigger: move |keys: KeyboardEvent| {
-                        if !(matches!(keys.code(), Code::KeyN) && keys.modifiers().ctrl()) {
-                            on_create_new();
-                        }
-                    },
+                    shortcut: Shortcut::new(Code::KeyN, true, false, false),
                     text: "Create new",
                 }
             }
