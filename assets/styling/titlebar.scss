@@ -1,11 +1,15 @@
+// Variables
+$button-border: solid lightgray 1px;
+$button-background-color: #E0E0E0;
+$font-size: 16px;
+
+// Main titlebar
 .titlebar {
-  --titlebar-height: 24px;
   --titlebar-margin: 4px;
 
   margin: var(--titlebar-margin);
   display: inline-flex;
   gap: 8px;
-  height: var(--titlebar-height);
   width: calc(100% - var(--titlebar-margin) * 2);
 }
 
@@ -15,12 +19,14 @@
 }
 
 .titlebar span {
-  font-size: 12px;
+  font-size: $font-size;
   font-weight: 600;
   align-content: center;
   user-select: none;
+  padding: 4px 0 0 4px;
 }
 
+// Positioning contents
 .titlebar-left {
   justify-content: flex-start;
 }
@@ -33,9 +39,8 @@
   justify-content: flex-end;
 }
 
+// Window controls
 .window-controls {
-  --wcontrol-side: calc(var(--titlebar-height) / 1.5);
-
   align-items: center;
   display: inline-flex;
   gap: 4px;
@@ -49,8 +54,8 @@
   border-radius: 4px;
   align-self: center;
   transition-duration: 200ms;
-  width: var(--wcontrol-side);
-  height: var(--wcontrol-side);
+  width: $font-size;
+  height: $font-size;
 }
 
 .wcontrol-minimize:hover {

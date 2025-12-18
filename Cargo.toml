@@ -8,13 +8,10 @@ log = "0.4.28"
 simple_logger = "5.1.0"
 regex = "1.12.2"
 once_cell = "1.21.3"
-dioxus = { version = "0.7.1", features = [] }
+dioxus = { version = "0.7.2", features = ["desktop"] }
 dioxus-desktop = "0.7.2"
+tokio = { version = "1.47.2", features = ["time"] }
 
 [features]
 default = ["desktop"]
-
-# NOTE: below features wont be used, however excluding them makes rust-analyzer crash so 
-web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
-mobile = ["dioxus/mobile"]

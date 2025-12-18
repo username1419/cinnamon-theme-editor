@@ -23,7 +23,6 @@ pub fn Titlebar() -> Element {
             },
             div { class: "titlebar-left" }
             div { class: "titlebar-center",
-
                 span { class: "title", "Cinnamon Theme Editor" }
             }
             div { class: "titlebar-right",

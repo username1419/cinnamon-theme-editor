@@ -1,0 +1,66 @@
+$toolbar-color: #b8b8b8;
+$toolbar-button-hover-color: #a0a0a0;
+$toolbar-border: solid gray 1px;
+
+.toolbar {
+  width: 100%;
+  border-top: $toolbar-border;
+  background-color: $toolbar-color;
+  display: flex;
+}
+
+.toolbar>.toolbar-button {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  align-items: stretch;
+  align-self: stretch;
+}
+
+.toolbar-button {
+  padding-left: 4px;
+  padding-right: 4px;
+  border-radius: 0;
+  background-color: transparent;
+  border-width: 0;
+  transition-duration: 100ms;
+}
+
+.toolbar-button:hover {
+  background-color: $toolbar-button-hover-color;
+}
+
+.toolbar-menu {
+  z-index: 1;
+  position: absolute;
+  position-area: bottom left;
+  display: flex;
+  align-self: unset;
+  width: fit-content;
+  background-color: $toolbar-color;
+  border: $toolbar-border;
+  border-top: 0;
+  padding: 0;
+}
+
+.toolbar-menu>* {
+  display: flex;
+  background-color: transparent;
+  border: 0;
+  flex-direction: row;
+  border-radius: 0px;
+  flex-grow: 1;
+  flex-wrap: nowrap;
+  transition-duration: 100ms;
+}
+
+.toolbar-menu>*:hover {
+  background-color: $toolbar-button-hover-color;
+}
+
+#toolbar-file-menu {
+  position-anchor: --file;
+}
+
+#toolbar-file {
+  anchor-name: --file;
+}

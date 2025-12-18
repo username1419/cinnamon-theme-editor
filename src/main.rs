@@ -4,11 +4,13 @@ use simple_logger::SimpleLogger;
 pub mod app;
 pub mod helper;
 use crate::app::components::{
-    contents::main_contents::MainContent, decorations::titlebar::Titlebar,
+    contents::{main_contents::MainContent, toolbar::Toolbar},
+    decorations::titlebar::Titlebar,
 };
 use dioxus::prelude::*;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TITLEBAR_STYLE: Asset = asset!("/assets/styling/titlebar.scss");
+const TOOLBAR_STYLE: Asset = asset!("/assets/styling/toolbar.scss");
 const MAIN_STYLE: Asset = asset!("/assets/styling/main.scss");
 fn main() {
     if cfg!(windows) {
@@ -70,8 +72,11 @@ fn App() -> Element {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_STYLE }
         document::Link { rel: "stylesheet", href: TITLEBAR_STYLE }
+        document::Link { rel: "stylesheet", href: TOOLBAR_STYLE }
+
         div { class: "window",
             Titlebar {}
+            Toolbar {}
             MainContent {}
         }
     }
