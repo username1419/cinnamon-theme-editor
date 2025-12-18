@@ -23,6 +23,7 @@ $toolbar-border: solid gray 1px;
   background-color: transparent;
   border-width: 0;
   transition-duration: 100ms;
+  width: max-content;
 }
 
 .toolbar-button:hover {
@@ -35,11 +36,11 @@ $toolbar-border: solid gray 1px;
   position-area: bottom left;
   display: flex;
   align-self: unset;
-  width: fit-content;
   background-color: $toolbar-color;
   border: $toolbar-border;
   border-top: 0;
   padding: 0;
+  width: max-content;
 }
 
 .toolbar-menu>* {
@@ -48,13 +49,24 @@ $toolbar-border: solid gray 1px;
   border: 0;
   flex-direction: row;
   border-radius: 0px;
-  flex-grow: 1;
-  flex-wrap: nowrap;
   transition-duration: 100ms;
 }
 
 .toolbar-menu>*:hover {
   background-color: $toolbar-button-hover-color;
+}
+
+.toolbar-menu-button>span {
+  color: gray;
+  margin-left: 12px;
+  text-align: right;
+}
+
+.toolbar-menu-button {
+  text-align: left;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  flex-grow: 1;
 }
 
 #toolbar-file-menu {
