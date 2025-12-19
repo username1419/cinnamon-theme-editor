@@ -5,13 +5,10 @@ use dioxus::{
     core::Element,
     prelude::{component, rsx},
 };
+use dioxus_desktop::tao::keyboard::ModifiersState;
 use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
-
-fn on_create_new() {
-    todo!("uhhhhhhh");
-}
 
 #[component]
 pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
@@ -37,28 +34,27 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
             },
             "File"
         }
-        if *toolbar_file_active.read() || *toolbar_file_menu_hover.read() {
-            div {
-                id: "toolbar-file-menu",
-                class: "toolbar-menu",
-                onmouseover: move |_| {
-                    toolbar_file_menu_hover.set(true);
-                },
-                onmouseleave: move |_| {
-                    let mut active = toolbar_file_menu_hover.clone();
-                    async move {
-                        sleep(mouse_exit_timeout).await;
-                        active.set(false);
-                    }
-                },
-                MenuButton {
-                    id: "crete-new-button",
-                    onclick: move |_| {
-                        on_create_new();
-                    },
-                    shortcut: Shortcut::new(Code::KeyN, true, false, false),
-                    text: "Create new",
+        div {
+            id: "toolbar-file-menu",
+            class: "toolbar-menu",
+            style: if !(*toolbar_file_active.read() || *toolbar_file_menu_hover.read()) { "display: none" },
+            onmouseover: move |_| {
+                toolbar_file_menu_hover.set(true);
+            },
+            onmouseleave: move |_| {
+                let mut active = toolbar_file_menu_hover.clone();
+                async move {
+                    sleep(mouse_exit_timeout).await;
+                    active.set(false);
                 }
+            },
+            MenuButton {
+                id: "crete-new-button",
+                onclick: move |_| {
+                    log::info!("create-new-button triggered");
+                },
+                shortcut: Shortcut::new(KeyCode::N, ModifiersState::CONTROL),
+                text: "Create new",
             }
         }
     }
