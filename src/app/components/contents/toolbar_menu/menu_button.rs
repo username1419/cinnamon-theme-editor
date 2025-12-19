@@ -1,6 +1,3 @@
-use std::rc::Rc;
-use std::str::FromStr;
-
 use dioxus::html::geometry::Coordinates;
 use dioxus::html::geometry::euclid::Point2D;
 use dioxus::prelude::*;
@@ -8,6 +5,7 @@ use dioxus::{
     core::Element,
     prelude::{component, rsx},
 };
+use std::rc::Rc;
 
 #[derive(PartialEq, Clone)]
 pub struct Shortcut {

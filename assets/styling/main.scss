@@ -1,3 +1,5 @@
+$window-border-radius: 6px;
+
 html,
 body,
 #main,
@@ -13,7 +15,7 @@ body {
 
 .window {
   background-color: #F6F6F6;
-  border-radius: 6px;
+  border-radius: $window-border-radius;
   color: #000000;
   display: flex;
   flex-direction: column;
@@ -25,11 +27,13 @@ body {
   width: 100%;
   flex-grow: 1;
   border-top: solid darkgray 1px;
+  overflow-y: hidden;
+  border-bottom-left-radius: $window-border-radius;
 }
 
 .sidebar {
   width: 33%;
-  flex-grow: 1;
+  overflow-y: scroll;
   background-color: lightgray;
   border-right: solid darkgray 1px;
 }
