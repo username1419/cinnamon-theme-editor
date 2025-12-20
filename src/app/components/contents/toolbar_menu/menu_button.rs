@@ -6,7 +6,8 @@ use dioxus::{
     prelude::{component, rsx},
 };
 use dioxus_desktop::tao::keyboard::ModifiersState;
-use dioxus_desktop::{HotKeyState, use_global_shortcut};
+use dioxus_desktop::wry::dpi::PhysicalPosition;
+use dioxus_desktop::{HotKeyState, use_global_shortcut, use_window};
 use std::rc::Rc;
 
 #[derive(PartialEq, Clone, Debug)]
@@ -22,6 +23,15 @@ impl Shortcut {
     }
 }
 
+fn to_coord(pos: PhysicalPosition<f64>) -> Coordinates {
+    let screen = Point2D::new(pos.x, pos.y);
+    let client = Point2D::new(pos.x, pos.y);
+    let element = Point2D::new(pos.x, pos.y);
+    let page = Point2D::new(pos.x, pos.y);
+
+    Coordinates::new(screen, client, element, page)
+}
+
 #[derive(Props, PartialEq, Clone)]
 pub struct MenuButtonProps {
     id: String,
@@ -34,25 +44,19 @@ pub struct MenuButtonProps {
 
 #[component]
 pub fn MenuButton(props: MenuButtonProps) -> Element {
+    let window = use_window();
     if let Some(shortcut) = props.shortcut.as_ref() {
         use_global_shortcut((shortcut.modifiers, shortcut.key), move |state| {
             if state == HotKeyState::Released {
                 return;
             }
             // tower of doom? more like mountain of doom LMAO
-            // NOTE: actually in hindsight it would be better if we get the cursor
-            // position instead
             props.onclick.call(MouseEvent::new(
                 Rc::new(
                     SerializedMouseData::new(
                         None,
                         Default::default(),
-                        Coordinates::new(
-                            Point2D::default(),
-                            Point2D::default(),
-                            Point2D::default(),
-                            Point2D::default(),
-                        ),
+                        to_coord(window.cursor_position().unwrap_or_default()),
                         Modifiers::default(),
                     )
                     .into(),
