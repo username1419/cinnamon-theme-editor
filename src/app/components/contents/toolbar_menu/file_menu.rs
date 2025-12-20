@@ -49,12 +49,42 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 }
             },
             MenuButton {
-                id: "crete-new-button",
+                id: "create-new-button",
                 onclick: move |_| {
                     log::info!("create-new-button triggered");
                 },
                 shortcut: Shortcut::new(KeyCode::N, ModifiersState::CONTROL),
-                text: "Create new",
+                text: "Create new theme",
+            }
+            MenuButton {
+                id: "open-theme-button",
+                onclick: move |_| {
+                    log::info!("open-theme-button triggered");
+                },
+                shortcut: Shortcut::new(KeyCode::O, ModifiersState::CONTROL),
+                text: "Open theme",
+            }
+            MenuButton {
+                id: "placeholder-button1",
+                onclick: move |_| {
+                    log::info!("placeholder-button1 triggered");
+                },
+                text: "Placeholder 1",
+            }
+            MenuButton {
+                id: "placeholder-button2",
+                onclick: move |_| {
+                    log::info!("placeholder-button2 triggered");
+                },
+                text: "Placeholder 2",
+            }
+            MenuButton {
+                id: "export-theme-button",
+                onclick: move |_| {
+                    log::info!("export-theme-button triggered");
+                },
+                shortcut: Shortcut::new(KeyCode::E, ModifiersState::CONTROL),
+                text: "Export theme",
             }
         }
     }

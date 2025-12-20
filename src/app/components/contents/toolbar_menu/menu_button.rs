@@ -93,6 +93,7 @@ pub fn MenuButton(props: MenuButtonProps) -> Element {
         button {
             class: "toolbar-menu-button",
             id: props.id,
+            // TODO: tooltips
             onclick: move |event| { props.onclick.call(event) },
             "{text}"
             span { class: "shortcut-text", "{shortcut_label}" }
