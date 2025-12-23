@@ -7,11 +7,14 @@ use crate::app::components::{
     contents::{main_contents::MainContent, toolbar::Toolbar},
     decorations::titlebar::Titlebar,
 };
+use crate::app::io::parse::StyleSheet;
 use dioxus::prelude::*;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
+const STYLE_COLORS: Asset = asset!("/assets/styling/colors.scss");
+const MAIN_STYLE: Asset = asset!("/assets/styling/main.scss");
 const TITLEBAR_STYLE: Asset = asset!("/assets/styling/titlebar.scss");
 const TOOLBAR_STYLE: Asset = asset!("/assets/styling/toolbar.scss");
-const MAIN_STYLE: Asset = asset!("/assets/styling/main.scss");
+const OVERLAY_STYLE: Asset = asset!("/assets/styling/overlay.scss");
 fn main() {
     if cfg!(windows) {
         panic!("Unsupported on Windows");
@@ -68,11 +71,14 @@ fn main() {
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
 #[component]
 fn App() -> Element {
+    use_context_provider(|| Signal::new(StyleSheet::default()));
+
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_STYLE }
         document::Link { rel: "stylesheet", href: TITLEBAR_STYLE }
         document::Link { rel: "stylesheet", href: TOOLBAR_STYLE }
+        document::Link { rel: "stylesheet", href: OVERLAY_STYLE }
 
         div { class: "window",
             Titlebar {}

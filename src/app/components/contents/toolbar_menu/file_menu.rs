@@ -16,6 +16,8 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
     let mut toolbar_file_active = use_signal(|| false);
     let mut toolbar_file_menu_hover = use_signal(|| false);
 
+    let mut choose_theme_name_overlay_active = use_signal(|| false);
+
     rsx! {
         button {
             id: "toolbar-file",
@@ -51,7 +53,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
             MenuButton {
                 id: "create-new-button",
                 onclick: move |_| {
-                    log::info!("create-new-button triggered");
+                    *choose_theme_name_overlay_active.write() = true;
                 },
                 shortcut: Shortcut::new(KeyCode::N, ModifiersState::CONTROL),
                 text: "Create new theme",
@@ -86,6 +88,26 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 },
                 shortcut: Shortcut::new(KeyCode::E, ModifiersState::CONTROL),
                 text: "Export theme",
+            }
+        }
+        // HACK: keep rendering until explicitly stopped
+        div {
+            id: "choose-theme-name-overlay",
+            class: "overlay focus-block",
+            style: if !*choose_theme_name_overlay_active.read() { "display: none" },
+            // NOTE: dialog isnt use bc modal implementation isnt available on desktop (to my
+            // understanding)
+            div {
+                id: "choose-theme-name-submenu",
+                class: "overlay-menu text-dialog",
+                span { "Enter theme name" }
+                input {
+                    r#type: "text",
+                    id: "chose-theme-name-input",
+                    class: "text-input",
+                    required: true,
+                    minlength: 1,
+                }
             }
         }
     }
