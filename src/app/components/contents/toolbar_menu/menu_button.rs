@@ -17,7 +17,6 @@ pub struct Shortcut {
 }
 
 impl Shortcut {
-    // NOTE: builder pattern would be more readable but idk
     pub fn new(key: KeyCode, modifiers: ModifiersState) -> Self {
         Shortcut { key, modifiers }
     }
@@ -36,6 +35,8 @@ fn to_coord(pos: PhysicalPosition<f64>) -> Coordinates {
 pub struct MenuButtonProps {
     id: String,
     onclick: EventHandler<MouseEvent>,
+    #[props(optional)]
+    tooltip: Option<String>,
     #[props(optional)]
     shortcut: Option<Shortcut>,
     #[props(optional)]
@@ -92,8 +93,8 @@ pub fn MenuButton(props: MenuButtonProps) -> Element {
     rsx! {
         button {
             class: "toolbar-menu-button",
+            title: props.tooltip,
             id: props.id,
-            // TODO: tooltips
             onclick: move |event| { props.onclick.call(event) },
             "{text}"
             span { class: "shortcut-text", "{shortcut_label}" }

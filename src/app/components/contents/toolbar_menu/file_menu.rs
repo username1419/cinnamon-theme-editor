@@ -55,6 +55,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 },
                 shortcut: Shortcut::new(KeyCode::N, ModifiersState::CONTROL),
                 text: "Create new theme",
+                tooltip: "Placeholder tooltip",
             }
             MenuButton {
                 id: "open-theme-button",
