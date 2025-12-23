@@ -40,3 +40,12 @@ body {
   background-color: lightgray;
   border-right: solid darkgray 1px;
 }
+
+.suggested-action {
+  background-color: #469CFF;
+  border: solid 1px #1984FF;
+
+  &:hover {
+    background-color: darken($color: #469CFF, $amount: 4);
+  }
+}

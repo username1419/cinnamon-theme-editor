@@ -105,8 +105,25 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                     r#type: "text",
                     id: "chose-theme-name-input",
                     class: "text-input",
+                    "placeholder": "Choose theme",
                     required: true,
                     minlength: 1,
+                }
+                div { class: "text-dialog-choices",
+                    button {
+                        class: "confirm-choice suggested-action",
+                        onclick: move |_| {
+                            *choose_theme_name_overlay_active.write() = false;
+                        },
+                        "Choose"
+                    }
+                    button {
+                        class: "cancel-choice",
+                        onclick: move |_| {
+                            *choose_theme_name_overlay_active.write() = false;
+                        },
+                        "Cancel"
+                    }
                 }
             }
         }
