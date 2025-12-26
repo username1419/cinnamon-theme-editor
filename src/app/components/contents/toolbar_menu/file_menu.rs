@@ -17,6 +17,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
     let mut toolbar_file_menu_hover = use_signal(|| false);
 
     let mut choose_theme_name_overlay_active = use_signal(|| false);
+    let mut input = use_signal(|| String::default());
 
     rsx! {
         button {
@@ -90,39 +91,50 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 text: "Export theme",
             }
         }
-        // HACK: keep rendering until explicitly stopped
-        div {
-            id: "choose-theme-name-overlay",
-            class: "overlay focus-block",
-            style: if !*choose_theme_name_overlay_active.read() { "display: none" },
-            // NOTE: dialog isnt use bc modal implementation isnt available on desktop (to my
-            // understanding)
+
+        if *choose_theme_name_overlay_active.read() {
+            // HACK: keep rendering until explicitly stopped
             div {
-                id: "choose-theme-name-submenu",
-                class: "overlay-menu text-dialog",
-                span { "Enter theme name" }
-                input {
-                    r#type: "text",
-                    id: "chose-theme-name-input",
-                    class: "text-input",
-                    "placeholder": "Choose theme",
-                    required: true,
-                    minlength: 1,
-                }
-                div { class: "text-dialog-choices",
-                    button {
-                        class: "confirm-choice suggested-action",
-                        onclick: move |_| {
+                id: "choose-theme-name-overlay",
+                class: "overlay focus-block",
+                style: if !*choose_theme_name_overlay_active.read() { "display: none" },
+                // NOTE: dialog isnt use bc modal implementation isnt available on desktop (to my
+                // understanding)
+                div {
+                    id: "choose-theme-name-submenu",
+                    class: "overlay-menu text-dialog",
+                    span { "Enter theme name" }
+                    input {
+                        r#type: "text",
+                        id: "chose-theme-name-input",
+                        class: "text-input",
+                        "placeholder": "Choose theme",
+                        required: true,
+                        minlength: 1,
+                        onmounted: move |element| {
+                            async move {
+                                let _ = element.set_focus(true).await;
+                            }
+                        },
+                        onsubmit: move |_| {
                             *choose_theme_name_overlay_active.write() = false;
                         },
-                        "Choose"
                     }
-                    button {
-                        class: "cancel-choice",
-                        onclick: move |_| {
-                            *choose_theme_name_overlay_active.write() = false;
-                        },
-                        "Cancel"
+                    div { class: "text-dialog-choices",
+                        button {
+                            class: "confirm-choice suggested-action",
+                            onclick: move |_| {
+                                *choose_theme_name_overlay_active.write() = false;
+                            },
+                            "Choose"
+                        }
+                        button {
+                            class: "cancel-choice",
+                            onclick: move |_| {
+                                *choose_theme_name_overlay_active.write() = false;
+                            },
+                            "Cancel"
+                        }
                     }
                 }
             }
