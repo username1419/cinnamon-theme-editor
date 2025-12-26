@@ -28,12 +28,14 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 toolbar_file_active.set(!active);
 
             },
-            onmouseleave: move |_| {
-                let mut active = toolbar_file_active.clone();
-                async move {
-                    sleep(mouse_exit_timeout).await;
-                    active.set(false);
+            onmouseenter: move |_| {
+                if *toolbar_file_menu_hover.read() {
+                    toolbar_file_active.set(true);
                 }
+            },
+            onmouseleave: move |_| async move {
+                sleep(mouse_exit_timeout).await;
+                toolbar_file_active.set(false);
             },
             "File"
         }
@@ -41,15 +43,12 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
             id: "toolbar-file-menu",
             class: "toolbar-menu",
             style: if !(*toolbar_file_active.read() || *toolbar_file_menu_hover.read()) { "display: none" },
-            onmouseover: move |_| {
+            onmouseenter: move |_| {
                 toolbar_file_menu_hover.set(true);
             },
-            onmouseleave: move |_| {
-                let mut active = toolbar_file_menu_hover.clone();
-                async move {
-                    sleep(mouse_exit_timeout).await;
-                    active.set(false);
-                }
+            onmouseleave: move |_| async move {
+                sleep(mouse_exit_timeout).await;
+                toolbar_file_menu_hover.set(false);
             },
             MenuButton {
                 id: "create-new-button",
@@ -111,10 +110,8 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                         "placeholder": "Choose theme",
                         required: true,
                         minlength: 1,
-                        onmounted: move |element| {
-                            async move {
-                                let _ = element.set_focus(true).await;
-                            }
+                        onmounted: move |element| async move {
+                            let _ = element.set_focus(true).await;
                         },
                         onsubmit: move |_| {
                             *choose_theme_name_overlay_active.write() = false;
