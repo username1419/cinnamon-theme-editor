@@ -6,6 +6,7 @@ use dioxus::{
     prelude::{component, rsx},
 };
 use dioxus_desktop::tao::keyboard::ModifiersState;
+use rfd::FileDialog;
 use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
@@ -110,8 +111,21 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                 input.read()
                             );
                             input.clear();
-                            *choose_theme_name_overlay_active.write() = false;
                             e.prevent_default();
+                            async move {
+                                // NOTE: picking the default theme comes later because users might be
+                                // confused with opening a theme
+                                let folder = FileDialog::new()
+                                    .set_title("Choose a default theme")
+                                    .set_directory("/usr/share/themes/")
+                                    // WARN: original window will be flagged as inactive by cinnamon, idk how
+                                    // to fix it
+                                    .pick_folder();
+
+                                log::info!("Picked theme name \"{:?}\"", folder);
+
+                                *choose_theme_name_overlay_active.write() = false;
+                            }
                         },
                         oncancel: move |_| {
                             *choose_theme_name_overlay_active.write() = false;
