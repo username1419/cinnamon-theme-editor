@@ -30,7 +30,7 @@ button {
 
 .content {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   width: 100%;
   flex-grow: 1;
   border-top: solid darkgray 1px;
@@ -39,7 +39,7 @@ button {
 }
 
 .sidebar {
-  width: 33%;
+  width: 25%;
   flex-grow: 1;
   overflow-y: scroll;
   background-color: lightgray;
