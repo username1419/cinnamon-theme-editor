@@ -56,6 +56,7 @@ fn main() {
         .with_cfg(
             dioxus_desktop::Config::new().with_window(
                 WindowBuilder::new()
+                    // TODO: disable window rounding upon maximize
                     .with_decorations(false)
                     .with_inner_size(LogicalSize::new(1250, 750))
                     // NOTE: resizing isnt possible currently in dioxus 7.2.0
@@ -71,7 +72,8 @@ fn main() {
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
 #[component]
 fn App() -> Element {
-    use_context_provider(|| Signal::new(StyleSheet::default()));
+    let stylesheet = Signal::new(StyleSheet::default());
+    use_context_provider(|| stylesheet);
 
     rsx! {
         document::Link { rel: "icon", href: FAVICON }

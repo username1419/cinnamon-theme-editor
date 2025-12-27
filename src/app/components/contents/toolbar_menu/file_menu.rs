@@ -10,6 +10,8 @@ use rfd::FileDialog;
 use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
+use crate::app::io::parse::StyleSheet;
+use crate::app::io::read;
 
 #[component]
 pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
@@ -19,6 +21,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
 
     let mut choose_theme_name_overlay_active = use_signal(|| false);
     let mut input = use_signal(|| String::default());
+    let mut stylesheet_context = use_context::<Signal<StyleSheet>>();
 
     rsx! {
         button {
@@ -106,10 +109,12 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                     span { "Enter theme name" }
                     form {
                         onsubmit: move |e| {
+                            // TODO: perform input sanitization
                             log::info!(
                                 "onsumbit action for overlay-menu-theme-name-submenu form with value \"{}\"",
                                 input.read()
                             );
+                            let name = input.read().cloned();
                             input.clear();
                             e.prevent_default();
                             async move {
@@ -122,15 +127,30 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                     // to fix it
                                     .pick_folder();
 
-                                log::info!("Picked theme name \"{:?}\"", folder);
+                                if folder.is_none() {
+                                    return;
+                                }
+                                let folder = folder.unwrap();
 
+                                log::info!("Picked default theme \"{:?}\"", folder);
+
+                                let style = read::create_as_edit(name, folder);
+                                match style {
+                                    // close the overlay
+                                    Ok(stylesheet) => {
+                                        stylesheet_context.set(stylesheet);
+                                    }
+                                    Err(err) => {
+                                        log::error!("Error encountered on read: {}", err);
+                                    }
+                                }
                                 *choose_theme_name_overlay_active.write() = false;
                             }
                         },
                         oncancel: move |_| {
+                            // close the overlay
                             *choose_theme_name_overlay_active.write() = false;
                         },
-
                         input {
                             r#type: "text",
                             id: "chose-theme-name-input",
