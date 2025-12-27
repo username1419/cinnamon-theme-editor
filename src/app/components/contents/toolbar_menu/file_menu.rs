@@ -103,34 +103,39 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                     id: "choose-theme-name-submenu",
                     class: "overlay-menu text-dialog",
                     span { "Enter theme name" }
-                    input {
-                        r#type: "text",
-                        id: "chose-theme-name-input",
-                        class: "text-input",
-                        "placeholder": "Choose theme",
-                        required: true,
-                        minlength: 1,
-                        onmounted: move |element| async move {
-                            let _ = element.set_focus(true).await;
+                    form {
+                        onsubmit: move |e| {
+                            log::info!(
+                                "onsumbit action for overlay-menu-theme-name-submenu form with value \"{}\"",
+                                input.read()
+                            );
+                            input.clear();
+                            *choose_theme_name_overlay_active.write() = false;
+                            e.prevent_default();
                         },
-                        onsubmit: move |_| {
+                        oncancel: move |_| {
                             *choose_theme_name_overlay_active.write() = false;
                         },
-                    }
-                    div { class: "text-dialog-choices",
-                        button {
-                            class: "confirm-choice suggested-action",
-                            onclick: move |_| {
-                                *choose_theme_name_overlay_active.write() = false;
+
+                        input {
+                            r#type: "text",
+                            id: "chose-theme-name-input",
+                            class: "text-input",
+                            "placeholder": "Choose theme",
+                            required: true,
+                            minlength: 1,
+                            onmounted: move |element| async move {
+                                let _ = element.set_focus(true).await;
                             },
-                            "Choose"
+                            oninput: move |element| input.set(element.value()),
                         }
-                        button {
-                            class: "cancel-choice",
-                            onclick: move |_| {
-                                *choose_theme_name_overlay_active.write() = false;
-                            },
-                            "Cancel"
+                        div { class: "text-dialog-choices",
+                            button {
+                                class: "confirm-choice suggested-action",
+                                r#type: "submit",
+                                "Choose"
+                            }
+                            button { class: "cancel-choice", r#type: "cancel", "Cancel" }
                         }
                     }
                 }
