@@ -2,12 +2,16 @@ use core::panic;
 use dioxus_desktop::{LogicalSize, WindowBuilder};
 use simple_logger::SimpleLogger;
 pub mod app;
+pub mod config;
 pub mod helper;
-use crate::app::components::{
-    contents::{main_contents::MainContent, toolbar::Toolbar},
-    decorations::titlebar::Titlebar,
-};
 use crate::app::io::parse::StyleSheet;
+use crate::{
+    app::components::{
+        contents::{main_contents::MainContent, toolbar::Toolbar},
+        decorations::titlebar::Titlebar,
+    },
+    config::AppConfiguration,
+};
 use dioxus::prelude::*;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const STYLE_COLORS: Asset = asset!("/assets/styling/colors.scss");
@@ -72,8 +76,9 @@ fn main() {
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
 #[component]
 fn App() -> Element {
-    let stylesheet = Signal::new(StyleSheet::default());
-    use_context_provider(|| stylesheet);
+    use_context_provider(|| AppConfiguration {
+        stylesheet: Signal::new(StyleSheet::default()),
+    });
 
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
