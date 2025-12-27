@@ -15,6 +15,11 @@ body {
   margin: 0px;
 }
 
+span,
+button {
+  user-select: none;
+}
+
 .window {
   background-color: $window-color-main;
   border-radius: $window-border-radius;
