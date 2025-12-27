@@ -10,6 +10,8 @@ use dioxus_desktop::wry::dpi::PhysicalPosition;
 use dioxus_desktop::{HotKeyState, use_global_shortcut, use_window};
 use std::rc::Rc;
 
+use crate::helper::Helper;
+
 #[derive(PartialEq, Clone, Debug)]
 pub struct Shortcut {
     key: KeyCode,
@@ -20,15 +22,6 @@ impl Shortcut {
     pub fn new(key: KeyCode, modifiers: ModifiersState) -> Self {
         Shortcut { key, modifiers }
     }
-}
-
-fn to_coord(pos: PhysicalPosition<f64>) -> Coordinates {
-    let screen = Point2D::new(pos.x, pos.y);
-    let client = Point2D::new(pos.x, pos.y);
-    let element = Point2D::new(pos.x, pos.y);
-    let page = Point2D::new(pos.x, pos.y);
-
-    Coordinates::new(screen, client, element, page)
 }
 
 #[derive(Props, PartialEq, Clone)]
@@ -57,7 +50,7 @@ pub fn MenuButton(props: MenuButtonProps) -> Element {
                     SerializedMouseData::new(
                         None,
                         Default::default(),
-                        to_coord(window.cursor_position().unwrap_or_default()),
+                        Helper::to_coord(window.cursor_position().unwrap_or_default()),
                         Modifiers::default(),
                     )
                     .into(),

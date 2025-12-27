@@ -1,11 +1,14 @@
 use core::panic;
-use dioxus::html::geometry::Coordinates;
+use dioxus::html::input_data::{MouseButton, MouseButtonSet};
+use dioxus_desktop::wry::dpi::PhysicalPosition;
 use dioxus_desktop::{LogicalSize, WindowBuilder};
 use simple_logger::SimpleLogger;
 pub mod app;
 pub mod config;
 pub mod helper;
 use crate::app::io::parse::StyleSheet;
+use crate::config::MouseState;
+use crate::helper::Helper;
 use crate::{
     app::components::{
         contents::{main_contents::MainContent, toolbar::Toolbar},
@@ -20,6 +23,7 @@ const MAIN_STYLE: Asset = asset!("/assets/styling/main.scss");
 const TITLEBAR_STYLE: Asset = asset!("/assets/styling/titlebar.scss");
 const TOOLBAR_STYLE: Asset = asset!("/assets/styling/toolbar.scss");
 const OVERLAY_STYLE: Asset = asset!("/assets/styling/overlay.scss");
+const COLOR_PICKER_STYLE: Asset = asset!("/assets/styling/color-picker.scss");
 fn main() {
     if cfg!(windows) {
         panic!("Unsupported on Windows");
@@ -78,8 +82,15 @@ fn main() {
 #[component]
 fn App() -> Element {
     let stylesheet = use_store(|| StyleSheet::default());
+    let mut mouse_state = use_signal(|| MouseState {
+        coordinates: Helper::to_coord(PhysicalPosition::default()),
+        mouse_down: MouseButtonSet::default(),
+    });
 
-    use_context_provider(|| AppConfiguration { stylesheet });
+    use_context_provider(|| AppConfiguration {
+        stylesheet,
+        mouse_state,
+    });
 
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
@@ -87,8 +98,28 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: TITLEBAR_STYLE }
         document::Link { rel: "stylesheet", href: TOOLBAR_STYLE }
         document::Link { rel: "stylesheet", href: OVERLAY_STYLE }
+        document::Link { rel: "stylesheet", href: COLOR_PICKER_STYLE }
 
-        div { class: "window",
+        div {
+            class: "window",
+            onmousemove: move |event| {
+                let mut mouse_state = mouse_state.write();
+                mouse_state.coordinates = event.coordinates();
+                mouse_state.mouse_down = event.held_buttons();
+            },
+            onmouseenter: move |_| mouse_state.write().mouse_down = MouseButtonSet::default(),
+            onmouseleave: move |_| mouse_state.write().mouse_down = MouseButtonSet::default(),
+            onmousedown: move |event| {
+                // this is a very unnecessarily fancy way to do this
+                mouse_state.write().mouse_down
+                    |= event.trigger_button().unwrap_or(MouseButton::Unknown);
+            },
+            onmouseup: move |event| {
+                mouse_state
+                    .write()
+                    .mouse_down
+                    .remove(event.trigger_button().unwrap_or(MouseButton::Unknown));
+            },
             Titlebar {}
             Toolbar {}
             MainContent {}
