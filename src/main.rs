@@ -1,4 +1,5 @@
 use core::panic;
+use dioxus::html::geometry::Coordinates;
 use dioxus_desktop::{LogicalSize, WindowBuilder};
 use simple_logger::SimpleLogger;
 pub mod app;
@@ -76,9 +77,9 @@ fn main() {
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
 #[component]
 fn App() -> Element {
-    use_context_provider(|| AppConfiguration {
-        stylesheet: Signal::new(StyleSheet::default()),
-    });
+    let stylesheet = use_store(|| StyleSheet::default());
+
+    use_context_provider(|| AppConfiguration { stylesheet });
 
     rsx! {
         document::Link { rel: "icon", href: FAVICON }

@@ -1,12 +1,14 @@
+use dioxus::prelude::dioxus_stores;
 use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
+use dioxus::stores::Store;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
 use super::parser::{declaration_block::DeclarationBlock, selector::*};
 
 /// Represents a CSS stylesheet.
-#[derive(Debug)]
+#[derive(Debug, Store)]
 pub struct StyleSheet {
     /// The stylesheet's source file path
     source: PathBuf,

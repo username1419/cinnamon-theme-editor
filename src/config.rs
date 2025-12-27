@@ -1,8 +1,9 @@
-use dioxus::signals::Signal;
+use dioxus::{html::geometry::Coordinates, signals::Signal, stores::Store};
 
 use crate::app::io::parse::StyleSheet;
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct AppConfiguration {
-    pub stylesheet: Signal<StyleSheet>,
+    pub stylesheet: Store<StyleSheet>,
+    pub mouse_state: Signal<Coordinates>,
 }
