@@ -39,9 +39,9 @@ button {
 }
 
 .sidebar {
+  min-width: min-content;
   max-width: 25%;
   resize: horizontal;
-  flex-grow: 1;
   overflow-y: scroll;
   background-color: lightgray;
   border-right: solid darkgray 1px;
