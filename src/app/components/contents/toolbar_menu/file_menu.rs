@@ -10,7 +10,6 @@ use rfd::FileDialog;
 use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
-use crate::app::io::parse::StyleSheet;
 use crate::app::io::read;
 use crate::config::AppConfiguration;
 

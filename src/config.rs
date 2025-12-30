@@ -1,5 +1,8 @@
 use dioxus::{
-    html::{geometry::Coordinates, input_data::MouseButtonSet},
+    html::{
+        geometry::Coordinates,
+        input_data::{MouseButton, MouseButtonSet},
+    },
     signals::Signal,
     stores::Store,
 };
