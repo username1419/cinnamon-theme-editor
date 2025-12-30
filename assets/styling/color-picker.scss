@@ -1,0 +1,44 @@
+.color-picker {
+  user-select: none;
+  min-width: 25vw;
+  max-width: 33vw;
+  padding: 12px;
+}
+
+.saturation-brightness-picker {
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  border: solid 1px black;
+}
+
+.saturation-brightness-cursor {
+  position: absolute;
+  border-radius: 6px;
+  border: solid 2px white;
+  cursor: pointer;
+  width: 8px;
+  height: 8px;
+  z-index: 1;
+}
+
+.hue-selector {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(to right, rgb(255, 0, 0), rgb(255, 255, 0), rgb(0, 255, 0), rgb(0, 255, 255), rgb(0, 0, 255), rgb(255, 0, 255), rgb(255, 0, 0));
+  margin: 12px 0 0 0;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0px;
+    height: 20px;
+    border: solid 2px rgba($color: #000000, $alpha: 0.7);
+    cursor: pointer;
+  }
+}
