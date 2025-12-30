@@ -41,14 +41,30 @@ button {
     min-width: min-content;
     max-width: 25%;
     resize: horizontal;
-    border-right: solid darkgray 1px;
+    border-right: solid $sidebar-bg-color 1px;
     overflow-y: hidden;
   }
 }
 
 .sidebar {
+  min-width: fit-content;
   overflow-y: scroll;
   background-color: lightgray;
+  padding: 8px;
+  gap: 8px;
+
+  & span {
+    padding: 4px 2px;
+  }
+
+  &>div {
+    border-radius: 6px;
+    border: none;
+
+    &:hover {
+      background-color: $sidebar-content-hover-bg-color;
+    }
+  }
 }
 
 .suggested-action {

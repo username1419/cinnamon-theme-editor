@@ -90,3 +90,17 @@
 
   }
 }
+
+.color-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+
+  &>div {
+    height: 2vh;
+    width: 2vh;
+    border: solid 1px black;
+    cursor: pointer;
+  }
+}

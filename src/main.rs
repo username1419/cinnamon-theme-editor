@@ -86,8 +86,10 @@ fn App() -> Element {
         coordinates: Helper::to_coord(PhysicalPosition::default()),
         mouse_down: MouseButtonSet::default(),
     });
+    let mut is_editing = use_signal(|| false);
 
     use_context_provider(|| AppConfiguration {
+        is_editing,
         stylesheet,
         mouse_state,
     });

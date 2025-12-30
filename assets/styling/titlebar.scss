@@ -1,7 +1,4 @@
-// Variables
-$button-border: solid lightgray 1px;
-$button-background-color: #E0E0E0;
-$font-size: min(1.2vw, 16px);
+@import 'colors.scss';
 
 // Main titlebar
 .titlebar {

@@ -139,6 +139,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                     // close the overlay
                                     Ok(stylesheet) => {
                                         config.stylesheet.set(stylesheet);
+                                        config.is_editing.set(true);
                                     }
                                     Err(err) => {
                                         log::error!("Error encountered on read: {}", err);
