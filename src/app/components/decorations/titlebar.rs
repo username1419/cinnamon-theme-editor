@@ -21,6 +21,14 @@ pub fn Titlebar() -> Element {
                 }
                 use_window().drag();
             },
+            ondoubleclick: move |_| {
+                if *wcontrol_hover.read() {
+                    return;
+                }
+                let w = use_window();
+                // i tried
+                w.set_maximized(!w.is_maximized());
+            },
             div { class: "titlebar-left" }
             div { class: "titlebar-center",
                 span { class: "title", "Cinnamon Theme Editor" }
