@@ -36,15 +36,19 @@ button {
   border-top: solid darkgray 1px;
   overflow-y: hidden;
   border-bottom-left-radius: $window-border-radius;
+
+  &>div {
+    min-width: min-content;
+    max-width: 25%;
+    resize: horizontal;
+    border-right: solid darkgray 1px;
+    overflow-y: hidden;
+  }
 }
 
 .sidebar {
-  min-width: min-content;
-  max-width: 25%;
-  resize: horizontal;
   overflow-y: scroll;
   background-color: lightgray;
-  border-right: solid darkgray 1px;
 }
 
 .suggested-action {
