@@ -22,40 +22,46 @@ pub fn ColorPicker() -> Element {
 
     rsx! {
         div { class: "color-picker",
-            div {
-                class: "saturation-brightness-picker",
-                style: r#"background: linear-gradient(transparent, black), linear-gradient(to right, white, transparent), hsl({selected_hue}, 100%, 50%); "#,
-                onresize: move |e| {
-                    if let Ok(bounds) = e.get_content_box_size() {
-                        saturation_lightness_select_rect.set(bounds.to_tuple());
-                    }
-                },
-                onmousemove: move |event| {
-                    if !config.mouse_state.read().mouse_down.contains(MouseButton::Primary) {
-                        return;
-                    }
-                    let relative_coord = event.element_coordinates();
-                    let absolute_coord = event.client_coordinates();
-                    let offset = (
-                        absolute_coord.x - relative_coord.x,
-                        absolute_coord.y - relative_coord.y,
-                    );
-                    let bounds = *saturation_lightness_select_rect.read();
+            div { class: "saturation-brightness-picker-group color-previews",
+                div {
+                    class: "saturation-brightness-picker",
+                    style: r#"background: linear-gradient(transparent, black), linear-gradient(to right, white, transparent), hsl({selected_hue}, 100%, 50%); "#,
+                    onresize: move |e| {
+                        if let Ok(bounds) = e.get_content_box_size() {
+                            saturation_lightness_select_rect.set(bounds.to_tuple());
+                        }
+                    },
+                    onmousemove: move |event| {
+                        if !config.mouse_state.read().mouse_down.contains(MouseButton::Primary) {
+                            return;
+                        }
+                        let relative_coord = event.element_coordinates();
+                        let absolute_coord = event.client_coordinates();
+                        let offset = (
+                            absolute_coord.x - relative_coord.x,
+                            absolute_coord.y - relative_coord.y,
+                        );
+                        let bounds = *saturation_lightness_select_rect.read();
 
-                    let cursor_x = (relative_coord.x + offset.0 - CURSOR_SIZE)
-                        .clamp(offset.0 - CURSOR_SIZE, offset.0 + bounds.0 + CURSOR_SIZE);
-                    let cursor_y = (relative_coord.y + offset.1 - CURSOR_SIZE)
-                        .clamp(offset.1 - CURSOR_SIZE, offset.1 + bounds.1 + CURSOR_SIZE);
+                        let cursor_x = (relative_coord.x + offset.0 - CURSOR_SIZE)
+                            .clamp(offset.0 - CURSOR_SIZE, offset.0 + bounds.0 + CURSOR_SIZE);
+                        let cursor_y = (relative_coord.y + offset.1 - CURSOR_SIZE)
+                            .clamp(offset.1 - CURSOR_SIZE, offset.1 + bounds.1 + CURSOR_SIZE);
 
-                    cursor_pos.set((cursor_x, cursor_y));
-                    let saturation = (cursor_x - offset.0 - CURSOR_SIZE) / (bounds.0 + CURSOR_SIZE);
-                    let value = 1.0
+                        cursor_pos.set((cursor_x, cursor_y));
+                        let saturation = (cursor_x - offset.0 - CURSOR_SIZE) / (bounds.0 + CURSOR_SIZE);
+                        let value = 1.0
 
-                        // conversion to hsl bc im stupid
-                        - ((cursor_y - offset.1 - CURSOR_SIZE) / (bounds.1 + CURSOR_SIZE));
-                    selected_lightness.set(((value * (1.0 - saturation / 2.0)) * 100.0) as u32);
-                    selected_saturation.set((saturation * 100.0) as u32);
-                },
+                            // conversion to hsl bc im stupid
+                            - ((cursor_y - offset.1 - CURSOR_SIZE) / (bounds.1 + CURSOR_SIZE));
+                        selected_lightness.set(((value * (1.0 - saturation / 2.0)) * 100.0) as u32);
+                        selected_saturation.set((saturation * 100.0) as u32);
+                    },
+                }
+                div {
+                    class: "color-preview",
+                    style: "background-color: hsla({selected_hue}, {selected_saturation}%, {selected_lightness}%, {selected_alpha}%);",
+                }
             }
             div {
                 class: "saturation-brightness-cursor",
@@ -81,7 +87,6 @@ pub fn ColorPicker() -> Element {
             }
                 // TODO: (split-/)complementary/analogus colors mb
         // TODO: color history
-        // TODO: alpha range input
         }
     }
 }
