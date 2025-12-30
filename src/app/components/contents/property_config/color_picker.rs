@@ -15,6 +15,7 @@ pub fn ColorPicker() -> Element {
     let mut selected_hue = use_signal(|| 0 as u32);
     let mut selected_saturation = use_signal(|| 0);
     let mut selected_lightness = use_signal(|| 100);
+    let mut selected_alpha = use_signal(|| 100);
 
     let mut saturation_lightness_select_rect = use_signal(|| (0.0, 0.0));
     let mut cursor_pos = use_signal(|| (0.0, 0.0));
@@ -69,6 +70,14 @@ pub fn ColorPicker() -> Element {
                 max: 359,
                 value: "{selected_hue}",
                 oninput: move |element| selected_hue.set(element.value().parse().unwrap()),
+            }
+            input {
+                r#type: "range",
+                class: "alpha-selector",
+                min: 0,
+                max: 100,
+                value: "{selected_alpha}",
+                oninput: move |element| selected_alpha.set(element.value().parse().unwrap()),
             }
                 // TODO: (split-/)complementary/analogus colors mb
         // TODO: color history
