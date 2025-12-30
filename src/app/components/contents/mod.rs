@@ -1,3 +1,4 @@
+pub mod inspector;
 pub mod main_contents;
 pub mod property_config;
 pub mod sidebar;
