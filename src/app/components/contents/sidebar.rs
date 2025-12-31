@@ -16,7 +16,7 @@ pub fn Sidebar() -> Element {
             if *config.is_editing.read() {
                 for (index , category) in SelectorCategory::VALUES.iter().enumerate() {
                     div { id: "sidebar-category-{index}",
-                        span { "{category:?}" } // TODO: make it look good
+                        span { "{category:?}" }
                     }
                 }
             }
