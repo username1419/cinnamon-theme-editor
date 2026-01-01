@@ -1,10 +1,41 @@
+use dioxus::html::g::d;
 use log::trace;
+use std::result::Result::Ok;
 
+use std::collections::{HashSet, VecDeque};
 use std::io::Error;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
 
 use super::parse::StyleSheet;
+
+/// Copy a directory recursively, in a depth-first manner. The function operates so that the result
+/// of the function is `to/dir_contents`, assuming directory `to` already exists.
+fn copy_recursive(src: &Path, dst: &Path) -> Result<(), Error> {
+    fs::create_dir_all(dst)?;
+
+    // Stack holds (source_dir, destination_dir)
+    let mut stack: Vec<(PathBuf, PathBuf)> = Vec::new();
+    stack.push((src.to_path_buf(), dst.to_path_buf()));
+
+    while let Some((current_src, current_dst)) = stack.pop() {
+        for entry in fs::read_dir(&current_src)? {
+            let entry = entry?;
+            let file_type = entry.file_type()?;
+            let src_path = entry.path();
+            let dst_path = current_dst.join(entry.file_name());
+
+            if file_type.is_dir() {
+                fs::create_dir_all(&dst_path)?;
+                stack.push((src_path, dst_path));
+            } else {
+                fs::copy(&src_path, &dst_path)?;
+            }
+        }
+    }
+
+    Ok(())
+}
 
 /// Creates a theme in $HOME/.themes/, importing `default` as the fallback.
 ///
@@ -35,27 +66,17 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
         "Theme existence check passed. Theme with name \"{}\" does not yet exist.",
         name
     );
-    file_path.push("cinnamon");
 
+    fs::create_dir(&file_path)?;
     trace!(
-        "Creating theme directory at path {:?}.",
-        file_path.as_os_str()
+        "Copying theme from \"{:?}\" to \"{:?}\"",
+        default, file_path
     );
-    if let Err(err) = fs::create_dir_all(&file_path) {
-        return Err(err);
-    }
-    file_path.push(Path::new("cinnamon.css"));
+    copy_recursive(&default, &file_path)?;
 
-    trace!("Writing cinnamon.css stylesheet for theme \"{}\".", name);
-    if let Err(err) = fs::write(
-        &file_path,
-        format!(
-            "@import url(\"{}\");\n",
-            default.as_os_str().to_str().unwrap()
-        ),
-    ) {
-        return Err(err);
-    }
+    // NOTE: idk if i should remove the original css file or not
+    file_path.push(".cinnamon-edit.css");
+    fs::write(&file_path, format!("@import url(\"{:?}\");", default))?;
 
     trace!(
         "Reading back cinnamon.css stylesheet for theme \"{}\".",
