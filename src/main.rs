@@ -57,7 +57,11 @@ fn main() {
 
     if !is_logger_init {
         SimpleLogger::new()
-            .with_level(log::LevelFilter::Info)
+            .with_level(if cfg!(debug_assertions) {
+                log::LevelFilter::Trace
+            } else {
+                log::LevelFilter::Info
+            })
             .init()
             .unwrap();
     }
