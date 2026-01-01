@@ -14,7 +14,7 @@ impl CinnamonSettings {
     fn get(setting: &str) -> Result<String, Error> {
         Command::new("dconf")
             .arg("read")
-            .arg(format!("/org/cinnamon/"))
+            .arg(format!("/org/cinnamon/{}", setting))
             .output()
             .map(
                 |o| String::from_utf8(o.stdout).unwrap().trim().to_string(), // WARN: prayge
