@@ -19,6 +19,7 @@ pub fn ColorPicker() -> Element {
 
     let mut saturation_lightness_select_rect = use_signal(|| (0.0, 0.0));
     let mut cursor_pos = use_signal(|| (0.0, 0.0));
+    let mut history = use_signal(|| [(0 as u32, 100 as i32, 100 as i32, 100 as i32); 10]);
 
     rsx! {
         div { class: "color-picker",
@@ -51,9 +52,8 @@ pub fn ColorPicker() -> Element {
                         cursor_pos.set((cursor_x, cursor_y));
                         let saturation = (cursor_x - offset.0 - CURSOR_SIZE) / (bounds.0 + CURSOR_SIZE);
                         let value = 1.0
-
-                            // conversion to hsl bc im stupid
                             - ((cursor_y - offset.1 - CURSOR_SIZE) / (bounds.1 + CURSOR_SIZE));
+                        // conversion to hsl bc im stupid
                         selected_lightness.set(((value * (1.0 - saturation / 2.0)) * 100.0) as u32);
                         selected_saturation.set((saturation * 100.0) as u32);
                     },
@@ -84,6 +84,18 @@ pub fn ColorPicker() -> Element {
                 max: 100,
                 value: "{selected_alpha}",
                 oninput: move |element| selected_alpha.set(element.value().parse().unwrap()),
+            }
+            div { class: "color-history",
+                for (index , color) in history().iter().enumerate() {
+                    div {
+                        id: "color-{index}",
+                        style: r#"background-color: hsl({color.0}, {color.1}%, {color.2}%, {color.3}%);"#,
+                        onclick: move |_| {
+                            // TODO:
+                            info!("TODO: change color");
+                        },
+                    }
+                }
             }
                 // TODO: (split-/)complementary/analogus colors mb
         // TODO: color history
