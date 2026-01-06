@@ -21,3 +21,9 @@ impl Declaration {
         }
     }
 }
+
+impl ToString for Declaration {
+    fn to_string(&self) -> String {
+        self.raw.clone()
+    }
+}

@@ -127,3 +127,18 @@ impl StyleSheet {
             .collect()
     }
 }
+
+impl ToString for StyleSheet {
+    fn to_string(&self) -> String {
+        let mut out = String::new();
+        for (selector, declaration_block) in self.rulesets.iter() {
+            out.push_str(&*format!(
+                "{}{{{}}}",
+                selector.to_string(),
+                declaration_block.to_string()
+            ));
+        }
+
+        out
+    }
+}

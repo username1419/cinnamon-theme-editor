@@ -23,3 +23,13 @@ impl DeclarationBlock {
         DeclarationBlock { raw, declarations }
     }
 }
+
+impl ToString for DeclarationBlock {
+    fn to_string(&self) -> String {
+        // i mean i can use self.raw but idk
+        self.declarations
+            .iter()
+            .map(|d| format!("{};", d.to_string()))
+            .collect()
+    }
+}

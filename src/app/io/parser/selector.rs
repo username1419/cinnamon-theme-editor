@@ -218,3 +218,9 @@ impl Selector {
         category
     }
 }
+
+impl ToString for Selector {
+    fn to_string(&self) -> String {
+        self.raw.clone()
+    }
+}
