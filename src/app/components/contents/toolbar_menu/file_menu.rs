@@ -123,7 +123,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                 let folder = FileDialog::new()
                                     .set_title("Choose a default theme")
                                     .set_directory("/usr/share/themes/")
-                                    // WARN: original window will be flagged as inactive by cinnamon, idk how
+                                    // BUG: original window will be flagged as inactive by cinnamon, idk how
                                     // to fix it
                                     .pick_folder();
 
@@ -138,7 +138,9 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                 match style {
                                     // close the overlay
                                     Ok(stylesheet) => {
-                                        config.stylesheet.set(stylesheet);
+                                        let (editing, default) = stylesheet.to_webview_safe();
+                                        config.default_style.set(default.unwrap_or_default().to_string());
+                                        config.editing_stylesheet.set(editing);
                                         config.is_editing.set(true);
                                     }
                                     Err(err) => {

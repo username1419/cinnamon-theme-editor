@@ -132,7 +132,7 @@ impl StyleSheet {
             .collect()
     }
 
-    fn to_webview_safe(mut self) -> (StyleSheet, Option<StyleSheet>) {
+    pub fn to_webview_safe(mut self) -> (StyleSheet, Option<StyleSheet>) {
         let mut rulesets = HashMap::new();
         for (selector, declaration_block) in self.rulesets {
             rulesets.insert(selector.to_webview_safe(), declaration_block);

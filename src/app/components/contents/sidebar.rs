@@ -10,7 +10,7 @@ use crate::config::AppConfiguration;
 #[component]
 pub fn Sidebar() -> Element {
     let config = use_context::<AppConfiguration>();
-    let stylesheet = config.stylesheet;
+    let stylesheet = config.editing_stylesheet;
     rsx! {
         div { class: "sidebar",
             if *config.is_editing.read() {

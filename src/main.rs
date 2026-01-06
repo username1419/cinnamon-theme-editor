@@ -7,6 +7,7 @@ pub mod app;
 pub mod config;
 pub mod helper;
 use crate::app::io::parse::StyleSheet;
+use crate::app::io::parser::selector::SelectorCategory;
 use crate::config::MouseState;
 use crate::helper::Helper;
 use crate::{
@@ -85,17 +86,21 @@ fn main() {
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
 #[component]
 fn App() -> Element {
-    let stylesheet = use_store(|| StyleSheet::default());
+    let default_style = use_signal(|| String::new());
+    let editing_stylesheet = use_store(|| StyleSheet::default());
     let mut mouse_state = use_signal(|| MouseState {
         coordinates: Helper::to_coord(PhysicalPosition::default()),
         mouse_down: MouseButtonSet::default(),
     });
-    let mut is_editing = use_signal(|| false);
+    let is_editing = use_signal(|| false);
+    let inspector_type = use_signal(|| SelectorCategory::default());
 
     use_context_provider(|| AppConfiguration {
         is_editing,
-        stylesheet,
+        default_style,
+        editing_stylesheet,
         mouse_state,
+        inspector_type,
     });
 
     rsx! {

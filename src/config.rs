@@ -4,13 +4,15 @@ use dioxus::{
     stores::Store,
 };
 
-use crate::app::io::parse::StyleSheet;
+use crate::app::io::{parse::StyleSheet, parser::selector::SelectorCategory};
 
 #[derive(Clone)]
 pub struct AppConfiguration {
     pub is_editing: Signal<bool>,
-    pub stylesheet: Store<StyleSheet>,
+    pub default_style: Signal<String>,
+    pub editing_stylesheet: Store<StyleSheet>,
     pub mouse_state: Signal<MouseState>,
+    pub inspector_type: Signal<SelectorCategory>,
 }
 
 #[derive(Debug)]
