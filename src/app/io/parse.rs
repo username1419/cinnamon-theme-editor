@@ -1,5 +1,10 @@
 use dioxus::prelude::dioxus_stores;
-use std::{collections::HashMap, path::PathBuf, str::FromStr};
+use std::{
+    collections::HashMap,
+    fs::{read, read_to_string},
+    path::PathBuf,
+    str::FromStr,
+};
 
 use dioxus::stores::Store;
 use once_cell::sync::Lazy;
@@ -125,6 +130,41 @@ impl StyleSheet {
                 }
             })
             .collect()
+    }
+
+    fn to_webview_safe(mut self) -> (StyleSheet, Option<StyleSheet>) {
+        let mut rulesets = HashMap::new();
+        for (selector, declaration_block) in self.rulesets {
+            rulesets.insert(selector.to_webview_safe(), declaration_block);
+        }
+        let import = None;
+        if let Some(import_path) = self.import {
+            let import = read_to_string(&import_path)
+                .inspect_err(|e| log::error!("{}", e))
+                .ok();
+            let import = import.map(|import| {
+                let mut style = StyleSheet::parse(import_path, import);
+
+                style.rulesets = style
+                    .rulesets
+                    .into_iter()
+                    .map(|(selector, declaration_block)| {
+                        (selector.to_webview_safe(), declaration_block)
+                    })
+                    .collect();
+
+                style
+            });
+        }
+
+        (
+            StyleSheet {
+                source: self.source,
+                import: None,
+                rulesets,
+            },
+            import,
+        )
     }
 }
 
