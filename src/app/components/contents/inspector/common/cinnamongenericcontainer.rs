@@ -7,9 +7,9 @@ use dioxus::{
 use crate::config::AppConfiguration;
 
 #[component]
-pub fn CinnamonGenericContainer(children: Element) -> Element {
+pub fn CinnamonGenericContainer(class: String, children: Element) -> Element {
     let config = use_context::<AppConfiguration>();
     rsx! {
-        div { class: "CinnamonGenericContainer", {children} }
+        div { class: "CinnamonGenericContainer {class}", {children} }
     }
 }
