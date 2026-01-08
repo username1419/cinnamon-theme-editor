@@ -1,12 +1,9 @@
-use dioxus::html::geometry::Coordinates;
-use dioxus::html::geometry::euclid::Point2D;
 use dioxus::prelude::*;
 use dioxus::{
     core::Element,
     prelude::{component, rsx},
 };
 use dioxus_desktop::tao::keyboard::ModifiersState;
-use dioxus_desktop::wry::dpi::PhysicalPosition;
 use dioxus_desktop::{HotKeyState, use_global_shortcut, use_window};
 use std::rc::Rc;
 
@@ -59,7 +56,7 @@ pub fn MenuButton(props: MenuButtonProps) -> Element {
             ));
         })
         .is_err()
-        .then(|| log::error!("Failed to initialize shortcut {:?}", shortcut));
+        .then(|| error!("Failed to initialize shortcut {:?}", shortcut));
     }
     let text = use_hook(|| props.text.unwrap_or_default());
     let shortcut_label = use_hook(|| {

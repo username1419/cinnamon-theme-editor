@@ -1,8 +1,8 @@
 use core::panic;
 use dioxus::html::input_data::{MouseButton, MouseButtonSet};
+use dioxus::logger::tracing::{self, Level, Subscriber, subscriber};
 use dioxus_desktop::wry::dpi::PhysicalPosition;
 use dioxus_desktop::{LogicalSize, WindowBuilder};
-use simple_logger::SimpleLogger;
 pub mod app;
 pub mod config;
 pub mod helper;
@@ -17,7 +17,7 @@ use crate::{
     },
     config::AppConfiguration,
 };
-use dioxus::prelude::*;
+use dioxus::{logger, prelude::*};
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const STYLE_COLORS: Asset = asset!("/assets/styling/colors.scss");
 const MAIN_STYLE: Asset = asset!("/assets/styling/main.scss");
@@ -25,6 +25,9 @@ const TITLEBAR_STYLE: Asset = asset!("/assets/styling/titlebar.scss");
 const TOOLBAR_STYLE: Asset = asset!("/assets/styling/toolbar.scss");
 const OVERLAY_STYLE: Asset = asset!("/assets/styling/overlay.scss");
 const COLOR_PICKER_STYLE: Asset = asset!("/assets/styling/color-picker.scss");
+
+const INSPECTOR_PANEL_STYLE: Asset = asset!("/assets/styling/inspector/panel.scss");
+#[cfg(debug_assertions)]
 fn main() {
     if cfg!(windows) {
         panic!("Unsupported on Windows");
@@ -47,7 +50,12 @@ fn main() {
         match arg.as_str() {
             "--trace" => {
                 println!("Starting log at trace level");
-                SimpleLogger::new().init().unwrap();
+                logger::init(Level::TRACE).unwrap();
+                is_logger_init = true;
+            }
+            "--debug" => {
+                println!("Starting log at debug level");
+                logger::init(Level::DEBUG).unwrap();
                 is_logger_init = true;
             }
             _ => {
@@ -57,15 +65,12 @@ fn main() {
     }
 
     if !is_logger_init {
-        SimpleLogger::new()
-            .with_level(if cfg!(debug_assertions) {
-                log::LevelFilter::Trace
-            } else {
-                log::LevelFilter::Info
-            })
-            .init()
-            .unwrap();
+        if cfg!(debug_assertions) {
+            logger::init(Level::DEBUG).unwrap();
+        }
+        logger::initialize_default();
     }
+
     dioxus::LaunchBuilder::desktop()
         .with_cfg(
             dioxus_desktop::Config::new().with_window(
@@ -110,6 +115,7 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: TOOLBAR_STYLE }
         document::Link { rel: "stylesheet", href: OVERLAY_STYLE }
         document::Link { rel: "stylesheet", href: COLOR_PICKER_STYLE }
+        document::Link { rel: "stylesheet", href: INSPECTOR_PANEL_STYLE }
 
         div {
             class: "window",

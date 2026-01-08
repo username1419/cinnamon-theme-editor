@@ -1,11 +1,10 @@
-use dioxus::html::g::d;
-use log::trace;
 use std::result::Result::Ok;
 
-use std::collections::{HashSet, VecDeque};
 use std::io::Error;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
+
+use dioxus::prelude::debug;
 
 use super::parse::StyleSheet;
 
@@ -62,27 +61,25 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
             "Theme already exists",
         ));
     }
-    trace!(
+    debug!(
         "Theme existence check passed. Theme with name \"{}\" does not yet exist.",
         name
     );
 
     fs::create_dir(&file_path)?;
-    trace!(
-        "Copying theme from \"{:?}\" to \"{:?}\"",
-        default, file_path
-    );
+    debug!("Copying theme from {:?} to {:?}", default, file_path);
     copy_recursive(&default, &file_path)?;
 
     // NOTE: idk if i should remove the original css file or not
     file_path.push(".cinnamon-edit.css");
-    fs::write(&file_path, format!("@import url(\"{:?}\");", default))?;
+    fs::write(&file_path, format!("@import url({:?});", default))?;
 
-    trace!(
-        "Reading back cinnamon.css stylesheet for theme \"{}\".",
-        name
+    debug!(
+        "Reading back {:?} stylesheet for theme \"{}\".",
+        file_path, name
     );
     let result = fs::read_to_string(&file_path);
+    debug!("Read content {:?} from {:?}", result, file_path);
 
     result.map(|raw| StyleSheet::parse(file_path.to_path_buf(), raw))
 }

@@ -1,4 +1,4 @@
-use dioxus::prelude::dioxus_stores;
+use dioxus::prelude::{debug, dioxus_stores, error};
 use std::{
     collections::HashMap,
     fs::{read, read_to_string},
@@ -132,17 +132,20 @@ impl StyleSheet {
             .collect()
     }
 
-    pub fn to_webview_safe(mut self) -> (StyleSheet, Option<StyleSheet>) {
+    pub fn to_webview_safe(self) -> (StyleSheet, Option<StyleSheet>) {
         let mut rulesets = HashMap::new();
         for (selector, declaration_block) in self.rulesets {
             rulesets.insert(selector.to_webview_safe(), declaration_block);
         }
-        let import = None;
-        if let Some(import_path) = self.import {
-            let import = read_to_string(&import_path)
-                .inspect_err(|e| log::error!("{}", e))
+        let mut import = None;
+        if let Some(mut import_path) = self.import {
+            import_path.push("cinnamon");
+            import_path.push("cinnamon.css");
+            let result = read_to_string(&import_path)
+                .inspect_err(|e| error!("{}", e))
                 .ok();
-            let import = import.map(|import| {
+            debug!("Read content from {:?}: {:?}", import_path, result);
+            import = result.map(|import| {
                 let mut style = StyleSheet::parse(import_path, import);
 
                 style.rulesets = style
@@ -155,6 +158,7 @@ impl StyleSheet {
 
                 style
             });
+            debug!("Converted import style: {:?}", import);
         }
 
         (

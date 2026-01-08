@@ -1,10 +1,7 @@
 use std::time::Duration;
 
+use dioxus::core::Element;
 use dioxus::prelude::*;
-use dioxus::{
-    core::Element,
-    prelude::{component, rsx},
-};
 use dioxus_desktop::tao::keyboard::ModifiersState;
 use rfd::FileDialog;
 use tokio::time::sleep;
@@ -66,7 +63,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
             MenuButton {
                 id: "open-theme-button",
                 onclick: move |_| {
-                    log::info!("open-theme-button triggered");
+                    info!("open-theme-button triggered");
                 },
                 shortcut: Shortcut::new(KeyCode::O, ModifiersState::CONTROL),
                 text: "Open theme",
@@ -74,21 +71,21 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
             MenuButton {
                 id: "placeholder-button1",
                 onclick: move |_| {
-                    log::info!("placeholder-button1 triggered");
+                    info!("placeholder-button1 triggered");
                 },
                 text: "Placeholder 1",
             }
             MenuButton {
                 id: "placeholder-button2",
                 onclick: move |_| {
-                    log::info!("placeholder-button2 triggered");
+                    info!("placeholder-button2 triggered");
                 },
                 text: "Placeholder 2",
             }
             MenuButton {
                 id: "export-theme-button",
                 onclick: move |_| {
-                    log::info!("export-theme-button triggered");
+                    info!("export-theme-button triggered");
                 },
                 shortcut: Shortcut::new(KeyCode::E, ModifiersState::CONTROL),
                 text: "Export theme",
@@ -110,7 +107,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                     form {
                         onsubmit: move |e| {
                             // TODO: perform input sanitization
-                            log::info!(
+                            info!(
                                 "onsumbit action for overlay-menu-theme-name-submenu form with value \"{}\"",
                                 input.read()
                             );
@@ -132,7 +129,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                 }
                                 let folder = folder.unwrap();
 
-                                log::info!("Picked default theme \"{:?}\"", folder);
+                                info!("Picked default theme {:?}", folder);
 
                                 let style = read::create_as_edit(name, folder);
                                 match style {
@@ -140,11 +137,12 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                     Ok(stylesheet) => {
                                         let (editing, default) = stylesheet.to_webview_safe();
                                         config.default_style.set(default.unwrap_or_default().to_string());
+                                        debug!("{}", config.default_style);
                                         config.editing_stylesheet.set(editing);
                                         config.is_editing.set(true);
                                     }
                                     Err(err) => {
-                                        log::error!("Error encountered on read: {}", err);
+                                        error!("Error encountered on read: {}", err);
                                     }
                                 }
                                 *choose_theme_name_overlay_active.write() = false;
