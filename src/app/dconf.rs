@@ -54,6 +54,11 @@ impl CinnamonSettings {
             .collect())
     }
 
+    /// Retrieves the dconf configuration `/org/cinnamon/panels-height`.
+    ///
+    /// Returns a tuple vector which contain the following information about each panel respectively:
+    ///  - the panel id
+    ///  - the height of the panel of which the panel id corresponds to
     pub fn get_panels_height() -> Result<Vec<(u8, u8)>, Error> {
         debug!("Retrieving 'panels-height' from dconf...");
         let conf = Self::get("panels-height");
@@ -77,8 +82,13 @@ impl CinnamonSettings {
     }
 }
 
+/// A function which removes all unneeded characters from the provided string.
+///
+/// Removed characters include:
+/// - Apostrophes (')
+/// - Left ([) and right (]) square brackets
+/// - Any whitespace character
 fn trim_array(mut array: String) -> String {
     array.retain(|c| c != '\'' && c != '[' && c != ']' && !c.is_whitespace());
-    debug!(array);
     array
 }
