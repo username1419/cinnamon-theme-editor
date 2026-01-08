@@ -1,6 +1,7 @@
 use std::io::Error;
 use std::process::Command;
 
+use dioxus::logger::tracing::field::debug;
 use dioxus::prelude::debug;
 
 pub struct CinnamonSettings {}
@@ -36,12 +37,9 @@ impl CinnamonSettings {
         if conf.is_err() {
             return Err(conf.unwrap_err());
         }
-        let mut conf = conf.unwrap();
+        let conf = conf.unwrap();
         debug!("dconf returns {}", conf);
-        conf.pop(); // '['
-        conf.pop(); // '\''
-        conf.remove(0); // ']'
-        conf.remove(0); // '\''
+        let conf = trim_array(conf);
         Ok(conf
             .split(',')
             .map(|s| {
@@ -55,4 +53,32 @@ impl CinnamonSettings {
             })
             .collect())
     }
+
+    pub fn get_panels_height() -> Result<Vec<(u8, u8)>, Error> {
+        debug!("Retrieving 'panels-height' from dconf...");
+        let conf = Self::get("panels-height");
+        if conf.is_err() {
+            return Err(conf.unwrap_err());
+        }
+        let conf = conf.unwrap();
+        debug!("dconf returns {}", conf);
+        let conf = trim_array(conf);
+        Ok(conf
+            .split(',')
+            .map(|s| {
+                let mut s = s.split(':');
+
+                (
+                    s.next().unwrap().parse().unwrap(),
+                    s.next().unwrap().parse().unwrap(),
+                )
+            })
+            .collect())
+    }
+}
+
+fn trim_array(mut array: String) -> String {
+    array.retain(|c| c != '\'' && c != '[' && c != ']' && !c.is_whitespace());
+    debug!(array);
+    array
 }
