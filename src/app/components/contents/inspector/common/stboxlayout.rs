@@ -12,11 +12,23 @@ pub enum Orientation {
     Horizontal,
 }
 
+#[derive(Props, PartialEq, Clone)]
+pub struct StBoxLayoutProps {
+    class: String,
+    #[props(optional)]
+    style: Option<String>,
+    children: Element,
+    orientation: Orientation,
+}
+
 #[component]
-pub fn StBoxLayout(class: String, children: Element, orientation: Orientation) -> Element {
+pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
     let config = use_context::<AppConfiguration>();
+    let class = props.class;
+    let style = props.style.unwrap_or_default();
+    let orientation = props.orientation;
 
     rsx! {
-        div { class: "stboxlayout {class}", {children} }
+        div { class: "StBoxLayout {class}", style: "{style}", {props.children} }
     }
 }
