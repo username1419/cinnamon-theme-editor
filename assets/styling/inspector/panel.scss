@@ -1,0 +1,174 @@
+$fg_color: rgb(195, 195, 195);
+$panel_bg: rgb(195, 195, 195);
+$borders_color: rgb(195, 195, 195);
+$error_color: rgb(195, 0, 0);
+$error_bg_color: rgb(195, 0, 0);
+
+.stage {
+  min-width: 40vw;
+  max-height: 75%;
+  max-height: 100%;
+  aspect-ratio: 1;
+
+  & *:hover:not(:has(*:hover)) {
+    background: red;
+  }
+}
+
+.panel {
+
+  &-top,
+  &-bottom,
+  &-left,
+  &-right {
+    font-weight: bold;
+    color: $fg_color;
+    background-color: $panel_bg;
+    display: flex;
+
+    &>* {
+      flex-grow: 1;
+    }
+  }
+
+  &-top,
+  &-bottom {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  &-left,
+  &-right {
+    flex-direction: column;
+    height: 80%;
+  }
+
+  &-left {
+    float: left;
+  }
+
+  // HACK: i have literally no idea how this works
+  &-right,
+  &-bottom {
+    float: right;
+  }
+
+  &Left {
+    gap: 4px;
+
+    &:dnd {
+      background-color: rgba(255, 0, 0, 0.2);
+    }
+
+    // For panel edit mode
+    &:ltr {
+      padding-right: 4px;
+    }
+
+    &:rtl {
+      padding-left: 4px;
+    }
+
+    &.vertical {
+      padding: 0;
+
+      &:ltr {
+        padding-right: 0px;
+      }
+
+      &:rtl {
+        padding-left: 0px;
+      }
+    }
+  }
+
+  &Right {
+
+    &:dnd {
+      background-color: rgba(0, 0, 255, 0.2);
+    }
+
+    &:ltr {
+      padding-left: 4px;
+      gap: 0;
+    }
+
+    &:rtl {
+      padding-right: 4px;
+      gap: 0;
+    }
+
+    &.vertical {
+      padding: 0;
+
+      &:ltr {
+        padding-left: 0;
+        gap: 0;
+      }
+
+      &:rtl {
+        padding-right: 0;
+        gap: 0;
+      }
+    }
+  }
+
+  &Center {
+    gap: 4px;
+
+    &:dnd {
+      background-color: rgba(0, 255, 0, 0.2);
+    }
+
+    &.vertical {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  // create a border on the side we want for each location
+  &-top {
+    box-shadow: inset 0 -1px $borders_color;
+  }
+
+  &-bottom {
+    box-shadow: inset 0 1px $borders_color;
+  }
+
+  &-left {
+    box-shadow: inset -1px 0 $borders_color;
+  }
+
+  &-right {
+    box-shadow: inset 1px 0 $borders_color;
+  }
+
+  // used when adding a new panel
+  &-dummy {
+    background-color: transparentize($error_color, 0.5);
+
+    &:entered {
+      background-color: transparentize($error_color, 0.4);
+    }
+  }
+
+  //&-status-button {}
+
+  // used by the keyboard applet but see no reason for it
+}
+
+// NOTE: if we uncomment these dioxus wont compile for some reason
+
+// these are available but we aren't using them here
+//.panel-corner {}
+
+//.panel-corner:overview {}
+
+//.panel-corner:active {}
+
+//.panel-corner:focus {}
+
+// this is needed to highlight a specific panel when using the panel settings
+#panel:highlight {
+  background-color: mix($panel_bg, $error_bg_color, 75%);
+}
