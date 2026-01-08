@@ -1,6 +1,8 @@
 use std::io::Error;
 use std::process::Command;
 
+use dioxus::prelude::debug;
+
 pub struct CinnamonSettings {}
 impl CinnamonSettings {
     /// Retrieves a cinnamon configuration via dconf.
@@ -29,13 +31,17 @@ impl CinnamonSettings {
     ///  - position on the monitor the panel resides on (top, bottom, left, right)
     // NOTE: my ocd tells me to seperate these
     pub fn get_enabled_panels() -> Result<Vec<(u8, u8, String)>, Error> {
+        debug!("Retrieving 'panels-enabled' from dconf...");
         let conf = Self::get("panels-enabled");
         if conf.is_err() {
             return Err(conf.unwrap_err());
         }
         let mut conf = conf.unwrap();
+        debug!("dconf returns {}", conf);
         conf.pop(); // '['
+        conf.pop(); // '\''
         conf.remove(0); // ']'
+        conf.remove(0); // '\''
         Ok(conf
             .split(',')
             .map(|s| {
