@@ -1,6 +1,6 @@
 use core::panic;
 use dioxus::html::input_data::{MouseButton, MouseButtonSet};
-use dioxus::logger::tracing::{self, Level, Subscriber, subscriber};
+use dioxus::logger::tracing::Level;
 use dioxus_desktop::wry::dpi::PhysicalPosition;
 use dioxus_desktop::{LogicalSize, WindowBuilder};
 pub mod app;
@@ -98,7 +98,9 @@ fn App() -> Element {
         mouse_down: MouseButtonSet::default(),
     });
     let is_editing = use_signal(|| false);
+    let selected_element = use_signal(|| None);
     let inspector_type = use_signal(|| SelectorCategory::default());
+    let current_element = use_signal(|| 0);
 
     use_context_provider(|| AppConfiguration {
         is_editing,
@@ -106,6 +108,8 @@ fn App() -> Element {
         editing_stylesheet,
         mouse_state,
         inspector_type,
+        current_element,
+        selected_element,
     });
 
     rsx! {
