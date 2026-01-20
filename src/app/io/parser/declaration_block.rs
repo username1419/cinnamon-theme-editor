@@ -1,3 +1,5 @@
+use crate::app::io::parser::{property::Property, property_value::Value};
+
 use super::declaration::Declaration;
 
 #[derive(Clone, Debug)]
@@ -21,6 +23,25 @@ impl DeclarationBlock {
             .collect();
 
         DeclarationBlock { raw, declarations }
+    }
+
+    /// Sets a value to the provided style attribute. This function does not implement checking,
+    /// therefore the caller must verify the validity of the provided values.
+    fn set_style_attribute(&mut self, attribute: Property, values: &[Value]) {
+        let mut found = false;
+        for declaration in self.declarations.iter_mut() {
+            if declaration.property != attribute {
+                continue;
+            }
+
+            declaration.value = values.to_vec();
+            found = true;
+        }
+
+        if !found {
+            let declarations = &mut self.declarations;
+            declarations.push(Declaration::new(attribute, values.to_vec()));
+        }
     }
 }
 

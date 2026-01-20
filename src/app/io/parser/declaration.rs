@@ -2,9 +2,9 @@ use super::{property::Property, property_value::Value};
 
 #[derive(Clone, Debug)]
 pub struct Declaration {
-    raw: String,
-    property: Property,
-    value: Vec<Value>,
+    pub raw: String,
+    pub property: Property,
+    pub value: Vec<Value>,
 }
 
 impl Declaration {
@@ -14,6 +14,15 @@ impl Declaration {
         let property = Property::from_raw(property);
         let value = Value::from_raw(value);
 
+        Self {
+            raw,
+            property,
+            value,
+        }
+    }
+
+    pub fn new(property: Property, value: Vec<Value>) -> Self {
+        let raw = format!("{:?}:{:?}", property, value);
         Self {
             raw,
             property,
