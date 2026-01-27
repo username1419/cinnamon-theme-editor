@@ -22,7 +22,15 @@ impl Declaration {
     }
 
     pub fn new(property: Property, value: Vec<Value>) -> Self {
-        let raw = format!("{:?}:{:?}", property, value);
+        let raw = format!(
+            "{}:{}",
+            property.to_string(),
+            value
+                .iter()
+                .map(|v| v.to_string())
+                .collect::<Vec<String>>()
+                .join(" ")
+        );
         Self {
             raw,
             property,

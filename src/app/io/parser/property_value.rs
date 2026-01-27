@@ -112,3 +112,9 @@ impl Value {
         Self { raw, value, unit }
     }
 }
+
+impl ToString for Value {
+    fn to_string(&self) -> String {
+        self.raw.clone()
+    }
+}
