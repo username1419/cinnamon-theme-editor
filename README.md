@@ -1,4 +1,4 @@
-An application which helps users create and edit themes for the Cinnamon Desktop Environment, written in Rust with the help of libadwaita and GTK4.
+A desktop application which helps users create and edit themes for the Cinnamon Desktop Environment, written in Rust with the help of the [Dioxus framework](https://dioxuslabs.com/).
 
 ---
 ## Features
@@ -12,20 +12,21 @@ something
 ## Building
 
 ### Dependencies:
-- libadwaita-1 >= 1.4
-- gtk-4 >= 4.14(?)
-- glib
+- dioxus-cli
 - cargo
 - git
 
-Install using the `build.sh` script provided:
+### Instructions:
+0. Install dioxus-cli using this [tutorial](https://dioxuslabs.com/learn/0.7/getting_started/#install-the-dioxus-cli)
+1. Clone the git repository
 ```sh
-git clone https://github.com/username1419/cinnamon-desktop-editor # clone the repository
+git clone https://github.com/username1419/cinnamon-desktop-editor
 cd cinnamon-desktop-editor
-
-./scripts/build.sh --release # build the project
 ```
-The script does not do anything other than compiling gresources and executing `cargo build`, you can view its code [here](file address here).
+2. Build the application
+```sh
+dx build --release
+```
 
 ---
 ## Contribution
