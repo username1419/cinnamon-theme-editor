@@ -1,0 +1,11 @@
+[application]
+script = []
+
+[bundle]
+identifier = "com.usr1419"
+publisher = "a"
+icon = ["./assets/img/200x200.png"]
+
+[bundle.deb]
+depends = ["dconf-cli", "cinnamon"]
+

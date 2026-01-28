@@ -1,6 +1,9 @@
 use std::io::Error;
 use std::process::Command;
 
+use dioxus::logger::tracing::field::debug;
+use dioxus::prelude::debug;
+
 pub struct CinnamonSettings {}
 impl CinnamonSettings {
     /// Retrieves a cinnamon configuration via dconf.
@@ -14,7 +17,7 @@ impl CinnamonSettings {
     fn get(setting: &str) -> Result<String, Error> {
         Command::new("dconf")
             .arg("read")
-            .arg(format!("/org/cinnamon/"))
+            .arg(format!("/org/cinnamon/{}", setting))
             .output()
             .map(
                 |o| String::from_utf8(o.stdout).unwrap().trim().to_string(), // WARN: prayge
@@ -29,13 +32,14 @@ impl CinnamonSettings {
     ///  - position on the monitor the panel resides on (top, bottom, left, right)
     // NOTE: my ocd tells me to seperate these
     pub fn get_enabled_panels() -> Result<Vec<(u8, u8, String)>, Error> {
+        debug!("Retrieving 'panels-enabled' from dconf...");
         let conf = Self::get("panels-enabled");
         if conf.is_err() {
             return Err(conf.unwrap_err());
         }
-        let mut conf = conf.unwrap();
-        conf.pop(); // '['
-        conf.remove(0); // ']'
+        let conf = conf.unwrap();
+        debug!("dconf returns {}", conf);
+        let conf = trim_array(conf);
         Ok(conf
             .split(',')
             .map(|s| {
@@ -49,4 +53,42 @@ impl CinnamonSettings {
             })
             .collect())
     }
+
+    /// Retrieves the dconf configuration `/org/cinnamon/panels-height`.
+    ///
+    /// Returns a tuple vector which contain the following information about each panel respectively:
+    ///  - the panel id
+    ///  - the height of the panel of which the panel id corresponds to
+    pub fn get_panels_height() -> Result<Vec<(u8, u8)>, Error> {
+        debug!("Retrieving 'panels-height' from dconf...");
+        let conf = Self::get("panels-height");
+        if conf.is_err() {
+            return Err(conf.unwrap_err());
+        }
+        let conf = conf.unwrap();
+        debug!("dconf returns {}", conf);
+        let conf = trim_array(conf);
+        Ok(conf
+            .split(',')
+            .map(|s| {
+                let mut s = s.split(':');
+
+                (
+                    s.next().unwrap().parse().unwrap(),
+                    s.next().unwrap().parse().unwrap(),
+                )
+            })
+            .collect())
+    }
+}
+
+/// A function which removes all unneeded characters from the provided string.
+///
+/// Removed characters include:
+/// - Apostrophes (')
+/// - Left ([) and right (]) square brackets
+/// - Any whitespace character
+fn trim_array(mut array: String) -> String {
+    array.retain(|c| c != '\'' && c != '[' && c != ']' && !c.is_whitespace());
+    array
 }

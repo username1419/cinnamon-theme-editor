@@ -1,11 +1,11 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Value {
     raw: String,
     value: String,
     unit: ValueUnit,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ValueUnit {
     None,
     Px,
@@ -110,5 +110,11 @@ impl Value {
         };
 
         Self { raw, value, unit }
+    }
+}
+
+impl ToString for Value {
+    fn to_string(&self) -> String {
+        self.raw.clone()
     }
 }

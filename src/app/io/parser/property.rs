@@ -1,10 +1,12 @@
-#[derive(Clone, Debug)]
+use std::fmt::{Display, Write};
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct Property {
     raw: String,
     category: PropertyCategory,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum PropertyCategory {
     Background,
     Foreground,
@@ -46,5 +48,11 @@ impl Property {
             raw: raw.trim().to_string(),
             category: PropertyCategory::try_match(raw),
         }
+    }
+}
+
+impl ToString for Property {
+    fn to_string(&self) -> String {
+        self.raw.to_string()
     }
 }

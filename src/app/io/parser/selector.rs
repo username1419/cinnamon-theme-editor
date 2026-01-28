@@ -217,4 +217,23 @@ impl Selector {
 
         category
     }
+
+    pub fn to_webview_safe(mut self) -> Self {
+        self.raw = format!("inspector {}", self.raw);
+        self.selectors.insert(
+            0,
+            (
+                BasicSelector::from_raw(self.raw.as_str()),
+                Combinator::Descendant,
+            ),
+        );
+
+        self
+    }
+}
+
+impl ToString for Selector {
+    fn to_string(&self) -> String {
+        self.raw.clone()
+    }
 }

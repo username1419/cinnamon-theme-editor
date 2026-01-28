@@ -1,0 +1,7 @@
+$window-color-main: #F6F6F6;
+$overlay-color: #404040cc;
+$button-border: solid lightgray 1px;
+$button-background-color: #E0E0E0;
+$font-size: min(1.2vw, 16px);
+$sidebar-bg-color: darkgray;
+$sidebar-content-hover-bg-color: darken($color: $sidebar-bg-color, $amount: 3);

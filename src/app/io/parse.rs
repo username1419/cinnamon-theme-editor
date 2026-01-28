@@ -1,12 +1,19 @@
-use std::{collections::HashMap, path::PathBuf, str::FromStr};
+use dioxus::prelude::{debug, dioxus_stores, error};
+use std::{
+    collections::HashMap,
+    fs::{read, read_to_string},
+    path::PathBuf,
+    str::FromStr,
+};
 
+use dioxus::stores::Store;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
 use super::parser::{declaration_block::DeclarationBlock, selector::*};
 
 /// Represents a CSS stylesheet.
-#[derive(Debug)]
+#[derive(Debug, Store)]
 pub struct StyleSheet {
     /// The stylesheet's source file path
     source: PathBuf,
@@ -123,5 +130,59 @@ impl StyleSheet {
                 }
             })
             .collect()
+    }
+
+    pub fn to_webview_safe(self) -> (StyleSheet, Option<StyleSheet>) {
+        let mut rulesets = HashMap::new();
+        for (selector, declaration_block) in self.rulesets {
+            rulesets.insert(selector.to_webview_safe(), declaration_block);
+        }
+        let mut import = None;
+        if let Some(mut import_path) = self.import {
+            import_path.push("cinnamon");
+            import_path.push("cinnamon.css");
+            let result = read_to_string(&import_path)
+                .inspect_err(|e| error!("{}", e))
+                .ok();
+            debug!("Read content from {:?}: {:?}", import_path, result);
+            import = result.map(|import| {
+                let mut style = StyleSheet::parse(import_path, import);
+
+                style.rulesets = style
+                    .rulesets
+                    .into_iter()
+                    .map(|(selector, declaration_block)| {
+                        (selector.to_webview_safe(), declaration_block)
+                    })
+                    .collect();
+
+                style
+            });
+            debug!("Converted import style: {:?}", import);
+        }
+
+        (
+            StyleSheet {
+                source: self.source,
+                import: None,
+                rulesets,
+            },
+            import,
+        )
+    }
+}
+
+impl ToString for StyleSheet {
+    fn to_string(&self) -> String {
+        let mut out = String::new();
+        for (selector, declaration_block) in self.rulesets.iter() {
+            out.push_str(&*format!(
+                "{}{{{}}}",
+                selector.to_string(),
+                declaration_block.to_string()
+            ));
+        }
+
+        out
     }
 }
