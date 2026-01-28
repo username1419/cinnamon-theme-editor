@@ -1,11 +1,11 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Value {
     raw: String,
     value: String,
     unit: ValueUnit,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ValueUnit {
     None,
     Px,

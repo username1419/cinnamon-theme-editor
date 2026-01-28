@@ -1,6 +1,6 @@
 use super::{property::Property, property_value::Value};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Declaration {
     pub raw: String,
     pub property: Property,
@@ -41,6 +41,14 @@ impl Declaration {
 
 impl ToString for Declaration {
     fn to_string(&self) -> String {
-        self.raw.clone()
+        format!(
+            "{}:{}",
+            self.property.to_string(),
+            self.value
+                .iter()
+                .map(|v| v.to_string())
+                .collect::<Vec<String>>()
+                .join(" ")
+        )
     }
 }
