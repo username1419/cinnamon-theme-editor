@@ -7,6 +7,7 @@ pub mod app;
 pub mod config;
 pub mod helper;
 use crate::app::io::parse::StyleSheet;
+use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::SelectorCategory;
 use crate::config::MouseState;
 use crate::helper::Helper;
@@ -98,9 +99,10 @@ fn App() -> Element {
         mouse_down: MouseButtonSet::default(),
     });
     let is_editing = use_signal(|| false);
-    let selected_element = use_signal(|| None);
     let inspector_type = use_signal(|| SelectorCategory::default());
     let current_element = use_signal(|| 0);
+    let element_selected = use_signal(|| 0);
+    let element_style = use_signal(|| DeclarationBlock::default());
 
     use_context_provider(|| AppConfiguration {
         is_editing,
@@ -109,7 +111,8 @@ fn App() -> Element {
         mouse_state,
         inspector_type,
         current_element,
-        selected_element,
+        element_selected,
+        element_style,
     });
 
     rsx! {

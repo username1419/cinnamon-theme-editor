@@ -1,9 +1,12 @@
+use std::sync::{Arc, Mutex};
+
 use dioxus::prelude::*;
 use dioxus::{
     core::Element,
     prelude::{component, rsx},
 };
 
+use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::Selector;
 use crate::config::{Ancestry, AppConfiguration};
 
@@ -17,13 +20,24 @@ pub struct CinnamonGenericContainerProps {
 #[component]
 pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element {
     let config = use_context::<AppConfiguration>();
-    let mut selected_element = config.selected_element;
     let mut current_element = config.current_element;
+    let mut editing_style = config.element_style;
     *current_element.write() += 1;
     let element_id = *current_element.peek();
 
+    let mut use_original_style = use_signal(|| true);
+    let mut is_style_override = use_signal(|| true);
     let class = props.class;
-    let style = props.style;
+    let mut this_style = use_signal(|| DeclarationBlock::from_raw(props.style));
+    let style = use_memo(move || {
+        if use_original_style() {
+            this_style()
+        } else {
+            editing_style()
+        }
+    });
+    let mut selected = use_signal(|| false);
+    let mut num_selected = config.element_selected;
 
     // NOTE: (mostly) vibed
 
@@ -42,17 +56,34 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
     use_context_provider(|| Ancestry(ancestry.clone()));
 
     // full ancestry for custom attribute
-    let ancestry_attr = use_hook(move || ancestry.join(">"));
+    let ancestry_attr =
+        use_hook(move || Selector::from_raw(format!("inspector {}", ancestry.join(">")).as_str()));
 
     rsx! {
         div {
             id: "{element_id}",
             class: "CinnamonGenericContainer {class}",
-            style: "{style}",
+            style: "{dbg!(style.read().to_string())}",
             onclick: move |evt| {
-                selected_element.set(Some(Selector::from_raw(&*ancestry_attr)));
-                debug!("{ancestry_attr} clicked");
-                evt.stop_propagation();
+                let ancestry_attr = ancestry_attr.clone();
+                async move {
+                    if selected() {
+                        // TODO: probably make the footer show selected components or something
+                        *selected.write() = false;
+                        *num_selected.write() -= 1;
+                        *this_style.write() = style.read().clone();
+                        *use_original_style.write() = true;
+                    }
+                    if is_style_override() {
+                        *editing_style.write() = style.read().cloned();
+                        *is_style_override.write() = false;
+                        *use_original_style.write() = false;
+                    }
+                    debug!("{} clicked", ancestry_attr.to_string());
+                    *selected.write() = true;
+                    *num_selected.write() += 1;
+                    evt.stop_propagation();
+                }
             },
             {props.children}
         }

@@ -13,7 +13,6 @@ pub fn Inspector() -> Element {
     let config = use_context::<AppConfiguration>();
     let default_style = config.default_style;
     let editing_stylesheet = config.editing_stylesheet;
-    let selected_element = config.selected_element;
     rsx! {
         div { class: "inspector",
             style { "{default_style.read()}" }

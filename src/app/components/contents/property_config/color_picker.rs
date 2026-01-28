@@ -4,14 +4,19 @@ use dioxus::{
     core::Element,
     prelude::{component, rsx},
 };
+use tokio::time::{self, Instant};
 
+use crate::app::io::parser::property::Property;
+use crate::app::io::parser::property_value::Value;
 use crate::config::AppConfiguration;
 
 const CURSOR_SIZE: f64 = 8.0;
 
 #[component]
 pub fn ColorPicker() -> Element {
+    // TODO: set default as original element color somehow
     let config = use_context::<AppConfiguration>();
+    let mut editing_style = config.element_style;
     let mut selected_hue = use_signal(|| 0 as u32);
     let mut selected_saturation = use_signal(|| 0);
     let mut selected_lightness = use_signal(|| 100);
@@ -20,6 +25,9 @@ pub fn ColorPicker() -> Element {
     let mut saturation_lightness_select_rect = use_signal(|| (0.0, 0.0));
     let mut cursor_pos = use_signal(|| (0.0, 0.0));
     let mut history = use_signal(|| [(0 as u32, 100 as i32, 100 as i32, 100 as i32); 10]);
+
+    const REFRESH_RATE: f64 = 1.0 / 60.0;
+    let mut last_time = use_signal(|| Instant::now());
 
     rsx! {
         div { class: "color-picker",
@@ -33,29 +41,66 @@ pub fn ColorPicker() -> Element {
                         }
                     },
                     onmousemove: move |event| {
-                        if !config.mouse_state.read().mouse_down.contains(MouseButton::Primary) {
-                            return;
+                        // PERF: high cpu & gpu usage when dragging
+                        // ~4% CPU (Intel i5-13420H)
+                        // ~7% GPU (GeForce RTX 4050 Mobile)
+                        async move {
+                            if !config.mouse_state.read().mouse_down.contains(MouseButton::Primary) {
+                                return;
+                            }
+
+                            // NOTE: reducing refresh rate on my machine only decrases cpu/gpu
+                            // usage by 0.5% at most
+                            let delta = time::Instant::now().duration_since(*last_time.peek());
+                            if delta.as_secs_f64() < REFRESH_RATE {
+                                return;
+                            }
+
+                            let bounds = *saturation_lightness_select_rect.read();
+
+                            let relative_coord = event.element_coordinates();
+                            let absolute_coord = event.client_coordinates();
+                            // offset of bounding box from top left of viewport
+                            let offset_x = absolute_coord.x - relative_coord.x;
+                            let offset_y = absolute_coord.y - relative_coord.y;
+
+                            // subtract cursor size so it looks good
+                            let raw_x: f64 = relative_coord.x - CURSOR_SIZE;
+                            let raw_y: f64 = relative_coord.y - CURSOR_SIZE;
+
+                            // normalize cursor position relative to bounding box
+                            // i have a sneaking suspicion that this is the problem but i got
+                            // nothin
+                            let normalized_x = (raw_x / bounds.0).clamp(0.0, 1.0);
+                            let normalized_y = (raw_y / bounds.1).clamp(0.0, 1.0);
+
+                            let cursor_x = offset_x + normalized_x * bounds.0;
+                            let cursor_y = offset_y + normalized_y * bounds.1;
+
+                            cursor_pos.set((cursor_x, cursor_y));
+
+                            let saturation = normalized_x;
+                            let value = 1.0 - normalized_y;
+                            // conversion to hsl bc im stupid
+                            let lightness = ((value * (1.0 - saturation / 2.0)) * 100.0) as u32;
+                            let saturation_percent = (saturation * 100.0) as u32;
+
+                            *selected_lightness.write() = lightness;
+                            *selected_saturation.write() = saturation_percent;
+
+                            let values = vec![
+                                Value::from_raw_single(
+                                    format!(
+                                        "hsla({selected_hue}, {selected_saturation}%, {selected_lightness}%, {selected_alpha}%)",
+                                    )
+                                        .as_str(),
+                                ),
+                            ];
+                            editing_style
+                                .write()
+                                .set_style_attribute(Property::from_raw("background-color"), values);
+                            *last_time.write() = time::Instant::now();
                         }
-                        let relative_coord = event.element_coordinates();
-                        let absolute_coord = event.client_coordinates();
-                        let offset = (
-                            absolute_coord.x - relative_coord.x,
-                            absolute_coord.y - relative_coord.y,
-                        );
-                        let bounds = *saturation_lightness_select_rect.read();
-
-                        let cursor_x = (relative_coord.x + offset.0 - CURSOR_SIZE)
-                            .clamp(offset.0 - CURSOR_SIZE, offset.0 + bounds.0 + CURSOR_SIZE);
-                        let cursor_y = (relative_coord.y + offset.1 - CURSOR_SIZE)
-                            .clamp(offset.1 - CURSOR_SIZE, offset.1 + bounds.1 + CURSOR_SIZE);
-
-                        cursor_pos.set((cursor_x, cursor_y));
-                        let saturation = (cursor_x - offset.0 - CURSOR_SIZE) / (bounds.0 + CURSOR_SIZE);
-                        let value = 1.0
-                            - ((cursor_y - offset.1 - CURSOR_SIZE) / (bounds.1 + CURSOR_SIZE));
-                        // conversion to hsl bc im stupid
-                        selected_lightness.set(((value * (1.0 - saturation / 2.0)) * 100.0) as u32);
-                        selected_saturation.set((saturation * 100.0) as u32);
                     },
                 }
                 div {

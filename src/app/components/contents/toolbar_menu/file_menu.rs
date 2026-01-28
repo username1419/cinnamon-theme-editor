@@ -64,6 +64,8 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 id: "open-theme-button",
                 onclick: move |_| {
                     info!("open-theme-button triggered");
+                    todo!();
+                    ()
                 },
                 shortcut: Shortcut::new(KeyCode::O, ModifiersState::CONTROL),
                 text: "Open theme",
@@ -72,6 +74,8 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 id: "placeholder-button1",
                 onclick: move |_| {
                     info!("placeholder-button1 triggered");
+                    todo!();
+                    ()
                 },
                 text: "Placeholder 1",
             }
@@ -79,6 +83,8 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 id: "placeholder-button2",
                 onclick: move |_| {
                     info!("placeholder-button2 triggered");
+                    todo!();
+                    ()
                 },
                 text: "Placeholder 2",
             }
@@ -86,6 +92,8 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 id: "export-theme-button",
                 onclick: move |_| {
                     info!("export-theme-button triggered");
+                    todo!();
+                    ()
                 },
                 shortcut: Shortcut::new(KeyCode::E, ModifiersState::CONTROL),
                 text: "Export theme",
