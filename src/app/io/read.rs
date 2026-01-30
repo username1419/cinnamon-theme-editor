@@ -91,6 +91,37 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
     result.map(|raw| StyleSheet::parse(file_path.to_path_buf(), raw))
 }
 
-pub async fn open_existing(name: String) {
-    todo!()
+pub fn open_existing(mut file_path: PathBuf) -> Result<StyleSheet, Error> {
+    let name = file_path
+        .iter()
+        .last()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default()
+        .to_string();
+
+    file_path.push(".cinnamon-edit.css");
+    if !fs::exists(&file_path).unwrap_or(false) {
+        let theme_file_path = PathBuf::from(format!(
+            "{}/cinnamon/cinnamon.css",
+            file_path.to_str().unwrap_or_default()
+        ));
+        match fs::exists(&theme_file_path) {
+            Ok(exists) => {
+                if !exists {
+                    // honestly i have no idea how this ? works but eh
+                    fs::copy(theme_file_path, &file_path)?;
+                }
+            }
+            Err(err) => {
+                return Err(err);
+            }
+        }
+    }
+
+    debug!("Reading {:?} stylesheet for theme \"{}\".", file_path, name);
+    let result = fs::read_to_string(&file_path);
+    debug!("Read content {:?} from {:?}", result, file_path);
+
+    result.map(|raw| StyleSheet::parse(file_path.to_path_buf(), raw))
 }

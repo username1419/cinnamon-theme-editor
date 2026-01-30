@@ -7,7 +7,7 @@ use rfd::FileDialog;
 use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
-use crate::app::io::read::{self, is_theme_exist};
+use crate::app::io::read::{self, is_theme_exist, open_existing};
 use crate::config::AppConfiguration;
 
 #[component]
@@ -19,6 +19,78 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
     let mut choose_theme_name_overlay_active = use_signal(|| false);
     let mut input = use_signal(|| String::default());
     let mut config = use_context::<AppConfiguration>();
+
+    let mut create_new_theme = move |name| {
+        let theme_exists = is_theme_exist(&name);
+        if theme_exists.is_err() || theme_exists.as_ref().is_ok_and(|e| e.eq(&true)) {
+            if theme_exists.is_err() {
+                error!("{}", theme_exists.unwrap_err());
+                return;
+            }
+            error!("Theme already exists");
+        }
+        // NOTE: picking the default theme comes later because users might be
+        // confused with opening a theme
+        // though idk the actual effectiveness of this cuz the first couple of times i
+        // still got confused
+        let folder = FileDialog::new()
+            .set_title("Choose a default theme")
+            .set_directory("/usr/share/themes/")
+            // BUG: original window will be flagged as inactive by cinnamon, idk how
+            // to fix it
+            .pick_folder();
+        if folder.is_none() {
+            return;
+        }
+        let folder = folder.unwrap();
+        info!("Picked default theme {:?}", folder);
+        let style = read::create_as_edit(name, folder);
+        match style {
+            // close the overlay
+            Ok(stylesheet) => {
+                let (editing, default) = stylesheet.to_webview_safe();
+                config
+                    .default_style
+                    .set(default.unwrap_or_default().to_string());
+                debug!("{}", config.default_style);
+                config.editing_stylesheet.set(editing);
+                config.is_editing.set(true);
+            }
+            Err(err) => {
+                error!("Error encountered on read: {}", err);
+            }
+        }
+    };
+
+    let mut open_existing_theme = move || {
+        let folder = FileDialog::new()
+            .set_title("Choose a theme")
+            .set_directory("/usr/share/themes/")
+            // BUG: original window will be flagged as inactive by cinnamon, idk how
+            // to fix it
+            .pick_folder();
+        if folder.is_none() {
+            return;
+        }
+        let folder = folder.unwrap();
+        info!("Picked theme {:?}", folder);
+        let style = read::open_existing(folder);
+        match style {
+            // close the overlay
+            Ok(stylesheet) => {
+                let (editing, default) = stylesheet.to_webview_safe();
+                config
+                    .default_style
+                    .set(default.unwrap_or_default().to_string());
+                debug!("{}", config.default_style);
+                config.editing_stylesheet.set(editing);
+                config.is_editing.set(true);
+            }
+            Err(err) => {
+                error!("Error encountered on read: {}", err);
+            }
+        }
+    };
 
     rsx! {
         button {
@@ -54,6 +126,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
             MenuButton {
                 id: "create-new-button",
                 onclick: move |_| {
+                    info!("create-new-button triggered");
                     *choose_theme_name_overlay_active.write() = true;
                 },
                 shortcut: Shortcut::new(KeyCode::N, ModifiersState::CONTROL),
@@ -62,10 +135,9 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
             }
             MenuButton {
                 id: "open-theme-button",
-                onclick: move |_| {
+                onclick: move |_| async move {
                     info!("open-theme-button triggered");
-                    todo!();
-                    ()
+                    open_existing_theme();
                 },
                 shortcut: Shortcut::new(KeyCode::O, ModifiersState::CONTROL),
                 text: "Open theme",
@@ -123,44 +195,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                             input.clear();
                             e.prevent_default();
                             async move {
-                                let theme_exists = is_theme_exist(&name);
-                                if theme_exists.is_err() || theme_exists.as_ref().is_ok_and(|e| e.eq(&true))
-                                {
-                                    if theme_exists.is_err() {
-                                        error!("{}", theme_exists.unwrap_err());
-                                        return;
-                                    }
-                                    error!("Theme already exists");
-                                }
-                                // NOTE: picking the default theme comes later because users might be
-                                // confused with opening a theme
-                                // though idk the actual effectiveness of this cuz the first couple of times i
-                                // still got confused
-                                let folder = FileDialog::new()
-                                    .set_title("Choose a default theme")
-                                    .set_directory("/usr/share/themes/")
-                                    // BUG: original window will be flagged as inactive by cinnamon, idk how
-                                    // to fix it
-                                    .pick_folder();
-                                if folder.is_none() {
-                                    return;
-                                }
-                                let folder = folder.unwrap();
-                                info!("Picked default theme {:?}", folder);
-                                let style = read::create_as_edit(name, folder);
-                                match style {
-                                    // close the overlay
-                                    Ok(stylesheet) => {
-                                        let (editing, default) = stylesheet.to_webview_safe();
-                                        config.default_style.set(default.unwrap_or_default().to_string());
-                                        debug!("{}", config.default_style);
-                                        config.editing_stylesheet.set(editing);
-                                        config.is_editing.set(true);
-                                    }
-                                    Err(err) => {
-                                        error!("Error encountered on read: {}", err);
-                                    }
-                                }
+                                create_new_theme(name);
                                 *choose_theme_name_overlay_active.write() = false;
                             }
                         },
