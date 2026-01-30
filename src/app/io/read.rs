@@ -36,6 +36,13 @@ fn copy_recursive(src: &Path, dst: &Path) -> Result<(), Error> {
     Ok(())
 }
 
+pub fn is_theme_exist(name: &String) -> Result<bool, Error> {
+    let mut file_path = env::home_dir().expect("Failed to find user's home directory.");
+    file_path.push(".themes/".to_string() + name.as_str());
+
+    fs::exists(&file_path)
+}
+
 /// Creates a theme in $HOME/.themes/, importing `default` as the fallback.
 ///
 /// # Returns
@@ -55,16 +62,16 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
 
     let mut file_path = env::home_dir().expect("Failed to find user's home directory.");
     file_path.push(".themes/".to_string() + name.as_str());
-    if fs::exists(&file_path).unwrap_or(false) {
+    let theme_exists = is_theme_exist(&name);
+    if theme_exists.is_err() || theme_exists.as_ref().is_ok_and(|e| e.eq(&true)) {
+        if theme_exists.is_err() {
+            return Err(theme_exists.unwrap_err());
+        }
         return Err(Error::new(
             std::io::ErrorKind::AlreadyExists,
-            "Theme already exists",
+            "Theme name already exists.",
         ));
     }
-    debug!(
-        "Theme existence check passed. Theme with name \"{}\" does not yet exist.",
-        name
-    );
 
     fs::create_dir(&file_path)?;
     debug!("Copying theme from {:?} to {:?}", default, file_path);
