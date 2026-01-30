@@ -1,3 +1,7 @@
+use std::str::FromStr;
+
+use dioxus::prelude::debug;
+
 use super::basic_selector::BasicSelector;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -54,7 +58,7 @@ pub enum Combinator {
 
 impl Combinator {
     pub fn try_match(combinator: &str) -> Self {
-        if combinator.is_empty() {
+        if combinator.contains(char::MAX) {
             return Self::None;
         }
         match combinator.trim() {
@@ -64,6 +68,19 @@ impl Combinator {
             "+" => Self::NextSibling,
             _ => panic!("Unknown combinator {}", combinator),
         }
+    }
+}
+
+impl ToString for Combinator {
+    fn to_string(&self) -> String {
+        String::from_str(match self {
+            Self::Descendant => " ",
+            Self::Child => ">",
+            Self::SubsequentSibling => "~",
+            Self::NextSibling => "+",
+            Self::None => "",
+        })
+        .unwrap_or_default()
     }
 }
 
@@ -81,15 +98,16 @@ pub struct Selector {
 
 impl Selector {
     pub fn from_raw(raw: &str) -> Self {
-        let selector_type = Self::get_type(raw);
-        let selector_category = Self::get_category(raw);
+        let raw = format!("{}{}", raw, char::MAX);
+        let selector_type = Self::get_type(&*raw);
+        let selector_category = Self::get_category(&*raw);
         let mut selectors = Vec::new();
         let mut chars = raw.chars().peekable();
-        let raw = raw.to_string().clone();
+        let mut raw = raw.to_string().clone();
         let mut tracking_selector = String::new();
 
         while let Some(ch) = chars.peek() {
-            if !(">~+".contains(*ch) || ch.is_whitespace()) {
+            if !(">~+".contains(*ch) || ch.is_whitespace() || ch.eq(&char::MAX)) {
                 tracking_selector.push(chars.next().unwrap());
                 if chars.peek().is_some() {
                     continue;
@@ -98,7 +116,7 @@ impl Selector {
 
             let combinator = chars
                 .clone()
-                .take_while(|c: &char| ">~+".contains(*c) || c.is_whitespace())
+                .take_while(|c: &char| ">~+".contains(*c) || c.is_whitespace() || c.eq(&char::MAX))
                 .collect::<String>();
             for _ in [0..combinator.len()] {
                 chars.next();
@@ -110,6 +128,7 @@ impl Selector {
             tracking_selector.clear();
         }
 
+        raw.pop();
         Self {
             raw,
             selector_type,
@@ -219,21 +238,29 @@ impl Selector {
     }
 
     pub fn to_webview_safe(mut self) -> Self {
-        self.raw = format!("inspector {}", self.raw);
-        self.selectors.insert(
-            0,
-            (
-                BasicSelector::from_raw(self.raw.as_str()),
-                Combinator::Descendant,
-            ),
-        );
+        self.selectors.iter_mut().for_each(|(b, _)| {
+            if b.get_raw().starts_with('.') {
+                return;
+            }
 
-        self
+            let mut repl = b.get_raw().to_string();
+
+            if b.get_raw().starts_with('#') {
+                repl.remove(0);
+            }
+
+            *b = BasicSelector::from_raw(&*format!(".{}", b.get_raw()));
+        });
+
+        Selector::from_raw(&*self.to_string())
     }
 }
 
 impl ToString for Selector {
     fn to_string(&self) -> String {
-        self.raw.clone()
+        self.selectors
+            .iter()
+            .map(|(b, c)| format!("{}{}", b.to_string(), c.to_string()))
+            .collect()
     }
 }

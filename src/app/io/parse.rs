@@ -151,8 +151,11 @@ impl StyleSheet {
                 style.rulesets = style
                     .rulesets
                     .into_iter()
-                    .map(|(selector, declaration_block)| {
-                        (selector.to_webview_safe(), declaration_block)
+                    .map(|(selector, mut declaration_block)| {
+                        (
+                            selector.to_webview_safe(),
+                            declaration_block.to_webview_safe(),
+                        )
                     })
                     .collect();
 

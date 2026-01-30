@@ -223,4 +223,14 @@ impl BasicSelector {
             pseudo_element,
         }
     }
+
+    pub fn get_raw(&self) -> &String {
+        &self.raw
+    }
+}
+
+impl ToString for BasicSelector {
+    fn to_string(&self) -> String {
+        self.raw.clone()
+    }
 }

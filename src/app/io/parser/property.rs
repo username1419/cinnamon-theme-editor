@@ -49,6 +49,10 @@ impl Property {
             category: PropertyCategory::try_match(raw),
         }
     }
+
+    pub fn get_raw(&self) -> &String {
+        &self.raw
+    }
 }
 
 impl ToString for Property {

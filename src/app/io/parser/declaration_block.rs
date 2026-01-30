@@ -1,4 +1,6 @@
-use dioxus::prelude::debug;
+use std::str::FromStr;
+
+use dioxus::{html::meta::property, prelude::debug};
 
 use crate::app::io::parser::{property::Property, property_value::Value};
 
@@ -49,6 +51,22 @@ impl DeclarationBlock {
     /// DeclarationBlock::set_style_attribute()
     pub fn get_raw(&self) -> &String {
         &self.raw
+    }
+
+    pub fn to_webview_safe(&mut self) -> Self {
+        DeclarationBlock::from_raw(
+            self.declarations
+                .iter()
+                .map(|declaration| {
+                    if declaration.property.get_raw().contains("image") {
+                        String::from_str("background-color: black").unwrap()
+                    } else {
+                        declaration.to_string()
+                    }
+                })
+                .collect::<Vec<String>>()
+                .join("; "),
+        )
     }
 }
 
