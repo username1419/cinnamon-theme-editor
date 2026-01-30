@@ -7,7 +7,7 @@ use rfd::FileDialog;
 use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
-use crate::app::io::read;
+use crate::app::io::read::{self, is_theme_exist};
 use crate::config::AppConfiguration;
 
 #[component]
@@ -123,22 +123,30 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                             input.clear();
                             e.prevent_default();
                             async move {
+                                let theme_exists = is_theme_exist(&name);
+                                if theme_exists.is_err() || theme_exists.as_ref().is_ok_and(|e| e.eq(&true))
+                                {
+                                    if theme_exists.is_err() {
+                                        error!("{}", theme_exists.unwrap_err());
+                                        return;
+                                    }
+                                    error!("Theme already exists");
+                                }
                                 // NOTE: picking the default theme comes later because users might be
                                 // confused with opening a theme
+                                // though idk the actual effectiveness of this cuz the first couple of times i
+                                // still got confused
                                 let folder = FileDialog::new()
                                     .set_title("Choose a default theme")
                                     .set_directory("/usr/share/themes/")
                                     // BUG: original window will be flagged as inactive by cinnamon, idk how
                                     // to fix it
                                     .pick_folder();
-
                                 if folder.is_none() {
                                     return;
                                 }
                                 let folder = folder.unwrap();
-
                                 info!("Picked default theme {:?}", folder);
-
                                 let style = read::create_as_edit(name, folder);
                                 match style {
                                     // close the overlay
