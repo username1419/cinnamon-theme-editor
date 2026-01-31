@@ -1,5 +1,3 @@
-use std::sync::{Arc, Mutex};
-
 use dioxus::prelude::*;
 use dioxus::{
     core::Element,
