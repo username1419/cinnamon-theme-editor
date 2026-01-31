@@ -39,15 +39,22 @@ button {
 
   &>div {
     min-width: min-content;
-    max-width: 25%;
+    align-self: stretch;
     resize: horizontal;
     border-right: solid $sidebar-bg-color 1px;
     overflow-y: hidden;
+  }
+
+  &>span {
+    width: 100%;
+    align-content: center;
+    text-align: center;
   }
 }
 
 .sidebar {
   min-width: fit-content;
+  max-width: 25%;
   overflow-y: scroll;
   background-color: lightgray;
   padding: 8px;
