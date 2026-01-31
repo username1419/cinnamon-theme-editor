@@ -71,7 +71,7 @@ pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
         div {
             id: "{element_id}",
             class: "StBoxLayout {class}",
-            style: "{dbg!(style.read().to_string())}",
+            style: "{style.read().to_string()}",
             onclick: move |evt| {
                 let ancestry_attr = ancestry_attr.clone();
                 async move {

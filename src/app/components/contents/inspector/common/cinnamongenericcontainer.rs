@@ -63,7 +63,7 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
         div {
             id: "{element_id}",
             class: "CinnamonGenericContainer {class}",
-            style: "{dbg!(style.read().to_string())}",
+            style: "{style.read().to_string()}",
             onclick: move |evt| {
                 let ancestry_attr = ancestry_attr.clone();
                 async move {
