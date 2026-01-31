@@ -174,17 +174,23 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
             }
         }
 
-        if *choose_theme_name_overlay_active.read() {
-            // HACK: keep rendering until explicitly stopped
+        if choose_theme_name_overlay_active() {
             div {
                 id: "choose-theme-name-overlay",
                 class: "overlay focus-block",
-                style: if !*choose_theme_name_overlay_active.read() { "display: none" },
+                style: if !choose_theme_name_overlay_active() { "display: none" },
+                onclick: move |_| {
+                    debug!("yee");
+                    // close the overlay
+                    *choose_theme_name_overlay_active.write() = false;
+                },
                 // NOTE: dialog isnt use bc modal implementation isnt available on desktop (to my
                 // understanding)
                 div {
                     id: "choose-theme-name-submenu",
                     class: "overlay-menu text-dialog",
+                    // idk why but the events break when i remove this
+                    onclick: move |e| e.stop_propagation(),
                     span { "Enter theme name" }
                     form {
                         onsubmit: move |e| {
@@ -200,10 +206,6 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                 create_new_theme(name);
                                 *choose_theme_name_overlay_active.write() = false;
                             }
-                        },
-                        oncancel: move |_| {
-                            // close the overlay
-                            *choose_theme_name_overlay_active.write() = false;
                         },
                         input {
                             r#type: "text",
@@ -223,7 +225,15 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                 r#type: "submit",
                                 "Choose"
                             }
-                            button { class: "cancel-choice", r#type: "cancel", "Cancel" }
+                            button {
+                                class: "cancel-choice",
+                                r#type: "button",
+                                onclick: move |_| {
+                                    // close the overlay
+                                    *choose_theme_name_overlay_active.write() = false;
+                                },
+                                "Cancel"
+                            }
                         }
                     }
                 }
