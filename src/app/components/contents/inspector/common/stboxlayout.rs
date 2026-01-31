@@ -31,6 +31,7 @@ pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
     let mut current_element = config.current_element;
     *current_element.write() += 1;
     let mut editing_style = config.element_style;
+    let mut editing_stylesheet = config.editing_stylesheet;
     let element_id = *current_element.peek();
     let class = props.class;
     let mut use_original_style = use_signal(|| true);
@@ -65,7 +66,7 @@ pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
 
     // full ancestry for custom attribute
     let ancestry_attr =
-        use_hook(move || Selector::from_raw(format!("inspector {}", ancestry.join(">")).as_str()));
+        use_hook(move || Selector::from_raw(format!(".inspector {}", ancestry.join(">")).as_str()));
 
     rsx! {
         div {
@@ -79,8 +80,11 @@ pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
                         // TODO: probably make the footer show selected components or something
                         *selected.write() = false;
                         *num_selected.write() -= 1;
-                        *this_style.write() = style.read().clone();
+                        *this_style.write() = style().clone();
                         *use_original_style.write() = true;
+                        editing_stylesheet
+                            .write()
+                            .append_rule(ancestry_attr.clone(), style().clone());
                     }
                     if is_style_override() {
                         *editing_style.write() = style.read().cloned();

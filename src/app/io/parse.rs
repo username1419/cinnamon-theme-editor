@@ -196,6 +196,15 @@ impl StyleSheet {
 
         categories
     }
+
+    pub fn append_rule(&mut self, selector: Selector, declaration_block: DeclarationBlock) {
+        let val = self.rulesets.get_mut(&selector);
+        if let Some(val) = val {
+            val.append(declaration_block);
+        } else {
+            self.rulesets.insert(selector, declaration_block);
+        }
+    }
 }
 
 impl ToString for StyleSheet {

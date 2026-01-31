@@ -22,6 +22,7 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
     let config = use_context::<AppConfiguration>();
     let mut current_element = config.current_element;
     let mut editing_style = config.element_style;
+    let mut editing_stylesheet = config.editing_stylesheet;
     *current_element.write() += 1;
     let element_id = *current_element.peek();
 
@@ -57,7 +58,7 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
 
     // full ancestry for custom attribute
     let ancestry_attr =
-        use_hook(move || Selector::from_raw(format!("inspector {}", ancestry.join(">")).as_str()));
+        use_hook(move || Selector::from_raw(format!(".inspector {}", ancestry.join(">")).as_str()));
 
     rsx! {
         div {
@@ -73,6 +74,9 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
                         *num_selected.write() -= 1;
                         *this_style.write() = style.read().clone();
                         *use_original_style.write() = true;
+                        editing_stylesheet
+                            .write()
+                            .append_rule(ancestry_attr.clone(), style().clone());
                     }
                     if is_style_override() {
                         *editing_style.write() = style.read().cloned();
