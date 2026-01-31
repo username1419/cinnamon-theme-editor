@@ -254,6 +254,10 @@ impl Selector {
 
         Selector::from_raw(&*self.to_string())
     }
+
+    pub fn category(&self) -> &SelectorCategory {
+        &self.selector_category
+    }
 }
 
 impl ToString for Selector {

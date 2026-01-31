@@ -1,10 +1,5 @@
 use dioxus::prelude::{debug, dioxus_stores, error};
-use std::{
-    collections::HashMap,
-    fs::{read, read_to_string},
-    path::PathBuf,
-    str::FromStr,
-};
+use std::{collections::HashMap, fs::read_to_string, path::PathBuf, str::FromStr};
 
 use dioxus::stores::Store;
 use once_cell::sync::Lazy;
@@ -83,7 +78,7 @@ impl StyleSheet {
         let raw = COMMENT_FILTER_REGEX.replace_all(&raw, "");
 
         let mut rulesets_iter = raw.split('}');
-        let mut rulesets = HashMap::new();
+        let mut rulesets: HashMap<Selector, DeclarationBlock> = HashMap::new();
 
         while let Some(ruleset) = rulesets_iter.next().map(|r| r.split('{')).as_mut() {
             // TODO: make actually good error logs
@@ -101,6 +96,10 @@ impl StyleSheet {
             Self::parse_selector(selector_group)
                 .into_iter()
                 .for_each(|selector| {
+                    if let Some(d) = rulesets.get_mut(&selector) {
+                        d.append(declaration_block.clone());
+                        return;
+                    }
                     rulesets.insert(selector, declaration_block.clone());
                 });
         }
@@ -172,6 +171,30 @@ impl StyleSheet {
             },
             import,
         )
+    }
+
+    pub fn to_string_categories(&self) -> HashMap<SelectorCategory, String> {
+        let categories = self.rulesets.iter().fold(
+            HashMap::from_iter(
+                SelectorCategory::VALUES
+                    .clone()
+                    .into_iter()
+                    .zip(SelectorCategory::VALUES.iter().map(|_| String::new())),
+            ),
+            |mut cat, (selector, declaration_block)| {
+                let val = cat.get_mut(selector.category());
+                if let Some(val) = val {
+                    val.push_str(&*format!(
+                        "{}{{{}}}",
+                        selector.to_string(),
+                        declaration_block.to_string()
+                    ));
+                }
+                cat
+            },
+        );
+
+        categories
     }
 }
 

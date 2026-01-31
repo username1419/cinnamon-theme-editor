@@ -3,6 +3,7 @@ use dioxus::html::input_data::{MouseButton, MouseButtonSet};
 use dioxus::logger::tracing::Level;
 use dioxus_desktop::wry::dpi::PhysicalPosition;
 use dioxus_desktop::{LogicalSize, WindowBuilder};
+use std::collections::HashMap;
 pub mod app;
 pub mod config;
 pub mod helper;
@@ -92,7 +93,7 @@ fn main() {
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
 #[component]
 fn App() -> Element {
-    let default_style = use_signal(|| String::new());
+    let default_style = use_signal(|| HashMap::new());
     let editing_stylesheet = use_store(|| StyleSheet::default());
     let mut mouse_state = use_signal(|| MouseState {
         coordinates: Helper::to_coord(PhysicalPosition::default()),

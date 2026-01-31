@@ -7,7 +7,7 @@ use rfd::FileDialog;
 use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
-use crate::app::io::read::{self, is_theme_exist, open_existing};
+use crate::app::io::read::{self, is_theme_exist};
 use crate::config::AppConfiguration;
 
 #[component]
@@ -48,11 +48,13 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
         match style {
             // close the overlay
             Ok(stylesheet) => {
+                // BUG: dioxus force trims style tags to a certain
+                // character limit so it literally doesnt work
                 let (editing, default) = stylesheet.to_webview_safe();
                 config
                     .default_style
-                    .set(default.unwrap_or_default().to_string());
-                debug!("{}", config.default_style);
+                    .set(default.unwrap_or_default().to_string_categories());
+                debug!("{:#?}", config.default_style);
                 config.editing_stylesheet.set(editing);
                 config.is_editing.set(true);
             }
@@ -81,8 +83,8 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 let (editing, default) = stylesheet.to_webview_safe();
                 config
                     .default_style
-                    .set(default.unwrap_or_default().to_string());
-                debug!("{}", config.default_style);
+                    .set(default.unwrap_or_default().to_string_categories());
+                debug!("{:#?}", config.default_style);
                 config.editing_stylesheet.set(editing);
                 config.is_editing.set(true);
             }

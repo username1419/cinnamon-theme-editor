@@ -68,6 +68,12 @@ impl DeclarationBlock {
                 .join("; "),
         )
     }
+
+    pub fn append(&mut self, declaration_block: DeclarationBlock) {
+        for declaration in declaration_block.declarations {
+            self.set_style_attribute(declaration.property, declaration.value);
+        }
+    }
 }
 
 impl ToString for DeclarationBlock {

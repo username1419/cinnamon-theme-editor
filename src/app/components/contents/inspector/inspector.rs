@@ -15,7 +15,11 @@ pub fn Inspector() -> Element {
     let editing_stylesheet = config.editing_stylesheet;
     rsx! {
         div { class: "inspector",
-            style { "{default_style.read()}" }
+            div { style: "display: none;", class: "default-styles",
+                for (category , styling) in default_style() {
+                    style { "category": "{category:?}", "{styling}" }
+                }
+            }
             style { "{editing_stylesheet.read().to_string()}" }
             // NOTE: inspector contents should autohide when not selected
             Panel {}
