@@ -99,21 +99,25 @@ fn App() -> Element {
         coordinates: Helper::to_coord(PhysicalPosition::default()),
         mouse_down: MouseButtonSet::default(),
     });
+    let is_dirty = use_signal(|| false);
     let is_editing = use_signal(|| false);
     let inspector_type = use_signal(|| SelectorCategory::default());
     let current_element = use_signal(|| 0);
-    let element_selected = use_signal(|| 0);
+    let num_element_selected = use_signal(|| 0);
     let element_style = use_signal(|| DeclarationBlock::default());
+    let selection_group = use_signal(|| 0);
 
     use_context_provider(|| AppConfiguration {
+        is_dirty,
         is_editing,
         default_style,
         editing_stylesheet,
         mouse_state,
         inspector_type,
         current_element,
-        element_selected,
+        num_element_selected,
         element_style,
+        selection_group,
     });
 
     rsx! {

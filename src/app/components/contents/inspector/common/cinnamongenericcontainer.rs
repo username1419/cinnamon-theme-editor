@@ -19,25 +19,23 @@ pub struct CinnamonGenericContainerProps {
 #[component]
 pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element {
     let config = use_context::<AppConfiguration>();
-    let mut current_element = config.current_element;
     let editing_style = config.element_style;
-    *current_element.write() += 1;
-    let element_id = *current_element.peek();
 
-    let use_original_style = use_signal(|| true);
     let is_style_override = use_signal(|| true);
     let class = props.class;
-    let this_style = use_signal(|| DeclarationBlock::from_raw(props.style));
+    let this_style = use_signal(|| DeclarationBlock::from_raw(String::new()));
+    let selected = use_signal(|| false);
     let style = use_memo(move || {
-        if use_original_style() {
+        if !selected() {
             this_style()
         } else {
             editing_style()
         }
     });
-    let selected = use_signal(|| false);
 
     // NOTE: (mostly) vibed
+    let is_multi_select = use_signal(|| false);
+    let this_selection_group = use_signal(|| 0u32);
 
     // read existing ancestry (if any)
     let mut ancestry: Vec<String> = try_use_context::<Ancestry>()
@@ -57,19 +55,35 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
     let ancestry_attr =
         use_hook(move || Selector::from_raw(format!(".inspector {}", ancestry.join(">")).as_str()));
 
+    let _ancestry_attr = ancestry_attr.clone();
+    // Effect to auto-deselect when another single element is selected
+    use_effect(move || {
+        let editing_style = editing_style();
+
+        InspectorUtil::inspector_component_select_effect(
+            is_style_override,
+            this_style,
+            editing_style,
+            selected,
+            this_selection_group,
+            _ancestry_attr.clone(),
+            style,
+        );
+    });
+
     rsx! {
         div {
-            id: "{element_id}",
             class: "CinnamonGenericContainer {class}",
-            style: "{style.read().to_string()}",
+            style: "{style.read().to_string()};{props.style};",
             onclick: move |evt| InspectorUtil::inspector_component_onclick(
                 evt,
                 selected,
-                use_original_style,
                 is_style_override,
                 ancestry_attr.clone(),
                 this_style,
                 style,
+                is_multi_select,
+                this_selection_group,
             ),
             {props.children}
         }

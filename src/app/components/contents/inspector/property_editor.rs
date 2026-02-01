@@ -10,7 +10,7 @@ use crate::config::AppConfiguration;
 #[component]
 pub fn PropertyEditor() -> Element {
     let config = use_context::<AppConfiguration>();
-    let num_selected = config.element_selected;
+    let num_selected = config.num_element_selected;
 
     rsx! {
         div { class: "property-editor",
