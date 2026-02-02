@@ -86,6 +86,7 @@ pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
             "select": "{is_style_override()} {selected()} {this_selection_group()}",
             onclick: move |evt| InspectorUtil::inspector_component_onclick(
                 evt,
+                selected,
                 ancestry_attr.clone(),
                 is_multi_select,
                 this_selection_group,

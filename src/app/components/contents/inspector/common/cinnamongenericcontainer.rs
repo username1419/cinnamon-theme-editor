@@ -74,6 +74,7 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
             style: "{style.read().to_string()};{props.style};",
             onclick: move |evt| InspectorUtil::inspector_component_onclick(
                 evt,
+                selected,
                 ancestry_attr.clone(),
                 is_multi_select,
                 this_selection_group,

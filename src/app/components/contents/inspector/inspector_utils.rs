@@ -13,6 +13,7 @@ pub struct InspectorUtil;
 impl InspectorUtil {
     pub fn inspector_component_onclick(
         evt: MouseEvent,
+        selected: Signal<bool>,
         ancestry_attr: Selector,
         mut is_multi_select: Signal<bool>,
         mut this_selection_group: Signal<u32>,
@@ -29,8 +30,10 @@ impl InspectorUtil {
             // This will trigger use_effect in other components to deselect
             let new_group = selection_group() + 1;
             *selection_group.write() = new_group;
-            *this_selection_group.write() = new_group;
-            *num_selected.write() = 1;
+            if selected.peek().eq(&false) {
+                *this_selection_group.write() = new_group;
+                *num_selected.write() = 1;
+            }
         } else {
             // Multi-select mode: join current session
             *this_selection_group.write() = selection_group();
