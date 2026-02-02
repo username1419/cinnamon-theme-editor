@@ -1,3 +1,34 @@
+use dioxus::prelude::debug;
+
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+pub enum BasicSelectorType {
+    Type,
+    Class,
+    Id,
+    Universal,
+}
+
+impl BasicSelectorType {
+    pub fn get_type_of(selector: &String) -> BasicSelectorType {
+        let mut binding = selector.chars().peekable();
+        let ch = binding.peek().unwrap();
+        match ch {
+            '#' => BasicSelectorType::Id,
+            '.' => BasicSelectorType::Class,
+            // basic selectors have weird valid beginning chars huh
+            c => {
+                if '_'.eq(c) || c.is_ascii_alphabetic() || c.to_digit(10).unwrap_or_default() > 80 {
+                    BasicSelectorType::Type
+                } else if '*'.eq(c) {
+                    BasicSelectorType::Universal
+                } else {
+                    panic!("Invalid basic selector \"{}\"", selector)
+                }
+            }
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum PseudoElement {
     Before,
@@ -147,6 +178,12 @@ impl PseudoClass {
 pub struct BasicSelector {
     /// The selector's raw contents
     raw: String,
+    /// The type of basic selector. Eg.: Class, Id, Type. Not to be confused with
+    /// Selector::selector_type
+    selector_type: BasicSelectorType,
+    /// The selector's default selector type, if it has been converted by
+    /// Selector::to_webview_safe(). Otherwise None.
+    default_selector_type: Option<BasicSelectorType>,
     /// Pseudo-class of the selector
     pseudo_class: Vec<PseudoClass>,
     /// Pseudo-element of the selector
@@ -156,6 +193,8 @@ pub struct BasicSelector {
 impl BasicSelector {
     pub fn new(
         raw: String,
+        selector_type: BasicSelectorType,
+        default_selector_type: Option<BasicSelectorType>,
         pseudo_class: Vec<PseudoClass>,
         pseudo_element: Option<PseudoElement>,
     ) -> Self {
@@ -163,16 +202,25 @@ impl BasicSelector {
             raw,
             pseudo_class,
             pseudo_element,
+            selector_type,
+            default_selector_type,
         }
     }
 
     pub fn from_raw(basic_selector: &str) -> Self {
+        let mut basic_selector = basic_selector;
+        if let Some(c) = basic_selector.chars().peekable().peek() {
+            if c.is_whitespace() {
+                basic_selector = basic_selector.trim();
+            }
+        }
         let mut base;
         let mut pseudo_class = Vec::new();
         let mut pseudo_element = None;
         let mut tracking_token = String::new();
         let mut chars = basic_selector.chars().peekable();
         let raw = basic_selector.to_string();
+        let selector_type = BasicSelectorType::get_type_of(&raw);
 
         while let Some(ch) = chars.peek() {
             // TODO: seriously this is a horrible way to deal with css errors
@@ -221,11 +269,25 @@ impl BasicSelector {
             raw,
             pseudo_class,
             pseudo_element,
+            selector_type,
+            default_selector_type: None,
         }
     }
 
     pub fn get_raw(&self) -> &String {
         &self.raw
+    }
+
+    pub fn get_default_selector_type(&self) -> Option<&BasicSelectorType> {
+        self.default_selector_type.as_ref()
+    }
+
+    pub fn set_default_selector_type(&mut self, default_selector_type: Option<BasicSelectorType>) {
+        self.default_selector_type = default_selector_type;
+    }
+
+    pub fn get_selector_type(&self) -> &BasicSelectorType {
+        &self.selector_type
     }
 }
 

@@ -2,6 +2,8 @@ use std::str::FromStr;
 
 use dioxus::prelude::debug;
 
+use crate::app::io::parser::basic_selector::BasicSelectorType;
+
 use super::basic_selector::BasicSelector;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -109,18 +111,18 @@ impl Selector {
         while let Some(ch) = chars.peek() {
             if !(">~+".contains(*ch) || ch.is_whitespace() || ch.eq(&char::MAX)) {
                 tracking_selector.push(chars.next().unwrap());
-                if chars.peek().is_some() {
-                    continue;
-                }
+                continue;
             }
 
-            let combinator = chars
-                .clone()
-                .take_while(|c: &char| ">~+".contains(*c) || c.is_whitespace() || c.eq(&char::MAX))
-                .collect::<String>();
-            for _ in [0..combinator.len()] {
-                chars.next();
+            let mut combinator = String::new();
+            while let Some(ch) = chars.peek() {
+                if ">~+".contains(*ch) || ch.is_whitespace() || ch.eq(&char::MAX) {
+                    combinator.push(chars.next().unwrap());
+                    continue;
+                }
+                break;
             }
+
             selectors.push((
                 BasicSelector::from_raw(tracking_selector.as_str()),
                 Combinator::try_match(combinator.as_str()),
@@ -239,20 +241,38 @@ impl Selector {
 
     pub fn to_webview_safe(mut self) -> Self {
         self.selectors.iter_mut().for_each(|(b, _)| {
-            if b.get_raw().starts_with('.') {
+            if b.get_raw().starts_with('.') || b.get_raw().starts_with('*') {
                 return;
             }
 
-            let mut repl = b.get_raw().to_string();
-
-            if b.get_raw().starts_with('#') {
-                repl.remove(0);
-            }
-
+            let default_selector_type = b.get_selector_type().clone();
             *b = BasicSelector::from_raw(&*format!(".{}", b.get_raw()));
+            b.set_default_selector_type(Some(default_selector_type));
         });
 
         Selector::from_raw(&*self.to_string())
+    }
+
+    /// Reverse process of Selector::to_webview_safe(). Will panic if this selector has not been
+    /// Selector::to_webview_safe()'ed
+    pub fn to_export_safe(&self) -> Selector {
+        let mut s = self.clone();
+        s.selectors.iter_mut().for_each(|(b, _)| {
+            if !b.get_raw().starts_with('.') || b.get_raw().starts_with('*') {
+                return;
+            }
+
+            let default_selector_type = b.get_default_selector_type().unwrap();
+            let prefix = match default_selector_type {
+                BasicSelectorType::Type | BasicSelectorType::Universal => "",
+                BasicSelectorType::Class => ".",
+                BasicSelectorType::Id => "#",
+            };
+            *b = BasicSelector::from_raw(&*format!("{}{}", prefix, b.get_raw().get(1..).unwrap()));
+            b.set_default_selector_type(None);
+        });
+
+        Selector::from_raw(&*s.to_string())
     }
 
     pub fn category(&self) -> &SelectorCategory {

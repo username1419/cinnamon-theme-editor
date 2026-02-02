@@ -150,11 +150,8 @@ impl StyleSheet {
                 style.rulesets = style
                     .rulesets
                     .into_iter()
-                    .map(|(selector, mut declaration_block)| {
-                        (
-                            selector.to_webview_safe(),
-                            declaration_block.to_webview_safe(),
-                        )
+                    .map(|(selector, declaration_block)| {
+                        (selector.to_webview_safe(), declaration_block)
                     })
                     .collect();
 
@@ -171,6 +168,53 @@ impl StyleSheet {
             },
             import,
         )
+    }
+
+    fn to_export_safe(&self) -> StyleSheet {
+        let rulesets = self
+            .rulesets
+            .iter()
+            .map(|(selector, declaration_block)| {
+                (selector.to_export_safe(), declaration_block.clone())
+            })
+            .collect();
+        debug!(
+            "Converting stylesheet with source {:?} to export format...",
+            self.source
+        );
+
+        StyleSheet {
+            source: self.source.clone(),
+            import: self.import.clone(),
+            rulesets,
+        }
+    }
+
+    pub fn to_export_string(&self) -> String {
+        let stylesheet = self.to_export_safe();
+        let mut out = String::new();
+        if let Some(import_path) = &self.import {
+            if let Some(import_str) = import_path.to_str() {
+                out.push_str(&*format!("@import url(\"{}\"); ", import_str));
+            }
+        }
+
+        out.push_str(&*stylesheet.to_string());
+
+        out
+    }
+
+    pub fn to_save_string(&self) -> String {
+        let mut out = String::new();
+        if let Some(import_path) = &self.import {
+            if let Some(import_str) = import_path.to_str() {
+                out.push_str(&*format!("@import url(\"{}\"); ", import_str));
+            }
+        }
+
+        out.push_str(&*self.to_string());
+
+        out
     }
 
     pub fn to_string_categories(&self) -> HashMap<SelectorCategory, String> {

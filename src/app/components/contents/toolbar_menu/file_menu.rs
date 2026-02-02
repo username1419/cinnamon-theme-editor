@@ -8,6 +8,7 @@ use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
 use crate::app::io::read::{self, is_theme_exist};
+use crate::app::io::write::{export_theme, save_theme};
 use crate::config::AppConfiguration;
 
 #[component]
@@ -48,8 +49,6 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
         match style {
             // close the overlay
             Ok(stylesheet) => {
-                // BUG: dioxus force trims style tags to a certain
-                // character limit so it literally doesnt work
                 let (editing, default) = stylesheet.to_webview_safe();
                 config
                     .default_style
@@ -145,13 +144,18 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 text: "Open theme",
             }
             MenuButton {
-                id: "placeholder-button1",
+                id: "save-theme-button",
                 onclick: move |_| {
-                    info!("placeholder-button1 triggered");
-                    todo!();
-                    ()
+                    info!("save-theme-button triggered");
+                    let config = consume_context::<AppConfiguration>();
+                    let is_dirty = config.is_dirty;
+                    let stylesheet = config.editing_stylesheet;
+                    if is_dirty() {
+                        let _ = stylesheet.with(|s| save_theme(s)).inspect_err(|e| error!("{}", e));
+                    }
                 },
-                text: "Placeholder 1",
+                shortcut: Shortcut::new(KeyCode::S, ModifiersState::CONTROL),
+                text: "Save theme",
             }
             MenuButton {
                 id: "placeholder-button2",
@@ -166,8 +170,14 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 id: "export-theme-button",
                 onclick: move |_| {
                     info!("export-theme-button triggered");
-                    todo!();
-                    ()
+                    let config = consume_context::<AppConfiguration>();
+                    let is_dirty = config.is_dirty;
+                    let stylesheet = config.editing_stylesheet;
+                    if is_dirty() {
+                        let _ = stylesheet
+                            .with(|s| export_theme(s))
+                            .inspect_err(|e| error!("{}", e));
+                    }
                 },
                 shortcut: Shortcut::new(KeyCode::E, ModifiersState::CONTROL),
                 text: "Export theme",
@@ -180,7 +190,6 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 class: "overlay focus-block",
                 style: if !choose_theme_name_overlay_active() { "display: none" },
                 onclick: move |_| {
-                    debug!("yee");
                     // close the overlay
                     *choose_theme_name_overlay_active.write() = false;
                 },

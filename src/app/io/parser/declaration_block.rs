@@ -37,10 +37,7 @@ impl DeclarationBlock {
             .iter_mut()
             .find(|d| attribute.eq(&d.property))
         {
-            debug!("before {}", declaration.to_string());
-            debug!("values {:?}", values);
             declaration.value = values;
-            debug!("after {}", declaration.to_string());
         } else {
             let declarations = &mut self.declarations;
             declarations.push(Declaration::new(attribute, values));
@@ -51,22 +48,6 @@ impl DeclarationBlock {
     /// DeclarationBlock::set_style_attribute()
     pub fn get_raw(&self) -> &String {
         &self.raw
-    }
-
-    pub fn to_webview_safe(&mut self) -> Self {
-        DeclarationBlock::from_raw(
-            self.declarations
-                .iter()
-                .map(|declaration| {
-                    if declaration.property.get_raw().contains("image") {
-                        String::from_str("background-color: black").unwrap()
-                    } else {
-                        declaration.to_string()
-                    }
-                })
-                .collect::<Vec<String>>()
-                .join("; "),
-        )
     }
 
     pub fn append(&mut self, declaration_block: DeclarationBlock) {
