@@ -58,12 +58,9 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
     let _ancestry_attr = ancestry_attr.clone();
     // Effect to auto-deselect when another single element is selected
     use_effect(move || {
-        let editing_style = editing_style();
-
         InspectorUtil::inspector_component_select_effect(
             is_style_override,
             this_style,
-            editing_style,
             selected,
             this_selection_group,
             _ancestry_attr.clone(),
@@ -77,11 +74,7 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
             style: "{style.read().to_string()};{props.style};",
             onclick: move |evt| InspectorUtil::inspector_component_onclick(
                 evt,
-                selected,
-                is_style_override,
                 ancestry_attr.clone(),
-                this_style,
-                style,
                 is_multi_select,
                 this_selection_group,
             ),
