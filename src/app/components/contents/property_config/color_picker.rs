@@ -33,6 +33,9 @@ pub fn ColorPicker() -> Element {
     let mut last_time_slow = use_signal(|| Instant::now());
     let mut offset: Signal<Point2D<f64, ClientSpace>> = use_signal(|| Point2D::origin());
 
+    let mut cursor_style = use_signal(|| String::new());
+    let mut color_preview_style = use_signal(|| String::new());
+
     rsx! {
         div { class: "color-picker",
             div { class: "saturation-brightness-picker-group color-previews",
@@ -70,6 +73,7 @@ pub fn ColorPicker() -> Element {
                             let offset = offset.peek();
                             let relative_coord: Point2D<f64, ElementSpace> = Point2D::new(global_coord.x - offset.x, global_coord.y - offset.y);
                             *cursor_pos.write() = relative_coord.clone();
+                            *cursor_style.write() = format!("left: {}px; top: {}px;", relative_coord.x, relative_coord.y);
 
                             // NOTE: changing this refresh rate doesnt really improve anything
                             // either, its probably something ive fucked up in auto reactivity
@@ -88,13 +92,10 @@ pub fn ColorPicker() -> Element {
                             // conversion to hsl bc im stupid
                             let lightness = ((value * (1.0 - saturation / 2.0)) * 100.0) as u32;
                             let saturation_percent = (saturation * 100.0) as u32;
-                            if lightness > 90 {
-                                debug!("{:?}", relative_coord);
-                                debug!("{} {}", normalized_x, normalized_y);
-                            }
 
                             *selected_lightness.write() = lightness;
                             *selected_saturation.write() = saturation_percent;
+                            *color_preview_style.write() = format!("background-color: hsla({}, {saturation_percent}%, {lightness}%, {}%);", selected_hue.peek(), selected_alpha.peek());
 
                             let values = vec![
                                 Value::from_raw_single(
@@ -112,12 +113,12 @@ pub fn ColorPicker() -> Element {
                     },
                     div {
                         class: "saturation-brightness-cursor",
-                        style: r#"left: {cursor_pos().x}px; top: {cursor_pos().y}px;background-color: hsl({selected_hue}, {selected_saturation}%, {selected_lightness}%);"#,
+                        style: r#"{cursor_style}{color_preview_style}"#,
                     }
                 }
                 div {
                     class: "color-preview",
-                    style: "background-color: hsla({selected_hue}, {selected_saturation}%, {selected_lightness}%, {selected_alpha}%);",
+                    style: "{color_preview_style}",
                 }
             }
             input {
