@@ -7,6 +7,7 @@ use std::collections::HashMap;
 pub mod app;
 pub mod config;
 pub mod helper;
+use crate::app::components::contents::property_config::color_picker::HSLColor;
 use crate::app::io::parse::StyleSheet;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::SelectorCategory;
@@ -106,6 +107,8 @@ fn App() -> Element {
     let num_element_selected = use_signal(|| 0);
     let element_style = use_signal(|| DeclarationBlock::default());
     let selection_group = use_signal(|| 0);
+    let color_history = use_signal(|| [HSLColor::default(); 10]);
+    let color_switch = use_signal(|| false);
 
     use_context_provider(|| AppConfiguration {
         is_dirty,
@@ -118,6 +121,8 @@ fn App() -> Element {
         num_element_selected,
         element_style,
         selection_group,
+        color_history,
+        color_switch,
     });
 
     rsx! {

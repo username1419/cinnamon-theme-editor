@@ -56,6 +56,7 @@ impl InspectorUtil {
         let current_group = config.selection_group;
         let mut editing_stylesheet = config.editing_stylesheet;
         let mut editing_style = config.element_style;
+        let mut color_switch = config.color_switch;
         let mut is_dirty = config.is_dirty;
         let current_group = current_group();
         let this_group = this_selection_group.peek();
@@ -65,6 +66,7 @@ impl InspectorUtil {
         if is_selected && current_group > 0 && this_group.ne(&current_group) {
             debug!("Deselected element {}", ancestry_attr.to_string());
             *selected.write() = false;
+            *color_switch.write() = true;
             *this_style.write() = editing_style.peek().clone();
             *is_style_override.write() = true;
             editing_stylesheet

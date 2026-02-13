@@ -6,8 +6,11 @@ use dioxus::{
     stores::Store,
 };
 
-use crate::app::io::parser::{declaration_block::DeclarationBlock, selector::Selector};
 use crate::app::io::{parse::StyleSheet, parser::selector::SelectorCategory};
+use crate::app::{
+    components::contents::property_config::color_picker::HSLColor,
+    io::parser::declaration_block::DeclarationBlock,
+};
 
 #[derive(Clone)]
 pub struct AppConfiguration {
@@ -24,6 +27,8 @@ pub struct AppConfiguration {
     /// Number of elements selected in the inspector.
     pub num_element_selected: Signal<u32>,
     pub selection_group: Signal<u32>,
+    pub color_history: Signal<[HSLColor; 10]>,
+    pub color_switch: Signal<bool>,
 }
 
 #[derive(Debug)]

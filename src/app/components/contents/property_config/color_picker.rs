@@ -12,20 +12,125 @@ use crate::app::io::parser::property::Property;
 use crate::app::io::parser::property_value::Value;
 use crate::config::AppConfiguration;
 
+#[derive(Clone, Copy, PartialEq)]
+pub struct HSLColor {
+    hue: u32,
+    saturation: u32,
+    lightness: u32,
+    alpha: u32,
+}
+
+impl HSLColor {
+    pub fn set_hue(&mut self, hue: u32) {
+        self.hue = hue;
+    }
+
+    pub fn set_lightness(&mut self, lightness: u32) {
+        self.lightness = lightness;
+    }
+
+    pub fn set_saturation(&mut self, saturation: u32) {
+        self.saturation = saturation;
+    }
+
+    pub fn set_alpha(&mut self, alpha: u32) {
+        self.alpha = alpha;
+    }
+
+    pub fn get_hue(&mut self) -> &u32 {
+        &self.hue
+    }
+
+    pub fn get_lightness(&mut self) -> &u32 {
+        &self.lightness
+    }
+
+    pub fn get_saturation(&mut self) -> &u32 {
+        &self.saturation
+    }
+
+    pub fn get_alpha(&mut self) -> &u32 {
+        &self.alpha
+    }
+
+    pub fn new(hue: u32, saturation: u32, lightness: u32, alpha: u32) -> Self {
+        Self {
+            hue,
+            saturation,
+            lightness,
+            alpha,
+        }
+    }
+
+    pub fn to_normalized(&self) -> (f64, f64, f64, f64) {
+        (
+            self.hue as f64,
+            (self.saturation as f64 / 100.0).clamp(0.0, 1.0),
+            (self.lightness as f64 / 100.0).clamp(0.0, 1.0),
+            (self.alpha as f64 / 100.0).clamp(0.0, 1.0),
+        )
+    }
+
+    pub fn to_rgb(&self) -> (u8, u8, u8, u8) {
+        let (h, s, l, a) = self.to_normalized();
+
+        let c = (1.0 - (2.0 * l - 1.0).abs()) * s;
+        let x = c * (1.0 - ((h / 60.0) % 2.0 - 1.0).abs());
+        let m = l - c / 2.0;
+
+        let (r, g, b) = if h < 60.0 {
+            (c, x, 0.0)
+        } else if h < 120.0 {
+            (x, c, 0.0)
+        } else if h < 180.0 {
+            (0.0, c, x)
+        } else if h < 240.0 {
+            (0.0, x, c)
+        } else if h < 300.0 {
+            (x, 0.0, c)
+        } else {
+            (c, 0.0, x)
+        };
+
+        (
+            ((r + m) * 255.0) as u8,
+            ((g + m) * 255.0) as u8,
+            ((b + m) * 255.0) as u8,
+            (a * 255.0) as u8,
+        )
+    }
+
+    pub fn as_css_property(&self) -> String {
+        format!(
+            "hsla({}, {}%, {}%, {}%)",
+            self.hue, self.saturation, self.lightness, self.alpha
+        )
+    }
+}
+
+impl Default for HSLColor {
+    fn default() -> Self {
+        Self {
+            hue: 0,
+            saturation: 100,
+            lightness: 100,
+            alpha: 100,
+        }
+    }
+}
+
 #[component]
 pub fn ColorPicker() -> Element {
     // TODO: set default as original element color somehow
     let config = use_context::<AppConfiguration>();
     let mouse_state = config.mouse_state;
     let mut editing_style = config.element_style;
-    let mut selected_hue = use_signal(|| 0 as u32);
-    let mut selected_saturation = use_signal(|| 0);
-    let mut selected_lightness = use_signal(|| 100);
-    let mut selected_alpha = use_signal(|| 100);
+    let mut selected_color = use_signal(|| HSLColor::default());
 
     let mut saturation_lightness_select_rect = use_signal(|| (0.0, 0.0));
     let mut cursor_pos: Signal<Point2D<f64, ElementSpace>> = use_signal(|| Point2D::origin());
-    let mut history = use_signal(|| [(0 as u32, 100 as i32, 100 as i32, 100 as i32); 10]);
+    let mut history = config.color_history;
+    let mut color_switch = config.color_switch;
 
     let refresh_rate = time::Duration::from_secs_f64(1.0 / 60.0);
     let refresh_rate_slow = time::Duration::from_secs_f64(1.0 / 10.0);
@@ -36,12 +141,26 @@ pub fn ColorPicker() -> Element {
     let mut cursor_style = use_signal(|| String::new());
     let mut color_preview_style = use_signal(|| String::new());
 
+    use_effect(move || {
+        if color_switch() {
+            let mut writelock = history.write();
+            let index = writelock.len() - 1;
+            writelock[index] = selected_color.cloned();
+            writelock.rotate_right(1);
+            *color_switch.write() = false;
+            debug!(
+                "Added color {} to history",
+                selected_color.peek().as_css_property()
+            );
+        }
+    });
+
     rsx! {
         div { class: "color-picker",
             div { class: "saturation-brightness-picker-group color-previews",
                 div {
                     class: "saturation-brightness-picker",
-                    style: r#"background: linear-gradient(transparent, black), linear-gradient(to right, white, transparent), hsl({selected_hue}, 100%, 50%); "#,
+                    style: r#"background: linear-gradient(transparent, black), linear-gradient(to right, white, transparent), hsl({selected_color().hue}, 100%, 50%); "#,
                     onresize: move |e| {
                         if let Ok(bounds) = e.get_content_box_size() {
                             saturation_lightness_select_rect.set(bounds.to_tuple());
@@ -93,15 +212,16 @@ pub fn ColorPicker() -> Element {
                             let lightness = ((value * (1.0 - saturation / 2.0)) * 100.0) as u32;
                             let saturation_percent = (saturation * 100.0) as u32;
 
-                            *selected_lightness.write() = lightness;
-                            *selected_saturation.write() = saturation_percent;
-                            *color_preview_style.write() = format!("background-color: hsla({}, {saturation_percent}%, {lightness}%, {}%);", selected_hue.peek(), selected_alpha.peek());
+                            {
+                                let mut selected_color = selected_color.write();
+                                selected_color.set_lightness(lightness);
+                                selected_color.set_saturation(saturation_percent);
+                            }
+                            *color_preview_style.write() = format!("background-color: {};", selected_color.peek().as_css_property());
 
                             let values = vec![
                                 Value::from_raw_single(
-                                    format!(
-                                        "hsla({selected_hue}, {selected_saturation}%, {selected_lightness}%, {selected_alpha}%)",
-                                    )
+                                    selected_color.peek().as_css_property()
                                         .as_str(),
                                 ),
                             ];
@@ -128,25 +248,38 @@ pub fn ColorPicker() -> Element {
                 class: "hue-selector",
                 min: 0,
                 max: 359,
-                value: "{selected_hue}",
-                oninput: move |element| selected_hue.set(element.value().parse().unwrap()),
+                value: "{selected_color().hue}",
+                oninput: move |element| selected_color.write().set_hue(element.value().parse().unwrap()),
             }
             input {
                 r#type: "range",
                 class: "alpha-selector",
                 min: 0,
                 max: 100,
-                value: "{selected_alpha}",
-                oninput: move |element| selected_alpha.set(element.value().parse().unwrap()),
+                value: "{selected_color().alpha}",
+                oninput: move |element| selected_color.write().set_alpha(element.value().parse().unwrap()),
             }
             div { class: "color-history",
-                for (index , color) in history().iter().enumerate() {
+                for (index , color) in history().into_iter().enumerate() {
                     div {
                         id: "color-{index}",
-                        style: r#"background-color: hsl({color.0}, {color.1}%, {color.2}%, {color.3}%);"#,
+                        style: r#"background-color: hsl({color.hue}, {color.saturation}%, {color.lightness}%, {color.alpha}%);"#,
                         onclick: move |_| {
-                            // TODO:
-                            info!("TODO: change color");
+                            debug!("Set selected color to {}", selected_color.peek().as_css_property());
+                            selected_color.set(color.clone());
+                            *color_preview_style.write() = format!("background-color: {};", color.as_css_property());
+                            let (_, s, l, _) = color.to_normalized();
+                            let bounds = saturation_lightness_select_rect.peek();
+                            *cursor_style.write() = format!("left: {}px; top: {}px;", l * bounds.1, s * bounds.0);
+                            let values = vec![
+                                Value::from_raw_single(
+                                    color.as_css_property()
+                                        .as_str(),
+                                ),
+                            ];
+                            editing_style
+                                .write()
+                                .set_style_attribute(Property::from_raw("background-color"), values);
                         },
                     }
                 }
