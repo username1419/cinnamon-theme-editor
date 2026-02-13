@@ -48,6 +48,10 @@ button {
     position: relative;
   }
 
+  &>.inspector {
+    flex-grow: 2;
+  }
+
   &>span {
     width: 100%;
     align-content: center;
@@ -70,31 +74,28 @@ button {
     }
   }
 
-  &:first-child {
-    flex: 0.6;
-  }
-}
+  &>.sidebar {
+    min-width: fit-content;
+    max-width: 25%;
+    overflow-y: scroll;
+    background-color: lightgray;
+    padding: 8px;
+    gap: 8px;
+    flex-grow: 0.6;
 
-.sidebar {
-  min-width: fit-content;
-  max-width: 25%;
-  overflow-y: scroll;
-  background-color: lightgray;
-  padding: 8px;
-  gap: 8px;
+    & span {
+      font-size: 14px;
+      padding: 0;
+    }
 
-  & span {
-    font-size: 14px;
-    padding: 0;
-  }
+    &>div {
+      padding: 0 4px;
+      border-radius: 6px;
+      border: none;
 
-  &>div {
-    padding: 0 4px;
-    border-radius: 6px;
-    border: none;
-
-    &:hover {
-      background-color: darken($color: lightgray, $amount: 10);
+      &:hover {
+        background-color: darken($color: lightgray, $amount: 10);
+      }
     }
   }
 }
