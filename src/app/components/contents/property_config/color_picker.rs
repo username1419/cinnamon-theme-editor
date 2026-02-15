@@ -257,7 +257,24 @@ pub fn ColorPicker() -> Element {
                         class: "color-preview-complementary",
                         title: "Complementary color",
                         style: "{complementary_color_preview_style}",
+                        onclick: move |_| {
+                            let color = selected_color.peek().get_complementary();
+                            debug!("Set selected color to {} by complementary", color.as_css_property());
+                            *color_preview_style.write() = format!("background-color: {};", color.as_css_property());
+                            let values = vec![
+                                Value::from_raw_single(
+                                    color.as_css_property()
+                                        .as_str(),
+                                ),
+                            ];
+                            editing_style
+                                .write()
+                                .set_style_attribute(Property::from_raw("background-color"), values);
+                            selected_color.set(color);
+                        },
+                        "C"
                     }
+                    // TODO: split-complementary/analogus colors mb
                 }
             }
             input {
@@ -284,7 +301,7 @@ pub fn ColorPicker() -> Element {
                         id: "color-{index}",
                         style: r#"background-color: hsl({color.hue}, {color.saturation}%, {color.lightness}%, {color.alpha}%);"#,
                         onclick: move |_| {
-                            debug!("Set selected color to {}", selected_color.peek().as_css_property());
+                            debug!("Set selected color to {} by history", color.as_css_property());
                             selected_color.set(color.clone());
                             *color_preview_style.write() = format!("background-color: {};", color.as_css_property());
                             let (_, s, l, _) = color.to_normalized();
@@ -303,7 +320,6 @@ pub fn ColorPicker() -> Element {
                     }
                 }
             }
-                // TODO: (split-/)complementary/analogus colors mb
         }
     }
 }
