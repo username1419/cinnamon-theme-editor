@@ -144,7 +144,14 @@ pub fn ColorPicker() -> Element {
     let mut last_time_slow = use_signal(|| Instant::now());
     let mut offset: Signal<Point2D<f64, ClientSpace>> = use_signal(|| Point2D::origin());
 
-    let mut cursor_style = use_signal(|| String::new());
+    let cursor_style = use_memo(move || {
+        let bounds = *saturation_lightness_select_rect.peek();
+        format!(
+            "left: {}%; top: {}%; ",
+            (cursor_pos().x / bounds.0 * 100.0).clamp(0.0, 100.0),
+            (cursor_pos().y / bounds.1 * 100.0).clamp(0.0, 100.0)
+        )
+    });
     let color_preview_style = use_memo(move || {
         let color = selected_color();
         format!("background-color: {};", color.as_css_property())
@@ -205,7 +212,6 @@ pub fn ColorPicker() -> Element {
                             let offset = offset.peek();
                             let relative_coord: Point2D<f64, ElementSpace> = Point2D::new(global_coord.x - offset.x, global_coord.y - offset.y);
                             *cursor_pos.write() = relative_coord.clone();
-                            *cursor_style.write() = format!("left: {}px; top: {}px;", relative_coord.x, relative_coord.y);
 
                             // NOTE: changing this refresh rate doesnt really improve anything
                             // either, its probably something ive fucked up in auto reactivity
@@ -306,7 +312,6 @@ pub fn ColorPicker() -> Element {
                             selected_color.set(color.clone());
                             let (_, s, l, _) = color.to_normalized();
                             let bounds = saturation_lightness_select_rect.peek();
-                            *cursor_style.write() = format!("left: {}px; top: {}px;", l * bounds.1, s * bounds.0);
                             let values = vec![
                                 Value::from_raw_single(
                                     color.as_css_property()

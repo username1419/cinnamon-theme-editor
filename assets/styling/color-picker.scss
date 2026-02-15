@@ -43,7 +43,7 @@
   width: $cursor-size;
   height: $cursor-size;
   z-index: 1;
-  transform: translate(-$cursor-size, -$cursor-size);
+  transform: translate(-$cursor-size * 2, -$cursor-size * 0.5);
 }
 
 .hue-selector {
