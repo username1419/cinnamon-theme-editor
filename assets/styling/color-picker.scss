@@ -35,15 +35,16 @@
 }
 
 .saturation-brightness-cursor {
-  $cursor-size: 8px;
+  --cursor-size: 8px;
   position: relative;
   border-radius: 6px;
   border: solid 2px white;
   cursor: pointer;
-  width: $cursor-size;
-  height: $cursor-size;
+  pointer-events: none;
+  width: var(--cursor-size);
+  height: var(--cursor-size);
   z-index: 1;
-  transform: translate(-$cursor-size * 2, -$cursor-size * 0.5);
+  transform: translate(calc(var(--cursor-size) * -1), calc(var(--cursor-size) * -1));
 }
 
 .hue-selector {

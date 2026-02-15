@@ -129,7 +129,6 @@ impl Default for HSLColor {
 pub fn ColorPicker() -> Element {
     // TODO: set default as original element color somehow
     let config = use_context::<AppConfiguration>();
-    let mouse_state = config.mouse_state;
     let mut editing_style = config.element_style;
     let mut selected_color = use_signal(|| HSLColor::default());
 
@@ -142,7 +141,6 @@ pub fn ColorPicker() -> Element {
     let refresh_rate_slow = time::Duration::from_secs_f64(1.0 / 10.0);
     let mut last_time = use_signal(|| Instant::now());
     let mut last_time_slow = use_signal(|| Instant::now());
-    let mut offset: Signal<Point2D<f64, ClientSpace>> = use_signal(|| Point2D::origin());
 
     let cursor_style = use_memo(move || {
         let bounds = *saturation_lightness_select_rect.peek();
@@ -202,15 +200,7 @@ pub fn ColorPicker() -> Element {
                                 return;
                             }
 
-                            let bounds = *saturation_lightness_select_rect.peek();
-
-                            let global_coord = mouse_state.peek().coordinates.client();
-                            if offset.peek().eq(&Point2D::origin()) {
-                                let relative_coord = event.element_coordinates();
-                                *offset.write() = Point2D::new(global_coord.x - relative_coord.x, global_coord.y - relative_coord.y);
-                            }
-                            let offset = offset.peek();
-                            let relative_coord: Point2D<f64, ElementSpace> = Point2D::new(global_coord.x - offset.x, global_coord.y - offset.y);
+                            let relative_coord = event.element_coordinates();
                             *cursor_pos.write() = relative_coord.clone();
 
                             // NOTE: changing this refresh rate doesnt really improve anything
@@ -221,6 +211,7 @@ pub fn ColorPicker() -> Element {
                                 return;
                             }
 
+                            let bounds = *saturation_lightness_select_rect.peek();
                             // normalize cursor position relative to bounding box
                             let normalized_x = (relative_coord.x / bounds.0).clamp(0.0, 1.0);
                             let normalized_y = (relative_coord.y / bounds.1).clamp(0.0, 1.0);
@@ -310,8 +301,6 @@ pub fn ColorPicker() -> Element {
                         onclick: move |_| {
                             debug!("Set selected color to {} by history", color.as_css_property());
                             selected_color.set(color.clone());
-                            let (_, s, l, _) = color.to_normalized();
-                            let bounds = saturation_lightness_select_rect.peek();
                             let values = vec![
                                 Value::from_raw_single(
                                     color.as_css_property()
