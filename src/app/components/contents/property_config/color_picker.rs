@@ -145,10 +145,13 @@ pub fn ColorPicker() -> Element {
     let mut offset: Signal<Point2D<f64, ClientSpace>> = use_signal(|| Point2D::origin());
 
     let mut cursor_style = use_signal(|| String::new());
-    let mut color_preview_style = use_signal(|| String::new());
+    let color_preview_style = use_memo(move || {
+        let color = selected_color();
+        format!("background-color: {};", color.as_css_property())
+    });
     let complementary_color_preview_style = use_memo(move || {
         let color = selected_color().get_complementary();
-        format!("background-color: {}", color.as_css_property())
+        format!("background-color: {};", color.as_css_property())
     });
 
     use_effect(move || {
@@ -227,7 +230,6 @@ pub fn ColorPicker() -> Element {
                                 selected_color.set_lightness(lightness);
                                 selected_color.set_saturation(saturation_percent);
                             }
-                            *color_preview_style.write() = format!("background-color: {};", selected_color.peek().as_css_property());
 
                             let values = vec![
                                 Value::from_raw_single(
@@ -260,7 +262,6 @@ pub fn ColorPicker() -> Element {
                         onclick: move |_| {
                             let color = selected_color.peek().get_complementary();
                             debug!("Set selected color to {} by complementary", color.as_css_property());
-                            *color_preview_style.write() = format!("background-color: {};", color.as_css_property());
                             let values = vec![
                                 Value::from_raw_single(
                                     color.as_css_property()
@@ -303,7 +304,6 @@ pub fn ColorPicker() -> Element {
                         onclick: move |_| {
                             debug!("Set selected color to {} by history", color.as_css_property());
                             selected_color.set(color.clone());
-                            *color_preview_style.write() = format!("background-color: {};", color.as_css_property());
                             let (_, s, l, _) = color.to_normalized();
                             let bounds = saturation_lightness_select_rect.peek();
                             *cursor_style.write() = format!("left: {}px; top: {}px;", l * bounds.1, s * bounds.0);
