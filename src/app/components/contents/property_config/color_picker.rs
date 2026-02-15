@@ -106,6 +106,12 @@ impl HSLColor {
             self.hue, self.saturation, self.lightness, self.alpha
         )
     }
+
+    pub fn get_complementary(&self) -> HSLColor {
+        let mut col = self.clone();
+        col.hue = (col.hue + 180) % 360;
+        col
+    }
 }
 
 impl Default for HSLColor {
@@ -140,6 +146,10 @@ pub fn ColorPicker() -> Element {
 
     let mut cursor_style = use_signal(|| String::new());
     let mut color_preview_style = use_signal(|| String::new());
+    let complementary_color_preview_style = use_memo(move || {
+        let color = selected_color().get_complementary();
+        format!("background-color: {}", color.as_css_property())
+    });
 
     use_effect(move || {
         if color_switch() {
@@ -238,7 +248,16 @@ pub fn ColorPicker() -> Element {
                 }
                 div {
                     class: "color-preview",
-                    style: "{color_preview_style}",
+                    div {
+                        class: "color-preview-original",
+                        title: "Current color",
+                        style: "{color_preview_style}",
+                    }
+                    div {
+                        class: "color-preview-complementary",
+                        title: "Complementary color",
+                        style: "{complementary_color_preview_style}",
+                    }
                 }
             }
             input {
@@ -285,7 +304,6 @@ pub fn ColorPicker() -> Element {
                 }
             }
                 // TODO: (split-/)complementary/analogus colors mb
-        // TODO: color history
         }
     }
 }
