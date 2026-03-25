@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Value {
     raw: String,
@@ -16,23 +18,53 @@ pub enum ValueUnit {
 }
 
 impl ValueUnit {
+    pub const PATTERNS: [(&str, ValueUnit); 4] = [
+        ("px", ValueUnit::Px),
+        ("em", ValueUnit::Em),
+        ("rem", ValueUnit::Rem),
+        ("%", ValueUnit::Percent),
+    ];
+
     pub fn match_end(raw: &str) -> Self {
-        let mut category = ValueUnit::Other;
+        let mut category = ValueUnit::None;
 
-        const PATTERNS: [(&str, ValueUnit); 4] = [
-            ("px", ValueUnit::Px),
-            ("em", ValueUnit::Em),
-            ("rem", ValueUnit::Rem),
-            ("%", ValueUnit::Percent),
-        ];
-
-        for (pattern, cat) in PATTERNS {
+        for (pattern, cat) in ValueUnit::PATTERNS {
             if raw.ends_with(pattern) {
                 category = cat.clone();
             }
         }
 
         category
+    }
+
+    pub fn from_str(raw: &str) -> Self {
+        let mut category = ValueUnit::None;
+
+        for (pattern, cat) in ValueUnit::PATTERNS {
+            if raw.eq(pattern) {
+                category = cat.clone();
+            }
+        }
+
+        category
+    }
+}
+
+impl Display for ValueUnit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(
+            ValueUnit::PATTERNS
+                .into_iter()
+                .find(|(_, u)| self.eq(u))
+                .unwrap_or_default()
+                .0,
+        )
+    }
+}
+
+impl Default for ValueUnit {
+    fn default() -> Self {
+        ValueUnit::None
     }
 }
 
@@ -111,10 +143,26 @@ impl Value {
 
         Self { raw, value, unit }
     }
+
+    pub fn get_value(&self) -> &String {
+        &self.value
+    }
+
+    pub fn get_unit(&self) -> &ValueUnit {
+        &self.unit
+    }
+
+    pub fn set_value(&mut self, value: String) {
+        self.value = value;
+    }
+
+    pub fn set_unit(&mut self, unit: ValueUnit) {
+        self.unit = unit;
+    }
 }
 
 impl ToString for Value {
     fn to_string(&self) -> String {
-        self.raw.clone()
+        format!("{}{}", self.value, self.unit)
     }
 }
