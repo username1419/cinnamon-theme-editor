@@ -55,6 +55,18 @@ impl DeclarationBlock {
             self.set_style_attribute(declaration.property, declaration.value);
         }
     }
+
+    pub fn find_attribute(&self, name: &str) -> Option<&Declaration> {
+        self.declarations
+            .iter()
+            .find(|d| name.eq(d.property.get_raw()))
+    }
+
+    pub fn findmut_attribute(&mut self, name: String) -> Option<&mut Declaration> {
+        self.declarations
+            .iter_mut()
+            .find(|d| name.eq(d.property.get_raw()))
+    }
 }
 
 impl ToString for DeclarationBlock {
