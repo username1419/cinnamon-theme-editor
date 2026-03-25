@@ -1,8 +1,5 @@
-use std::str::FromStr;
-
-use dioxus::prelude::debug;
-
 use crate::app::io::parser::basic_selector::BasicSelectorType;
+use std::{fmt::Display, str::FromStr};
 
 use super::basic_selector::BasicSelector;
 
@@ -278,13 +275,24 @@ impl Selector {
     pub fn category(&self) -> &SelectorCategory {
         &self.selector_category
     }
+
+    pub fn get_individual(&self, idx: usize) -> Option<(&BasicSelector, &Combinator)> {
+        self.selectors.iter().nth(idx).map(|(b, c)| (b, c))
+    }
+
+    pub fn get_last(&self) -> Option<(&BasicSelector, &Combinator)> {
+        self.selectors.last().map(|(b, c)| (b, c))
+    }
 }
 
-impl ToString for Selector {
-    fn to_string(&self) -> String {
-        self.selectors
+impl Display for Selector {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = self
+            .selectors
             .iter()
             .map(|(b, c)| format!("{}{}", b.to_string(), c.to_string()))
-            .collect()
+            .collect::<String>();
+
+        f.write_fmt(format_args!("{}", s))
     }
 }
