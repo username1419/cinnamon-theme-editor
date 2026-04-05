@@ -30,10 +30,10 @@ pub fn Panel() -> Element {
     let config = use_context::<AppConfiguration>();
     let selected_category = config.inspector_type;
     let panels_height = use_hook(|| {
-        PANEL_PROPERTIES
+        let mut heights = PANEL_PROPERTIES
             .iter()
             .filter_map(|(panel_id, monitor_id, position)| {
-                if 0.eq(monitor_id) {
+                if 0.ne(monitor_id) {
                     return None;
                 }
 
@@ -42,9 +42,16 @@ pub fn Panel() -> Element {
                     .find(|(panel_id2, _)| panel_id == panel_id2)
                     .unwrap_or(&(0, 0))
                     .1;
-                Some((position.clone(), height))
+                dbg!(Some((position.clone(), height)))
             })
-            .collect::<HashMap<String, u8>>()
+            .collect::<HashMap<String, u8>>();
+        for (pos, height) in vec![("right", 0), ("top", 0), ("bottom", 0), ("left", 0)] {
+            if heights.get(pos).is_none() {
+                heights.insert(pos.to_string(), height);
+            }
+        }
+
+        heights
     });
     rsx! {
         div {
