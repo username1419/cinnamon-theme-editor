@@ -5,8 +5,8 @@ use crate::{
 use dioxus::{
     core::consume_context,
     html::{ModifiersInteraction, MouseEvent},
-    prelude::debug,
-    signals::{Memo, ReadableExt, Signal, WritableExt},
+    prelude::{debug, warn},
+    signals::{Memo, ReadableExt, Signal, WritableExt, WritableVecExt},
 };
 
 pub struct InspectorUtil;
@@ -18,7 +18,7 @@ impl InspectorUtil {
         mut is_multi_select: Signal<bool>,
         mut this_selection_group: Signal<u32>,
     ) {
-        let config = consume_context::<AppConfiguration>();
+        let mut config = consume_context::<AppConfiguration>();
         let mut num_selected = config.num_element_selected;
         let mut selection_group = config.selection_group;
         let is_ctrl = evt.modifiers().ctrl();
@@ -40,6 +40,8 @@ impl InspectorUtil {
             *num_selected.write() += 1;
         }
 
+        config.selected_elements.push(ancestry_attr.clone());
+        debug!("Added element {} to selected_elements", ancestry_attr);
         debug!("{} clicked", ancestry_attr.to_string());
         evt.stop_propagation();
     }
@@ -52,7 +54,7 @@ impl InspectorUtil {
         ancestry_attr: Selector,
         dyn_style: Memo<DeclarationBlock>,
     ) {
-        let config = consume_context::<AppConfiguration>();
+        let mut config = consume_context::<AppConfiguration>();
         let current_group = config.selection_group;
         let mut editing_stylesheet = config.editing_stylesheet;
         let mut editing_style = config.element_style;
@@ -77,6 +79,18 @@ impl InspectorUtil {
                 ancestry_attr.to_string(),
                 dyn_style.peek().to_string()
             );
+            config.selected_elements.with_mut(|elements| {
+                let pos = elements.iter().position(|s| ancestry_attr.eq(s));
+                if let Some(pos) = pos {
+                    elements.remove(pos);
+                    debug!("Removed element {} from selected_elements", ancestry_attr);
+                } else {
+                    warn!(
+                        "Element {} not found in selected_elements, {:?}. Something went wrong.",
+                        ancestry_attr, elements
+                    );
+                }
+            });
             if is_dirty.peek().eq(&false) {
                 *is_dirty.write() = true;
             }
@@ -87,6 +101,8 @@ impl InspectorUtil {
             *selected.write() = true;
             *editing_style.write() = this_style.peek().cloned();
             *is_style_override.write() = false;
+            config.selected_elements.push(ancestry_attr.clone());
+            debug!("Added element {} to selected_elements", ancestry_attr);
         }
     }
 }

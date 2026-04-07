@@ -1,11 +1,15 @@
+use std::u8;
+
+use dioxus::html::geometry::ElementSpace;
 use dioxus::html::geometry::euclid::Point2D;
-use dioxus::html::geometry::{ClientSpace, ElementSpace};
 use dioxus::html::input_data::MouseButton;
 use dioxus::prelude::*;
 use dioxus::{
     core::Element,
     prelude::{component, rsx},
 };
+use once_cell::sync::Lazy;
+use regex::Regex;
 use tokio::time::{self, Instant};
 
 use crate::app::io::parser::property::Property;
@@ -14,46 +18,46 @@ use crate::config::AppConfiguration;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct HSLColor {
-    hue: u32,
-    saturation: u32,
-    lightness: u32,
-    alpha: u32,
+    hue: u16,
+    saturation: u16,
+    lightness: u16,
+    alpha: u16,
 }
 
 impl HSLColor {
-    pub fn set_hue(&mut self, hue: u32) {
+    pub fn set_hue(&mut self, hue: u16) {
         self.hue = hue;
     }
 
-    pub fn set_lightness(&mut self, lightness: u32) {
+    pub fn set_lightness(&mut self, lightness: u16) {
         self.lightness = lightness;
     }
 
-    pub fn set_saturation(&mut self, saturation: u32) {
+    pub fn set_saturation(&mut self, saturation: u16) {
         self.saturation = saturation;
     }
 
-    pub fn set_alpha(&mut self, alpha: u32) {
+    pub fn set_alpha(&mut self, alpha: u16) {
         self.alpha = alpha;
     }
 
-    pub fn get_hue(&mut self) -> &u32 {
+    pub fn get_hue(&self) -> &u16 {
         &self.hue
     }
 
-    pub fn get_lightness(&mut self) -> &u32 {
+    pub fn get_lightness(&self) -> &u16 {
         &self.lightness
     }
 
-    pub fn get_saturation(&mut self) -> &u32 {
+    pub fn get_saturation(&self) -> &u16 {
         &self.saturation
     }
 
-    pub fn get_alpha(&mut self) -> &u32 {
+    pub fn get_alpha(&self) -> &u16 {
         &self.alpha
     }
 
-    pub fn new(hue: u32, saturation: u32, lightness: u32, alpha: u32) -> Self {
+    pub fn new(hue: u16, saturation: u16, lightness: u16, alpha: u16) -> Self {
         Self {
             hue,
             saturation,
@@ -112,6 +116,153 @@ impl HSLColor {
         col.hue = (col.hue + 180) % 360;
         col
     }
+
+    pub fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> HSLColor {
+        let (r, g, b, a) = (r as f64, g as f64, b as f64, a as f64);
+        let max = r.max(g).max(b);
+        let min = r.min(g).min(b);
+        let delta = max - min;
+
+        // Lightness
+        let l = (max + min) / 2.0;
+
+        // Saturation
+        let s = if delta == 0.0 {
+            0.0
+        } else {
+            delta / (1.0 - (2.0 * l - 1.0).abs())
+        } as u16;
+        let l = l as u16;
+
+        // Hue
+        let h = if delta == 0.0 {
+            0.0
+        } else if max == r {
+            60.0 * (((g - b) / delta) % 6.0)
+        } else if max == g {
+            60.0 * (((b - r) / delta) + 2.0)
+        } else {
+            60.0 * (((r - g) / delta) + 4.0)
+        };
+
+        let h = if h < 0.0 { h + 360.0 } else { h } as u16;
+
+        // Alpha
+        let a = ((a as f64) / 255.0 * 100.0) as u16;
+
+        HSLColor {
+            hue: h,
+            saturation: s,
+            lightness: l,
+            alpha: a,
+        }
+    }
+
+    const RGB_MATCH: Lazy<Regex> = Lazy::new(|| {
+        Regex::new(r#"rgb\((\d+),(\d+),(\d+)\)"#).expect("Unable to compile regex: RGB_MATCH")
+    });
+
+    const RGBA_MATCH: Lazy<Regex> = Lazy::new(|| {
+        Regex::new(r#"rgb\((\d+),(\d+),(\d+),(\d+)\)"#)
+            .expect("Unable to compile regex: RGBA_MATCH")
+    });
+
+    const HSL_MATCH: Lazy<Regex> = Lazy::new(|| {
+        Regex::new(r#"hsla\((\d+),(\d+),(\d+)\)"#).expect("Unable to compile regex: HSL_MATCH")
+    });
+
+    const HSLA_MATCH: Lazy<Regex> = Lazy::new(|| {
+        Regex::new(r#"hsla\((\d+),(\d+),(\d+),(\d+)\)"#)
+            .expect("Unable to compile regex: HSLA_MATCH")
+    });
+
+    /// Tries to convert a CSS color to an internal representation. Currently supports rgb(),
+    /// rgba(), hsl(), hsla(), and shortened rgb/rgba values.
+    ///
+    /// Please do not use this in anywhere performance is needed it uses like 4 different regex
+    /// checks
+    pub(crate) fn from_css_property(color: String) -> Option<Self> {
+        let color = color
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect::<String>();
+
+        if Self::HSLA_MATCH.is_match(&*color) {
+            let components = Self::HSLA_MATCH.captures(&*color).unwrap();
+            let mut components = components.iter();
+            components.next();
+            let components = components
+                .map(|c| c.unwrap().as_str().parse::<u16>().unwrap())
+                .collect::<Vec<u16>>();
+            Some(HSLColor::new(
+                components[0],
+                components[1],
+                components[2],
+                components[3],
+            ))
+        } else if Self::HSL_MATCH.is_match(&*color) {
+            let components = Self::HSL_MATCH.captures(&*color).unwrap();
+            let mut components = components.iter();
+            components.next();
+            let components = components
+                .map(|c| c.unwrap().as_str().parse::<u16>().unwrap())
+                .collect::<Vec<u16>>();
+            Some(HSLColor::new(
+                components[0],
+                components[1],
+                components[2],
+                100,
+            ))
+        } else if Self::RGB_MATCH.is_match(&*color) {
+            let components = Self::RGB_MATCH.captures(&*color).unwrap();
+            let mut components = components.iter();
+            components.next();
+            let components = components
+                .map(|c| c.unwrap().as_str().parse::<u8>().unwrap())
+                .collect::<Vec<u8>>();
+            Some(HSLColor::from_rgba(
+                components[0],
+                components[1],
+                components[2],
+                u8::MAX,
+            ))
+        } else if Self::RGBA_MATCH.is_match(&*color) {
+            let components = Self::RGBA_MATCH.captures(&*color).unwrap();
+            let mut components = components.iter();
+            components.next();
+            let components = components
+                .map(|c| c.unwrap().as_str().parse::<u8>().unwrap())
+                .collect::<Vec<u8>>();
+            Some(HSLColor::from_rgba(
+                components[0],
+                components[1],
+                components[2],
+                components[3],
+            ))
+        } else if color.chars().next() == Some('#') {
+            let mut c = Vec::new();
+
+            let mut r = color.chars().skip(1).collect::<String>();
+            let contains_alpha = if r.len() == 6 { false } else { true };
+            let mut g = r.split_off(2);
+            let mut b = g.split_off(2);
+
+            c.push(u8::from_str_radix(&*r, 16).unwrap());
+            c.push(u8::from_str_radix(&*g, 16).unwrap());
+
+            if contains_alpha {
+                let a = b.split_off(2);
+                c.push(u8::from_str_radix(&*b, 16).unwrap());
+                c.push(u8::from_str_radix(&*a, 16).unwrap());
+            }
+            c.push(u8::from_str_radix(&*b, 16).unwrap());
+            c.push(u8::MAX);
+
+            Some(HSLColor::from_rgba(c[0], c[1], c[2], c[3]))
+        } else {
+            None
+        }
+    }
 }
 
 impl Default for HSLColor {
@@ -126,11 +277,14 @@ impl Default for HSLColor {
 }
 
 #[component]
-pub fn ColorPicker() -> Element {
+pub fn ColorPicker(
+    color: Signal<HSLColor>,
+    on_color_change: Option<Callback<HSLColor>>,
+) -> Element {
     // TODO: set default as original element color somehow
     let config = use_context::<AppConfiguration>();
     let mut editing_style = config.element_style;
-    let mut selected_color = use_signal(|| HSLColor::default());
+    let mut selected_color = color;
 
     let mut saturation_lightness_select_rect = use_signal(|| (0.0, 0.0));
     let mut cursor_pos: Signal<Point2D<f64, ElementSpace>> = use_signal(|| Point2D::origin());
@@ -161,9 +315,10 @@ pub fn ColorPicker() -> Element {
 
     use_effect(move || {
         if color_switch() {
+            // BUG: this happens 1 more time than it should sometimes
             let mut writelock = history.write();
             let index = writelock.len() - 1;
-            writelock[index] = selected_color.cloned();
+            writelock[index] = *selected_color.peek();
             writelock.rotate_right(1);
             *color_switch.write() = false;
             debug!(
@@ -219,24 +374,17 @@ pub fn ColorPicker() -> Element {
                             let saturation = normalized_x;
                             let value = 1.0 - normalized_y;
                             // conversion to hsl bc im stupid
-                            let lightness = ((value * (1.0 - saturation / 2.0)) * 100.0) as u32;
-                            let saturation_percent = (saturation * 100.0) as u32;
+                            let lightness = ((value * (1.0 - saturation / 2.0)) * 100.0) as u16;
+                            let saturation_percent = (saturation * 100.0) as u16;
 
                             {
                                 let mut selected_color = selected_color.write();
                                 selected_color.set_lightness(lightness);
                                 selected_color.set_saturation(saturation_percent);
+                                if let Some(callback) = on_color_change {
+                                    callback(*selected_color);
+                                }
                             }
-
-                            let values = vec![
-                                Value::from_raw_single(
-                                    selected_color.peek().as_css_property()
-                                        .as_str(),
-                                ),
-                            ];
-                            editing_style
-                                .write()
-                                .set_style_attribute(Property::from_raw("background-color"), values);
                             *last_time_slow.write() = time::Instant::now();
                         }
                     },

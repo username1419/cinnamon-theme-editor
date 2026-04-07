@@ -241,6 +241,24 @@ impl StyleSheet {
         categories
     }
 
+    pub fn to_categories(&self) -> HashMap<SelectorCategory, StyleSheet> {
+        let mut categories = SelectorCategory::VALUES
+            .clone()
+            .into_iter()
+            .map(|category| (category, StyleSheet::default()))
+            .collect::<HashMap<SelectorCategory, StyleSheet>>();
+
+        for (selector, declaration_block) in self.rulesets.clone().into_iter() {
+            let category = selector.category();
+            categories
+                .get_mut(category)
+                .unwrap()
+                .append_rule(selector, declaration_block);
+        }
+
+        categories
+    }
+
     pub fn append_rule(&mut self, selector: Selector, declaration_block: DeclarationBlock) {
         let val = self.rulesets.get_mut(&selector);
         if let Some(val) = val {

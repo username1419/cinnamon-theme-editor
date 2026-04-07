@@ -4,7 +4,7 @@ use dioxus::{
     prelude::{component, rsx},
 };
 
-use crate::app::components::contents::property_config::color_picker::ColorPicker;
+use crate::app::components::contents::property_config::style_input::StyleInput;
 use crate::config::AppConfiguration;
 
 #[component]
@@ -15,7 +15,7 @@ pub fn PropertyEditor() -> Element {
     rsx! {
         div { class: "property-editor",
             if num_selected() > 0 {
-                ColorPicker {}
+                StyleInput {  }
             } else {
                 span { "Select an element to begin" }
             }

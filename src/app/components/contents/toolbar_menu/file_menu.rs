@@ -52,8 +52,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 let (editing, default) = stylesheet.to_webview_safe();
                 config
                     .default_style
-                    .set(default.unwrap_or_default().to_string_categories());
-                debug!("{:#?}", config.default_style);
+                    .set(default.unwrap_or_default().to_categories());
                 config.editing_stylesheet.set(editing);
                 config.is_editing.set(true);
             }
@@ -82,8 +81,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 let (editing, default) = stylesheet.to_webview_safe();
                 config
                     .default_style
-                    .set(default.unwrap_or_default().to_string_categories());
-                debug!("{:#?}", config.default_style);
+                    .set(default.unwrap_or_default().to_categories());
                 config.editing_stylesheet.set(editing);
                 config.is_editing.set(true);
             }

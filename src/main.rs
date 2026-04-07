@@ -28,6 +28,7 @@ const TITLEBAR_STYLE: Asset = asset!("/assets/styling/titlebar.scss");
 const TOOLBAR_STYLE: Asset = asset!("/assets/styling/toolbar.scss");
 const OVERLAY_STYLE: Asset = asset!("/assets/styling/overlay.scss");
 const COLOR_PICKER_STYLE: Asset = asset!("/assets/styling/color-picker.scss");
+const STYLE_INPUT_STYLE: Asset = asset!("/assets/styling/style_input.scss");
 
 const INSPECTOR_PANEL_STYLE: Asset = asset!("/assets/styling/inspector/panel.scss");
 #[cfg(debug_assertions)]
@@ -103,7 +104,8 @@ fn App() -> Element {
     let is_dirty = use_signal(|| false);
     let is_editing = use_signal(|| false);
     let inspector_type = use_signal(|| SelectorCategory::default());
-    let current_element = use_signal(|| 0);
+    let count_element = use_signal(|| 0);
+    let selected_elements = use_signal(|| Vec::new());
     let num_element_selected = use_signal(|| 0);
     let element_style = use_signal(|| DeclarationBlock::default());
     let selection_group = use_signal(|| 0);
@@ -117,7 +119,8 @@ fn App() -> Element {
         editing_stylesheet,
         mouse_state,
         inspector_type,
-        current_element,
+        count_element,
+        selected_elements,
         num_element_selected,
         element_style,
         selection_group,
@@ -133,6 +136,7 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: OVERLAY_STYLE }
         document::Link { rel: "stylesheet", href: COLOR_PICKER_STYLE }
         document::Link { rel: "stylesheet", href: INSPECTOR_PANEL_STYLE }
+        document::Link { rel: "stylesheet", href: STYLE_INPUT_STYLE }
 
         div {
             class: "window",

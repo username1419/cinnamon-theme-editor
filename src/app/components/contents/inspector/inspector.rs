@@ -16,8 +16,8 @@ pub fn Inspector() -> Element {
     rsx! {
         div { class: "inspector",
             div { style: "display: none;", class: "default-styles",
-                for (category , styling) in default_style() {
-                    style { "category": "{category:?}", "{styling}" }
+                for (category , styling) in default_style.read().iter() {
+                    style { "category": "{category:?}", "{styling.to_string()}" }
                 }
             }
             style { "{editing_stylesheet.read().to_string()}" }

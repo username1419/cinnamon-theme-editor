@@ -6,7 +6,10 @@ use dioxus::{
     stores::Store,
 };
 
-use crate::app::io::{parse::StyleSheet, parser::selector::SelectorCategory};
+use crate::app::io::{
+    parse::StyleSheet,
+    parser::selector::{Selector, SelectorCategory},
+};
 use crate::app::{
     components::contents::property_config::color_picker::HSLColor,
     io::parser::declaration_block::DeclarationBlock,
@@ -16,14 +19,16 @@ use crate::app::{
 pub struct AppConfiguration {
     pub is_dirty: Signal<bool>,
     pub is_editing: Signal<bool>,
-    pub default_style: Signal<HashMap<SelectorCategory, String>>,
+    pub default_style: Signal<HashMap<SelectorCategory, StyleSheet>>,
     pub editing_stylesheet: Store<StyleSheet>,
     /// Cursor position relative to viewport
     pub mouse_state: Signal<MouseState>,
     pub inspector_type: Signal<SelectorCategory>,
     /// used to automatically assign inspector components' ids. do not use
-    pub current_element: Signal<u32>,
+    pub count_element: Signal<u32>,
     pub element_style: Signal<DeclarationBlock>,
+    /// Collection of css selectors all current selected elements use
+    pub selected_elements: Signal<Vec<Selector>>,
     /// Number of elements selected in the inspector.
     pub num_element_selected: Signal<u32>,
     pub selection_group: Signal<u32>,
