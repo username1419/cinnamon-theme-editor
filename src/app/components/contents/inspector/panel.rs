@@ -42,7 +42,7 @@ pub fn Panel() -> Element {
                     .find(|(panel_id2, _)| panel_id == panel_id2)
                     .unwrap_or(&(0, 0))
                     .1;
-                dbg!(Some((position.clone(), height)))
+                Some((position.clone(), height))
             })
             .collect::<HashMap<String, u8>>();
         for (pos, height) in vec![("right", 0), ("top", 0), ("bottom", 0), ("left", 0)] {
