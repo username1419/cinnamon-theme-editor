@@ -16,7 +16,7 @@ use crate::app::io::parser::property::Property;
 use crate::app::io::parser::property_value::Value;
 use crate::config::AppConfiguration;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct HSLColor {
     hue: u16,
     saturation: u16,

@@ -59,12 +59,12 @@ pub fn StyleInput() -> Element {
     rsx! {
         div {
             class: "style-input",
-            BackgroundColorInput {}
         }
     }
 }
 
 #[component]
+// NOTE: this looks like ass so im not using it anymore
 fn BackgroundColorInput() -> Element {
     let config = use_context::<AppConfiguration>();
     let default_style = config.default_style;
@@ -85,11 +85,14 @@ fn BackgroundColorInput() -> Element {
             warn!("hey this isnt implemented yet");
             return HSLColor::default();
         } else {
-            let element_name = selected_elements[0]
+            let element_name = selected_elements
+                .iter()
+                .next()
+                .unwrap()
                 .get_last()
                 .expect("Selector is not supposed to be empty.")
                 .0;
-            style = category_style.get_declaration(Selector::from_raw(&element_name.get_raw()));
+            style = category_style.get_declaration(&Selector::from_raw(&element_name.get_raw()));
         }
 
         if let Some(style) = style {

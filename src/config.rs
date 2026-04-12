@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use dioxus::{
     html::{geometry::Coordinates, input_data::MouseButtonSet},
@@ -28,7 +28,7 @@ pub struct AppConfiguration {
     pub count_element: Signal<u32>,
     pub element_style: Signal<DeclarationBlock>,
     /// Collection of css selectors all current selected elements use
-    pub selected_elements: Signal<Vec<Selector>>,
+    pub selected_elements: Signal<HashSet<Selector>>,
     /// Number of elements selected in the inspector.
     pub num_element_selected: Signal<u32>,
     pub selection_group: Signal<u32>,

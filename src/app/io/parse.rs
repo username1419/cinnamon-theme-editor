@@ -42,12 +42,12 @@ impl StyleSheet {
         self.import.as_ref()
     }
 
-    pub fn get_declaration(&self, selector: Selector) -> Option<&DeclarationBlock> {
-        self.rulesets.get(&selector)
+    pub fn get_declaration(&self, selector: &Selector) -> Option<&DeclarationBlock> {
+        self.rulesets.get(selector)
     }
 
-    pub fn get_ruleset(&self, selector: Selector) -> Option<(&Selector, &DeclarationBlock)> {
-        self.rulesets.get_key_value(&selector)
+    pub fn get_ruleset(&self, selector: &Selector) -> Option<(&Selector, &DeclarationBlock)> {
+        self.rulesets.get_key_value(selector)
     }
 
     // TODO: using a token parser would be faster but i cant be fucked rn

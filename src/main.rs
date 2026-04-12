@@ -3,7 +3,7 @@ use dioxus::html::input_data::{MouseButton, MouseButtonSet};
 use dioxus::logger::tracing::Level;
 use dioxus_desktop::wry::dpi::PhysicalPosition;
 use dioxus_desktop::{LogicalSize, WindowBuilder};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 pub mod app;
 pub mod config;
 pub mod helper;
@@ -105,7 +105,7 @@ fn App() -> Element {
     let is_editing = use_signal(|| false);
     let inspector_type = use_signal(|| SelectorCategory::default());
     let count_element = use_signal(|| 0);
-    let selected_elements = use_signal(|| Vec::new());
+    let selected_elements = use_signal(|| HashSet::new());
     let num_element_selected = use_signal(|| 0);
     let element_style = use_signal(|| DeclarationBlock::default());
     let selection_group = use_signal(|| 0);

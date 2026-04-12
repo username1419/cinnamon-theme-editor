@@ -6,7 +6,7 @@ use dioxus::{
     core::consume_context,
     html::{ModifiersInteraction, MouseEvent},
     prelude::{debug, warn},
-    signals::{Memo, ReadableExt, Signal, WritableExt, WritableVecExt},
+    signals::{Memo, ReadableExt, Signal, WritableExt, WritableHashSetExt},
 };
 
 pub struct InspectorUtil;
@@ -40,7 +40,7 @@ impl InspectorUtil {
             *num_selected.write() += 1;
         }
 
-        config.selected_elements.push(ancestry_attr.clone());
+        config.selected_elements.insert(ancestry_attr.clone());
         debug!("Added element {} to selected_elements", ancestry_attr);
         debug!("{} clicked", ancestry_attr.to_string());
         evt.stop_propagation();
@@ -80,9 +80,7 @@ impl InspectorUtil {
                 dyn_style.peek().to_string()
             );
             config.selected_elements.with_mut(|elements| {
-                let pos = elements.iter().position(|s| ancestry_attr.eq(s));
-                if let Some(pos) = pos {
-                    elements.remove(pos);
+                if elements.remove(&ancestry_attr) {
                     debug!("Removed element {} from selected_elements", ancestry_attr);
                 } else {
                     warn!(
@@ -101,7 +99,7 @@ impl InspectorUtil {
             *selected.write() = true;
             *editing_style.write() = this_style.peek().cloned();
             *is_style_override.write() = false;
-            config.selected_elements.push(ancestry_attr.clone());
+            config.selected_elements.insert(ancestry_attr.clone());
             debug!("Added element {} to selected_elements", ancestry_attr);
         }
     }
