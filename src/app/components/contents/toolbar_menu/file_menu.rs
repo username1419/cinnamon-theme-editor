@@ -26,9 +26,9 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
         if theme_exists.is_err() || theme_exists.as_ref().is_ok_and(|e| e.eq(&true)) {
             if theme_exists.is_err() {
                 error!("{}", theme_exists.unwrap_err());
-                return;
             }
             error!("Theme already exists");
+            return;
         }
         // NOTE: picking the default theme comes later because users might be
         // confused with opening a theme
