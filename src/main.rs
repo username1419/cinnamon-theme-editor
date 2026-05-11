@@ -75,18 +75,22 @@ fn main() {
         logger::initialize_default();
     }
 
+    let mut app_cfg = dioxus_desktop::Config::new().with_window(
+        WindowBuilder::new()
+            // TODO: disable window rounding upon maximize
+            .with_decorations(false)
+            .with_inner_size(LogicalSize::new(1250, 750))
+            // NOTE: resizing isnt possible currently in dioxus 7.2.0
+            .with_resizable(true)
+            .with_transparent(true),
+    );
+
+    if cfg!(debug_assertions) {
+        app_cfg = app_cfg.with_data_directory(std::env::temp_dir().join("cde-debug"));
+    }
+
     dioxus::LaunchBuilder::desktop()
-        .with_cfg(
-            dioxus_desktop::Config::new().with_window(
-                WindowBuilder::new()
-                    // TODO: disable window rounding upon maximize
-                    .with_decorations(false)
-                    .with_inner_size(LogicalSize::new(1250, 750))
-                    // NOTE: resizing isnt possible currently in dioxus 7.2.0
-                    .with_resizable(true)
-                    .with_transparent(true),
-            ),
-        )
+        .with_cfg(app_cfg)
         .launch(App);
 }
 /// App is the main component of our app. Components are the building blocks of dioxus apps. Each component is a function
