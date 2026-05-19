@@ -168,11 +168,11 @@ impl HSLColor {
     });
 
     const HSL_MATCH: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r#"hsla\((\d+),(\d+),(\d+)\)"#).expect("Unable to compile regex: HSL_MATCH")
+        Regex::new(r#"hsla\((\d+),(\d+)%,(\d+)%\)"#).expect("Unable to compile regex: HSL_MATCH")
     });
 
     const HSLA_MATCH: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r#"hsla\((\d+),(\d+),(\d+),(\d+)\)"#)
+        Regex::new(r#"hsla\((\d+),(\d+)%,(\d+)%,(\d+)%\)"#)
             .expect("Unable to compile regex: HSLA_MATCH")
     });
 
@@ -315,15 +315,11 @@ pub fn ColorPicker(
 
     use_effect(move || {
         if color_switch() {
-            // BUG: this happens 1 more time than it should sometimes
-            let mut writelock = history.write();
-            let index = writelock.len() - 1;
-            writelock[index] = *selected_color.peek();
-            writelock.rotate_right(1);
-            *color_switch.write() = false;
-            debug!(
-                "Added color {} to history",
-                selected_color.peek().as_css_property()
+            let color = color.peek();
+            let bounds = *saturation_lightness_select_rect.peek();
+            *cursor_pos.write() = Point2D::new(
+                color.saturation as f64 * bounds.0,
+                ((color.lightness * 2 - 1) as f64 / (1 - color.saturation) as f64) * bounds.1,
             );
         }
     });
