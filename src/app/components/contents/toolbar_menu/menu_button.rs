@@ -35,29 +35,6 @@ pub struct MenuButtonProps {
 
 #[component]
 pub fn MenuButton(props: MenuButtonProps) -> Element {
-    let window = use_window();
-    if let Some(shortcut) = props.shortcut.as_ref() {
-        use_global_shortcut((shortcut.modifiers, shortcut.key), move |state| {
-            if state == HotKeyState::Released {
-                return;
-            }
-            // tower of doom? more like mountain of doom LMAO
-            props.onclick.call(MouseEvent::new(
-                Rc::new(
-                    SerializedMouseData::new(
-                        None,
-                        Default::default(),
-                        Helper::to_coord(window.cursor_position().unwrap_or_default()),
-                        Modifiers::default(),
-                    )
-                    .into(),
-                ),
-                false,
-            ));
-        })
-        .is_err()
-        .then(|| error!("Failed to initialize shortcut {:?}", shortcut));
-    }
     let text = use_hook(|| props.text.unwrap_or_default());
     let shortcut_label = use_hook(|| {
         props
@@ -79,8 +56,12 @@ pub fn MenuButton(props: MenuButtonProps) -> Element {
             })
             .unwrap_or_default()
     });
+    let shortcut = props.shortcut;
 
     rsx! {
+        if let Some(shortcut) = shortcut {
+            ShortcutHandler { shortcut: shortcut, onclick: props.onclick }
+        }
         button {
             class: "toolbar-menu-button",
             title: props.tooltip,
@@ -90,4 +71,31 @@ pub fn MenuButton(props: MenuButtonProps) -> Element {
             span { class: "shortcut-text", "{shortcut_label}" }
         }
     }
+}
+
+#[component]
+fn ShortcutHandler(shortcut: Shortcut, onclick: EventHandler<MouseEvent>) -> Element {
+    let window = use_window();
+    use_global_shortcut((shortcut.modifiers, shortcut.key), move |state| {
+        if state == HotKeyState::Released {
+            return;
+        }
+        // tower of doom? more like mountain of doom LMAO
+        onclick.call(MouseEvent::new(
+            Rc::new(
+                SerializedMouseData::new(
+                    None,
+                    Default::default(),
+                    Helper::to_coord(window.cursor_position().unwrap_or_default()),
+                    Modifiers::default(),
+                )
+                .into(),
+            ),
+            false,
+        ));
+    })
+    .is_err()
+    .then(|| error!("Failed to initialize shortcut {:?}", shortcut));
+
+    rsx! {}
 }
