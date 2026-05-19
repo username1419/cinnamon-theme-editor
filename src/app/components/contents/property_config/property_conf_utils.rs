@@ -1,21 +1,14 @@
 use dioxus::prelude::*;
 
 use crate::{
-    app::io::parser::{property_value::Value, selector::Selector},
+    app::io::parser::{basic_selector::BasicSelector, property_value::Value, selector::Selector},
     config::AppConfiguration,
 };
 
+/// Finds the value of the specified attribute belonging to the currently selected element. Starts
+/// by retrieving a selector from `config.selected_elements`, then searching the
 pub fn find_element_attribute(attribute: &str) -> Vec<Value> {
     let config = consume_context::<AppConfiguration>();
-    let element_style = config.element_style;
-    let editing_style = config.editing_stylesheet;
-    let default_style = config.default_style;
-
-    if let Some(declaration) = element_style.peek().find_attribute(attribute) {
-        return declaration.value.clone();
-    }
-    let style = &*default_style.peek();
-    let category_style = style.get(&*config.inspector_type.peek()).unwrap();
     let selected_elements = &*config.selected_elements.peek();
     let selected = selected_elements.iter().next();
     if selected_elements.len() > 1 {
@@ -29,17 +22,10 @@ pub fn find_element_attribute(attribute: &str) -> Vec<Value> {
                 .expect("Selector is not supposed to be empty.")
                 .0;
             debug!("searching for selector {}", element_name.get_raw());
-            let style =
-                category_style.get_declaration(&Selector::from_raw(&element_name.get_raw()));
-            if let Some(block) = style {
-                debug!("found element style {:?}", block);
-                if let Some(declaration) = block.find_attribute(attribute) {
-                    debug!(
-                        "attribute value found for {}: {:?}",
-                        attribute, declaration.value
-                    );
-                    return declaration.value.clone();
-                }
+            if let Some(from_editing) = search_editing_style(element, attribute) {
+                return from_editing;
+            } else if let Some(from_default) = search_default_style(element_name, attribute) {
+                return from_default;
             }
         } else {
             warn!("there are no currently selected elements");
@@ -47,18 +33,68 @@ pub fn find_element_attribute(attribute: &str) -> Vec<Value> {
         }
     }
 
-    if let Some(selected) = selected {
-        debug!("searching for selector {}", selected);
-        if let Some(block) = editing_style.peek().get_declaration(selected) {
-            if let Some(declaration) = block.find_attribute(attribute) {
-                debug!(
-                    "attribute value found for {}: {:?}",
-                    attribute, declaration.value
-                );
-                return declaration.value.clone();
-            }
+    Vec::new()
+}
+
+fn search_default_style(element_name: &BasicSelector, attribute: &str) -> Option<Vec<Value>> {
+    let config = consume_context::<AppConfiguration>();
+    let default_style = config.default_style;
+    let default_rules = &*default_style.peek();
+    let default_category_rules = default_rules.get(&*config.inspector_type.peek()).unwrap();
+
+    let style =
+        default_category_rules.get_declaration(&Selector::from_raw(&element_name.get_raw()));
+    if let Some(block) = style {
+        debug!("found element style {:?}", block);
+        if let Some(declaration) = block.find_attribute(attribute) {
+            debug!(
+                "attribute value found for {}: {:?}",
+                attribute, declaration.value
+            );
+            return Some(declaration.value.clone());
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
+fn search_editing_style(selector: &Selector, attribute: &str) -> Option<Vec<Value>> {
+    let config = consume_context::<AppConfiguration>();
+    let current_rules = &*config.editing_stylesheet.peek();
+    let current_category_rules = current_rules.get(&*config.inspector_type.peek()).unwrap();
+
+    debug!("searching editing rules for {}", selector.to_string());
+    let style = current_category_rules.get_declaration(selector);
+    if let Some(block) = style {
+        debug!("found element style {:?}", block);
+        if let Some(declaration) = block.find_attribute(attribute) {
+            debug!(
+                "attribute value found for {}: {:?}",
+                attribute, declaration.value
+            );
+            return Some(declaration.value.clone());
         }
     }
 
-    Vec::new()
+    let element_name = selector
+        .get_last()
+        .expect("Selector is not supposed to be empty.")
+        .0;
+    debug!("searching editing rules for {}", element_name.to_string());
+    let style =
+        current_category_rules.get_declaration(&Selector::from_raw(&element_name.get_raw()));
+    if let Some(block) = style {
+        debug!("found element style {:?}", block);
+        if let Some(declaration) = block.find_attribute(attribute) {
+            debug!(
+                "attribute value found for {}: {:?}",
+                attribute, declaration.value
+            );
+            return Some(declaration.value.clone());
+        }
+    }
+
+    None
 }
