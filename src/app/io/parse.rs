@@ -8,7 +8,7 @@ use regex::Regex;
 use super::parser::{declaration_block::DeclarationBlock, selector::*};
 
 /// Represents a CSS stylesheet.
-#[derive(Debug, Store)]
+#[derive(Debug, Store, Clone)]
 pub struct StyleSheet {
     /// The stylesheet's source file path
     source: PathBuf,
@@ -245,7 +245,16 @@ impl StyleSheet {
         let mut categories = SelectorCategory::VALUES
             .clone()
             .into_iter()
-            .map(|category| (category, StyleSheet::default()))
+            .map(|category| {
+                (
+                    category,
+                    StyleSheet {
+                        source: self.source.clone(),
+                        import: self.import.clone(),
+                        rulesets: HashMap::new(),
+                    },
+                )
+            })
             .collect::<HashMap<SelectorCategory, StyleSheet>>();
 
         for (selector, declaration_block) in self.rulesets.clone().into_iter() {
@@ -281,5 +290,23 @@ impl ToString for StyleSheet {
         }
 
         out
+    }
+}
+
+impl From<HashMap<SelectorCategory, StyleSheet>> for StyleSheet {
+    fn from(value: HashMap<SelectorCategory, StyleSheet>) -> Self {
+        let mut sh = StyleSheet {
+            source: value.get(&SelectorCategory::Panel).unwrap().source.clone(),
+            import: value.get(&SelectorCategory::Panel).unwrap().import.clone(),
+            rulesets: HashMap::new(),
+        };
+
+        value.into_values().map(|s| s.rulesets).for_each(|r| {
+            r.into_iter().for_each(|(s, d)| {
+                sh.rulesets.insert(s, d);
+            })
+        });
+
+        sh
     }
 }
