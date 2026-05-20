@@ -6,7 +6,7 @@ use dioxus::{
     core::consume_context,
     html::{ModifiersInteraction, MouseEvent},
     prelude::{debug, warn},
-    signals::{Memo, ReadableExt, Signal, WritableExt, WritableHashSetExt},
+    signals::{Memo, ReadableExt, Signal, WritableExt},
 };
 
 pub struct InspectorUtil;
@@ -18,7 +18,7 @@ impl InspectorUtil {
         mut is_multi_select: Signal<bool>,
         mut this_selection_group: Signal<u32>,
     ) {
-        let mut config = consume_context::<AppConfiguration>();
+        let config = consume_context::<AppConfiguration>();
         let mut num_selected = config.num_element_selected;
         let mut selection_group = config.selection_group;
         let is_ctrl = evt.modifiers().ctrl();
@@ -40,8 +40,6 @@ impl InspectorUtil {
             *num_selected.write() += 1;
         }
 
-        config.selected_elements.insert(ancestry_attr.clone());
-        debug!("Added element {} to selected_elements", ancestry_attr);
         debug!("{} clicked", ancestry_attr.to_string());
         evt.stop_propagation();
     }
@@ -54,41 +52,49 @@ impl InspectorUtil {
         ancestry_attr: Selector,
         dyn_style: Memo<DeclarationBlock>,
     ) {
-        let mut config = consume_context::<AppConfiguration>();
+        let config = consume_context::<AppConfiguration>();
+
+        if !*config.is_editing.peek() {
+            return;
+        }
+
         let current_group = config.selection_group;
         let mut editing_stylesheet = config.editing_stylesheet;
         let mut editing_style = config.element_style;
         let mut color_switch = config.color_switch;
         let mut is_dirty = config.is_dirty;
+        let mut selected_elements = config.selected_elements;
         let current_group = current_group();
         let this_group = this_selection_group.peek();
         let is_selected = selected();
 
+        let mut selected_elements_wl = selected_elements.write();
+
         // If there's a new selection session and we're not part of it, deselect
         if is_selected && current_group > 0 && this_group.ne(&current_group) {
             debug!("Deselected element {}", ancestry_attr.to_string());
-            *selected.write() = false;
+            selected.set(false);
             *color_switch.write() = true;
             *this_style.write() = editing_style.peek().clone();
             *is_style_override.write() = true;
             editing_stylesheet
                 .write()
+                .get_mut(&*config.inspector_type.peek())
+                .unwrap()
                 .append_rule(ancestry_attr.clone(), dyn_style.peek().clone());
             debug!(
                 "Set element {} style as {}",
                 ancestry_attr.to_string(),
                 dyn_style.peek().to_string()
             );
-            config.selected_elements.with_mut(|elements| {
-                if elements.remove(&ancestry_attr) {
-                    debug!("Removed element {} from selected_elements", ancestry_attr);
-                } else {
-                    warn!(
-                        "Element {} not found in selected_elements, {:?}. Something went wrong.",
-                        ancestry_attr, elements
-                    );
-                }
-            });
+            if selected_elements_wl.remove(&ancestry_attr) {
+                debug!("Removed element {} from selected_elements", ancestry_attr);
+            } else {
+                warn!(
+                    "Element {} not found in selected_elements, {:?}. Something went wrong.",
+                    ancestry_attr, *selected_elements_wl
+                );
+            }
             if is_dirty.peek().eq(&false) {
                 *is_dirty.write() = true;
             }
@@ -96,10 +102,10 @@ impl InspectorUtil {
 
         if is_style_override.peek().eq(&true) && current_group > 0 && this_group.eq(&current_group)
         {
-            *selected.write() = true;
+            selected.set(true);
             *editing_style.write() = this_style.peek().cloned();
             *is_style_override.write() = false;
-            config.selected_elements.insert(ancestry_attr.clone());
+            selected_elements_wl.insert(ancestry_attr.clone());
             debug!("Added element {} to selected_elements", ancestry_attr);
         }
     }

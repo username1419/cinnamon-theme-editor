@@ -49,9 +49,10 @@ fn search_default_style(element_name: &BasicSelector, attribute: &str) -> Option
         if let Some(declaration) = block.find_attribute(attribute) {
             debug!(
                 "attribute value found for {}: {:?}",
-                attribute, declaration.value
+                attribute,
+                declaration.get_value()
             );
-            return Some(declaration.value.clone());
+            return Some(declaration.get_value().iter().cloned().collect());
         } else {
             None
         }
@@ -72,9 +73,10 @@ fn search_editing_style(selector: &Selector, attribute: &str) -> Option<Vec<Valu
         if let Some(declaration) = block.find_attribute(attribute) {
             debug!(
                 "attribute value found for {}: {:?}",
-                attribute, declaration.value
+                attribute,
+                declaration.get_value()
             );
-            return Some(declaration.value.clone());
+            return Some(declaration.get_value().iter().cloned().collect());
         }
     }
 
@@ -90,9 +92,10 @@ fn search_editing_style(selector: &Selector, attribute: &str) -> Option<Vec<Valu
         if let Some(declaration) = block.find_attribute(attribute) {
             debug!(
                 "attribute value found for {}: {:?}",
-                attribute, declaration.value
+                attribute,
+                declaration.get_value()
             );
-            return Some(declaration.value.clone());
+            return Some(declaration.get_value().iter().cloned().collect());
         }
     }
 

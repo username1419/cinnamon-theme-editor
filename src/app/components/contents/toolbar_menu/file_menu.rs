@@ -7,6 +7,7 @@ use rfd::FileDialog;
 use tokio::time::sleep;
 
 use crate::app::components::contents::toolbar_menu::menu_button::{MenuButton, Shortcut};
+use crate::app::io::parse::StyleSheet;
 use crate::app::io::read::{self, is_theme_exist};
 use crate::app::io::write::{export_theme, save_theme};
 use crate::config::AppConfiguration;
@@ -53,7 +54,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 config
                     .default_style
                     .set(default.unwrap_or_default().to_categories());
-                config.editing_stylesheet.set(editing);
+                config.editing_stylesheet.set(editing.to_categories());
                 config.is_editing.set(true);
             }
             Err(err) => {
@@ -82,7 +83,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 config
                     .default_style
                     .set(default.unwrap_or_default().to_categories());
-                config.editing_stylesheet.set(editing);
+                config.editing_stylesheet.set(editing.to_categories());
                 config.is_editing.set(true);
             }
             Err(err) => {
@@ -149,7 +150,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                     let is_dirty = config.is_dirty;
                     let stylesheet = config.editing_stylesheet;
                     if is_dirty() {
-                        let _ = stylesheet.with(|s| save_theme(s)).inspect_err(|e| error!("{}", e));
+                        let _ = stylesheet.with(|s| save_theme(&StyleSheet::from((*s).clone()))).inspect_err(|e| error!("{}", e));
                     }
                 },
                 shortcut: Shortcut::new(KeyCode::S, ModifiersState::CONTROL),
@@ -173,7 +174,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                     let stylesheet = config.editing_stylesheet;
                     if is_dirty() {
                         let _ = stylesheet
-                            .with(|s| export_theme(s))
+                            .with(|s| export_theme(&StyleSheet::from((*s).clone())))
                             .inspect_err(|e| error!("{}", e));
                     }
                 },

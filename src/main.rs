@@ -100,7 +100,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     let default_style = use_signal(|| HashMap::new());
-    let editing_stylesheet = use_store(|| StyleSheet::default());
+    let editing_stylesheet = use_store(|| HashMap::new());
     let mut mouse_state = use_signal(|| MouseState {
         coordinates: Helper::to_coord(PhysicalPosition::default()),
         mouse_down: MouseButtonSet::default(),

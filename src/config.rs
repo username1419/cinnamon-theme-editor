@@ -20,7 +20,7 @@ pub struct AppConfiguration {
     pub is_dirty: Signal<bool>,
     pub is_editing: Signal<bool>,
     pub default_style: Signal<HashMap<SelectorCategory, StyleSheet>>,
-    pub editing_stylesheet: Store<StyleSheet>,
+    pub editing_stylesheet: Store<HashMap<SelectorCategory, StyleSheet>>,
     /// Cursor position relative to viewport
     pub mouse_state: Signal<MouseState>,
     pub inspector_type: Signal<SelectorCategory>,

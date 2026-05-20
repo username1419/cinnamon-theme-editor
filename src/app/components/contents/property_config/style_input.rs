@@ -71,7 +71,7 @@ fn BackgroundColorInput() -> Element {
     let mut element_style = config.element_style;
     let mut element_color = use_signal(|| {
         if let Some(declaration) = element_style.peek().find_attribute("background-color") {
-            let color = declaration.value[0].get_value();
+            let color = declaration.get_value()[0].get_value();
             if let Some(col) = HSLColor::from_css_property(color.clone()) {
                 return col;
             }

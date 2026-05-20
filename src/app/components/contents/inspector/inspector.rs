@@ -20,7 +20,11 @@ pub fn Inspector() -> Element {
                     style { "category": "{category:?}", "{styling.to_string()}" }
                 }
             }
-            style { "{editing_stylesheet.read().to_string()}" }
+            div { style: "display: none;", class: "editing-styles",
+                for (category , styling) in editing_stylesheet.read().iter() {
+                    style { "category": "{category:?}", "{styling.to_string()}" }
+                }
+            }
             // NOTE: inspector contents should autohide when not selected
             Panel {}
         }

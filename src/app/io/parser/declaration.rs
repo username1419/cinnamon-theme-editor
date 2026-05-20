@@ -2,9 +2,9 @@ use super::{property::Property, property_value::Value};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Declaration {
-    pub raw: String,
-    pub property: Property,
-    pub value: Vec<Value>,
+    raw: String,
+    property: Property,
+    value: Vec<Value>,
 }
 
 impl Declaration {
@@ -36,6 +36,37 @@ impl Declaration {
             property,
             value,
         }
+    }
+
+    pub fn get_value(&self) -> &[Value] {
+        self.value.as_slice()
+    }
+
+    pub fn get_property(&self) -> &Property {
+        &self.property
+    }
+
+    pub fn add_value(&mut self, value: Value) {
+        self.value.push(value);
+        self.update_raw();
+    }
+
+    pub fn remove_value(&mut self, idx: usize) {
+        self.value.remove(idx);
+        self.update_raw();
+    }
+
+    pub fn set_value(&mut self, values: Vec<Value>) {
+        self.value = values;
+        self.update_raw();
+    }
+
+    fn update_raw(&mut self) {
+        self.raw = self.to_string();
+    }
+
+    pub fn decompose(self) -> (String, Property, Vec<Value>) {
+        (self.raw, self.property, self.value)
     }
 }
 

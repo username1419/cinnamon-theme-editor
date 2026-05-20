@@ -18,23 +18,24 @@ pub fn PropertyEditor() -> Element {
     let mut editing_style = config.element_style;
 
     let mut change = use_signal(|| true);
-    let mut current_col = use_signal(|| {
-        // NOTE: this is a bad idea
-        debug!("init: finding bgcolor for elements: {:?}", selected.peek());
-        let attr = find_element_attribute("background-color");
-        if let Some(attr) = attr.get(0) {
-            let col_str = attr.to_string();
-            if let Some(hsl_col) = HSLColor::from_css_property(col_str) {
-                debug!("init: found color {:?}", hsl_col);
-                return hsl_col;
-            }
-        }
-
-        debug!("init: color not found, falling back to default");
-        return HSLColor::default();
-    });
+    let mut current_col = use_signal(|| HSLColor::default());
     use_effect(move || {
         let _ = selected.read();
+        let conf = consume_context::<AppConfiguration>();
+        let mut color_switch = conf.color_switch;
+        let mut history = conf.color_history;
+        if color_switch() {
+            let mut writelock = history.write();
+            let index = writelock.len() - 1;
+            writelock[index] = *current_col.peek();
+            writelock.rotate_right(1);
+            *color_switch.write() = false;
+            debug!(
+                "Added color {} to history",
+                current_col.peek().as_css_property()
+            );
+        }
+
         if !*change.peek() {
             debug!("bgcolor change skipped");
             *change.write() = true;
@@ -42,17 +43,21 @@ pub fn PropertyEditor() -> Element {
         }
         *change.write() = false;
         debug!("finding bgcolor for elements: {:?}", selected.peek());
+        let mut set = false;
         let attr = find_element_attribute("background-color");
         if let Some(attr) = attr.get(0) {
             let col_str = attr.to_string();
-            if let Some(hsl_col) = HSLColor::from_css_property(col_str) {
+            if let Some(hsl_col) = dbg!(HSLColor::from_css_property(col_str)) {
                 debug!("found color {:?}", hsl_col);
                 *current_col.write() = hsl_col;
+                set = true;
             }
         }
 
-        debug!("color not found, falling back to default");
-        *current_col.write() = HSLColor::default();
+        if !set {
+            debug!("color not found, falling back to default");
+            *current_col.write() = HSLColor::default();
+        }
     });
 
     rsx! {

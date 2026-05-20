@@ -1,6 +1,4 @@
-use std::str::FromStr;
-
-use dioxus::{html::meta::property, prelude::debug};
+use std::fmt::Display;
 
 use crate::app::io::parser::{property::Property, property_value::Value};
 
@@ -35,9 +33,9 @@ impl DeclarationBlock {
         if let Some(declaration) = self
             .declarations
             .iter_mut()
-            .find(|d| attribute.eq(&d.property))
+            .find(|d| attribute.eq(d.get_property()))
         {
-            declaration.value = values;
+            declaration.set_value(values);
         } else {
             let declarations = &mut self.declarations;
             declarations.push(Declaration::new(attribute, values));
@@ -52,28 +50,32 @@ impl DeclarationBlock {
 
     pub fn append(&mut self, declaration_block: DeclarationBlock) {
         for declaration in declaration_block.declarations {
-            self.set_style_attribute(declaration.property, declaration.value);
+            let (_, property, values) = declaration.decompose();
+            self.set_style_attribute(property, values);
         }
     }
 
     pub fn find_attribute(&self, name: &str) -> Option<&Declaration> {
         self.declarations
             .iter()
-            .find(|d| name.eq(d.property.get_raw()))
+            .find(|d| name.eq(d.get_property().get_raw()))
     }
 
     pub fn findmut_attribute(&mut self, name: String) -> Option<&mut Declaration> {
         self.declarations
             .iter_mut()
-            .find(|d| name.eq(d.property.get_raw()))
+            .find(|d| name.eq(d.get_property().get_raw()))
     }
 }
 
-impl ToString for DeclarationBlock {
-    fn to_string(&self) -> String {
-        self.declarations
-            .iter()
-            .map(|d| format!("{};", d.to_string()))
-            .collect()
+impl Display for DeclarationBlock {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "{}",
+            self.declarations
+                .iter()
+                .map(|d| format!("{};", d.to_string()))
+                .collect::<String>()
+        ))
     }
 }

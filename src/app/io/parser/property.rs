@@ -1,5 +1,3 @@
-use std::fmt::{Display, Write};
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Property {
     raw: String,
