@@ -23,7 +23,8 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install openssl
+      - name: Set OPENSSL_DIR
+        run: export OPENSSL_DIR=/usr/bin/openssl
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
