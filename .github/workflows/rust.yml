@@ -2,8 +2,7 @@ name: DX
 
 on:
   push:
-    branches-ignore:
-      - "dependabot/**"
+    branches: [ master ]
   pull_request:
 
 concurrency:
@@ -20,6 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install openssl
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
