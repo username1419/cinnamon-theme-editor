@@ -1,4 +1,4 @@
-use dioxus::prelude::debug;
+use std::fmt::Display;
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum BasicSelectorType {
@@ -82,7 +82,7 @@ pub enum PseudoClass {
     Rtl,
     /// Matches an element when the user drag and drop them. Only works in panel edit mode
     Dnd,
-    ///
+    /// i got no clue what this does
     Entered,
     /// Calendar exclusive
     AllDay,
@@ -209,12 +209,11 @@ impl BasicSelector {
 
     pub fn from_raw(basic_selector: &str) -> Self {
         let mut basic_selector = basic_selector;
-        if let Some(c) = basic_selector.chars().peekable().peek() {
-            if c.is_whitespace() {
-                basic_selector = basic_selector.trim();
-            }
+        if let Some(c) = basic_selector.chars().peekable().peek()
+            && c.is_whitespace()
+        {
+            basic_selector = basic_selector.trim();
         }
-        let mut base;
         let mut pseudo_class = Vec::new();
         let mut pseudo_element = None;
         let mut tracking_token = String::new();
@@ -231,7 +230,6 @@ impl BasicSelector {
                 }
             }
 
-            base = tracking_token;
             chars.next();
             tracking_token = chars
                 .clone()
@@ -242,12 +240,11 @@ impl BasicSelector {
 
             if ch_ne.is_some() && !tracking_token.is_empty() {
                 pseudo_class.push(
-                    PseudoClass::from_str(tracking_token.as_str()).expect(
-                        format!(
+                    PseudoClass::from_str(tracking_token.as_str()).unwrap_or_else(|| {
+                        panic!(
                             "Failed to unwrap token \"{tracking_token}\"\nRaw: \"{basic_selector}\""
                         )
-                        .as_str(),
-                    ),
+                    }),
                 );
                 tracking_token.clear();
             } else if ch_ne.is_some() {
@@ -260,7 +257,7 @@ impl BasicSelector {
                 tracking_token.clear();
             }
 
-            for _ in [0..tracking_token.len()] {
+            for _ in (0..tracking_token.len()).collect::<std::vec::Vec<usize>>() {
                 chars.next();
             }
         }
@@ -291,8 +288,8 @@ impl BasicSelector {
     }
 }
 
-impl ToString for BasicSelector {
-    fn to_string(&self) -> String {
-        self.raw.clone()
+impl Display for BasicSelector {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.raw)
     }
 }

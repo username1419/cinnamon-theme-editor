@@ -45,8 +45,8 @@ pub fn Panel() -> Element {
                 Some((position.clone(), height))
             })
             .collect::<HashMap<String, u8>>();
-        for (pos, height) in vec![("right", 0), ("top", 0), ("bottom", 0), ("left", 0)] {
-            if heights.get(pos).is_none() {
+        for (pos, height) in [("right", 0), ("top", 0), ("bottom", 0), ("left", 0)] {
+            if !heights.contains_key(pos) {
                 heights.insert(pos.to_string(), height);
             }
         }

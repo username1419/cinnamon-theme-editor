@@ -33,6 +33,7 @@ pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
     let class = props.class;
     let is_style_override = use_signal(|| true);
     let this_style = use_signal(|| DeclarationBlock::from_raw(props.style.unwrap_or_default()));
+    #[allow(unused)]
     let orientation = props.orientation;
     let selected = use_signal(|| false);
     let style = use_memo(move || {

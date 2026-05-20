@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Property {
     raw: String,
@@ -53,8 +55,8 @@ impl Property {
     }
 }
 
-impl ToString for Property {
-    fn to_string(&self) -> String {
-        self.raw.to_string()
+impl Display for Property {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.raw)
     }
 }

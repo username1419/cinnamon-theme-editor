@@ -8,7 +8,6 @@ pub mod app;
 pub mod config;
 pub mod helper;
 use crate::app::components::contents::property_config::color_picker::HSLColor;
-use crate::app::io::parse::StyleSheet;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::SelectorCategory;
 use crate::config::MouseState;
@@ -22,6 +21,7 @@ use crate::{
 };
 use dioxus::{logger, prelude::*};
 const FAVICON: Asset = asset!("/assets/favicon.ico");
+#[allow(unused)]
 const STYLE_COLORS: Asset = asset!("/assets/styling/colors.scss");
 const MAIN_STYLE: Asset = asset!("/assets/styling/main.scss");
 const TITLEBAR_STYLE: Asset = asset!("/assets/styling/titlebar.scss");
@@ -99,19 +99,19 @@ fn main() {
 /// Components should be annotated with `#[component]` to support props, better error messages, and autocomplete
 #[component]
 fn App() -> Element {
-    let default_style = use_signal(|| HashMap::new());
-    let editing_stylesheet = use_store(|| HashMap::new());
+    let default_style = use_signal(HashMap::new);
+    let editing_stylesheet = use_store(HashMap::new);
     let mut mouse_state = use_signal(|| MouseState {
         coordinates: Helper::to_coord(PhysicalPosition::default()),
         mouse_down: MouseButtonSet::default(),
     });
     let is_dirty = use_signal(|| false);
     let is_editing = use_signal(|| false);
-    let inspector_type = use_signal(|| SelectorCategory::default());
+    let inspector_type = use_signal(SelectorCategory::default);
     let count_element = use_signal(|| 0);
-    let selected_elements = use_signal(|| HashSet::new());
+    let selected_elements = use_signal(HashSet::new);
     let num_element_selected = use_signal(|| 0);
-    let element_style = use_signal(|| DeclarationBlock::default());
+    let element_style = use_signal(DeclarationBlock::default);
     let selection_group = use_signal(|| 0);
     let color_history = use_signal(|| [HSLColor::default(); 10]);
     let color_switch = use_signal(|| false);

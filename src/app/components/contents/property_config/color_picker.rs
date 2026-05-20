@@ -1,5 +1,3 @@
-use std::u8;
-
 use dioxus::html::geometry::ElementSpace;
 use dioxus::html::geometry::euclid::Point2D;
 use dioxus::html::input_data::MouseButton;
@@ -23,6 +21,23 @@ pub struct HSLColor {
     lightness: u16,
     alpha: u16,
 }
+
+static RGB_MATCH: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"rgb\((\d+),(\d+),(\d+)\)"#).expect("Unable to compile regex: RGB_MATCH")
+});
+
+static RGBA_MATCH: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"rgba\((\d+),(\d+),(\d+),(\d+)\)"#).expect("Unable to compile regex: RGBA_MATCH")
+});
+
+static HSL_MATCH: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"hsl\((\d+),(\d+)%,(\d+)%\)"#).expect("Unable to compile regex: HSL_MATCH")
+});
+
+static HSLA_MATCH: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"hsla\((\d+),(\d+)%,(\d+)%,(\d+)%\)"#)
+        .expect("Unable to compile regex: HSLA_MATCH")
+});
 
 impl HSLColor {
     pub fn set_hue(&mut self, hue: u16) {
@@ -112,7 +127,7 @@ impl HSLColor {
     }
 
     pub fn get_complementary(&self) -> HSLColor {
-        let mut col = self.clone();
+        let mut col = *self;
         col.hue = (col.hue + 180) % 360;
         col
     }
@@ -148,7 +163,7 @@ impl HSLColor {
         let h = if h < 0.0 { h + 360.0 } else { h } as u16;
 
         // Alpha
-        let a = ((a as f64) / 255.0 * 100.0) as u16;
+        let a = (a / 255.0 * 100.0) as u16;
 
         HSLColor {
             hue: h,
@@ -157,24 +172,6 @@ impl HSLColor {
             alpha: a,
         }
     }
-
-    const RGB_MATCH: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r#"rgb\((\d+),(\d+),(\d+)\)"#).expect("Unable to compile regex: RGB_MATCH")
-    });
-
-    const RGBA_MATCH: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r#"rgb\((\d+),(\d+),(\d+),(\d+)\)"#)
-            .expect("Unable to compile regex: RGBA_MATCH")
-    });
-
-    const HSL_MATCH: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r#"hsla\((\d+),(\d+)%,(\d+)%\)"#).expect("Unable to compile regex: HSL_MATCH")
-    });
-
-    const HSLA_MATCH: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r#"hsla\((\d+),(\d+)%,(\d+)%,(\d+)%\)"#)
-            .expect("Unable to compile regex: HSLA_MATCH")
-    });
 
     /// Tries to convert a CSS color to an internal representation. Currently supports rgb(),
     /// rgba(), hsl(), hsla(), and shortened rgb/rgba values.
@@ -187,8 +184,8 @@ impl HSLColor {
             .filter(|c| !c.is_whitespace())
             .collect::<String>();
 
-        if Self::HSLA_MATCH.is_match(&*color) {
-            let components = Self::HSLA_MATCH.captures(&*color).unwrap();
+        if HSLA_MATCH.is_match(&color) {
+            let components = HSLA_MATCH.captures(&color).unwrap();
             let mut components = components.iter();
             components.next();
             let components = components
@@ -200,8 +197,8 @@ impl HSLColor {
                 components[2],
                 components[3],
             ))
-        } else if Self::HSL_MATCH.is_match(&*color) {
-            let components = Self::HSL_MATCH.captures(&*color).unwrap();
+        } else if HSL_MATCH.is_match(&color) {
+            let components = HSL_MATCH.captures(&color).unwrap();
             let mut components = components.iter();
             components.next();
             let components = components
@@ -213,8 +210,8 @@ impl HSLColor {
                 components[2],
                 100,
             ))
-        } else if Self::RGB_MATCH.is_match(&*color) {
-            let components = Self::RGB_MATCH.captures(&*color).unwrap();
+        } else if RGB_MATCH.is_match(&color) {
+            let components = RGB_MATCH.captures(&color).unwrap();
             let mut components = components.iter();
             components.next();
             let components = components
@@ -226,8 +223,8 @@ impl HSLColor {
                 components[2],
                 u8::MAX,
             ))
-        } else if Self::RGBA_MATCH.is_match(&*color) {
-            let components = Self::RGBA_MATCH.captures(&*color).unwrap();
+        } else if RGBA_MATCH.is_match(&color) {
+            let components = RGBA_MATCH.captures(&color).unwrap();
             let mut components = components.iter();
             components.next();
             let components = components
@@ -239,23 +236,23 @@ impl HSLColor {
                 components[2],
                 components[3],
             ))
-        } else if color.chars().next() == Some('#') {
+        } else if color.starts_with('#') {
             let mut c = Vec::new();
 
             let mut r = color.chars().skip(1).collect::<String>();
-            let contains_alpha = if r.len() == 6 { false } else { true };
+            let contains_alpha = r.len() != 6;
             let mut g = r.split_off(2);
             let mut b = g.split_off(2);
 
-            c.push(u8::from_str_radix(&*r, 16).unwrap());
-            c.push(u8::from_str_radix(&*g, 16).unwrap());
+            c.push(u8::from_str_radix(&r, 16).unwrap());
+            c.push(u8::from_str_radix(&g, 16).unwrap());
 
             if contains_alpha {
                 let a = b.split_off(2);
-                c.push(u8::from_str_radix(&*b, 16).unwrap());
-                c.push(u8::from_str_radix(&*a, 16).unwrap());
+                c.push(u8::from_str_radix(&b, 16).unwrap());
+                c.push(u8::from_str_radix(&a, 16).unwrap());
             }
-            c.push(u8::from_str_radix(&*b, 16).unwrap());
+            c.push(u8::from_str_radix(&b, 16).unwrap());
             c.push(u8::MAX);
 
             Some(HSLColor::from_rgba(c[0], c[1], c[2], c[3]))
@@ -287,14 +284,14 @@ pub fn ColorPicker(
     let mut selected_color = color;
 
     let mut saturation_lightness_select_rect = use_signal(|| (0.0, 0.0));
-    let mut cursor_pos: Signal<Point2D<f64, ElementSpace>> = use_signal(|| Point2D::origin());
-    let mut history = config.color_history;
-    let mut color_switch = config.color_switch;
+    let mut cursor_pos: Signal<Point2D<f64, ElementSpace>> = use_signal(Point2D::origin);
+    let history = config.color_history;
+    let color_switch = config.color_switch;
 
     let refresh_rate = time::Duration::from_secs_f64(1.0 / 60.0);
     let refresh_rate_slow = time::Duration::from_secs_f64(1.0 / 10.0);
-    let mut last_time = use_signal(|| Instant::now());
-    let mut last_time_slow = use_signal(|| Instant::now());
+    let mut last_time = use_signal(Instant::now);
+    let mut last_time_slow = use_signal(Instant::now);
 
     let cursor_style = use_memo(move || {
         let bounds = *saturation_lightness_select_rect.peek();
@@ -352,7 +349,7 @@ pub fn ColorPicker(
                             }
 
                             let relative_coord = event.element_coordinates();
-                            *cursor_pos.write() = relative_coord.clone();
+                            *cursor_pos.write() = relative_coord;
 
                             // NOTE: changing this refresh rate doesnt really improve anything
                             // either, its probably something ive fucked up in auto reactivity
@@ -444,7 +441,7 @@ pub fn ColorPicker(
                         style: r#"background-color: hsl({color.hue}, {color.saturation}%, {color.lightness}%, {color.alpha}%);"#,
                         onclick: move |_| {
                             debug!("Set selected color to {} by history", color.as_css_property());
-                            selected_color.set(color.clone());
+                            selected_color.set(color);
                             let values = vec![
                                 Value::from_raw_single(
                                     color.as_css_property()
