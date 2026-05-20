@@ -21,10 +21,9 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
     let config = use_context::<AppConfiguration>();
     let editing_style = config.element_style;
 
-    let is_style_override = use_signal(|| true);
     let class = props.class;
     let this_style = use_signal(|| DeclarationBlock::from_raw(String::new()));
-    let selected = use_signal(|| false);
+    let selected = use_signal_sync(|| false);
     let style = use_memo(move || {
         if !selected() {
             this_style()
@@ -34,8 +33,6 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
     });
 
     // NOTE: (mostly) vibed
-    let is_multi_select = use_signal(|| false);
-    let this_selection_group = use_signal(|| 0u32);
 
     // read existing ancestry (if any)
     let mut ancestry: Vec<String> = try_use_context::<Ancestry>()
@@ -56,16 +53,11 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
         use_hook(move || Selector::from_raw(format!(".inspector {}", ancestry.join(">")).as_str()));
 
     let _ancestry_attr = ancestry_attr.clone();
-    // Effect to auto-deselect when another single element is selected
-    use_effect(move || {
-        InspectorUtil::inspector_component_select_effect(
-            is_style_override,
-            this_style,
-            selected,
-            this_selection_group,
-            _ancestry_attr.clone(),
-            style,
-        );
+    let __ancestry_attr = ancestry_attr.clone();
+
+    use_future(move || {
+        let _ancestry_attr = _ancestry_attr.clone();
+        InspectorUtil::inspector_component_background_watcher(selected, _ancestry_attr, this_style)
     });
 
     rsx! {
@@ -75,9 +67,7 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
             onclick: move |evt| InspectorUtil::inspector_component_onclick(
                 evt,
                 selected,
-                ancestry_attr.clone(),
-                is_multi_select,
-                this_selection_group,
+                __ancestry_attr.clone(),
             ),
             {props.children}
         }

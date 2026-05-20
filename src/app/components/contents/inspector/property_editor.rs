@@ -5,6 +5,7 @@ use dioxus::{
     core::Element,
     prelude::{component, rsx},
 };
+use tokio::task::spawn_blocking;
 
 use crate::app::components::contents::property_config::color_picker::{ColorPicker, HSLColor};
 use crate::app::components::contents::property_config::property_conf_utils::find_element_attribute;
@@ -22,6 +23,7 @@ pub fn PropertyEditor() -> Element {
     use_effect(move || {
         let _ = selected.read();
         let conf = consume_context::<AppConfiguration>();
+
         let mut color_switch = conf.color_switch;
         let mut history = conf.color_history;
         if color_switch() {
@@ -35,6 +37,17 @@ pub fn PropertyEditor() -> Element {
                 current_col.peek().as_css_property()
             );
         }
+
+        let notify = conf.elements_notify.peek().clone();
+        let confirm_notify = conf.elements_notify_confirm.peek().clone();
+        spawn_blocking(move || async move {
+            notify.notified().await;
+            if let Some(confirm) = confirm_notify.clone()
+                && let Some(confirm) = confirm.upgrade()
+            {
+                confirm.notified().await;
+            }
+        });
 
         if !*change.peek() {
             debug!("bgcolor change skipped");

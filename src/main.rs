@@ -4,6 +4,8 @@ use dioxus::logger::tracing::Level;
 use dioxus_desktop::wry::dpi::PhysicalPosition;
 use dioxus_desktop::{LogicalSize, WindowBuilder};
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
+use tokio::sync::Notify;
 pub mod app;
 pub mod config;
 pub mod helper;
@@ -29,8 +31,8 @@ const TOOLBAR_STYLE: Asset = asset!("/assets/styling/toolbar.scss");
 const OVERLAY_STYLE: Asset = asset!("/assets/styling/overlay.scss");
 const COLOR_PICKER_STYLE: Asset = asset!("/assets/styling/color-picker.scss");
 const STYLE_INPUT_STYLE: Asset = asset!("/assets/styling/style_input.scss");
-
 const INSPECTOR_PANEL_STYLE: Asset = asset!("/assets/styling/inspector/panel.scss");
+
 #[cfg(debug_assertions)]
 fn main() {
     if cfg!(windows) {
@@ -100,7 +102,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     let default_style = use_signal(HashMap::new);
-    let editing_stylesheet = use_store(HashMap::new);
+    let editing_stylesheet = use_signal_sync(HashMap::new);
     let mut mouse_state = use_signal(|| MouseState {
         coordinates: Helper::to_coord(PhysicalPosition::default()),
         mouse_down: MouseButtonSet::default(),
@@ -109,12 +111,13 @@ fn App() -> Element {
     let is_editing = use_signal(|| false);
     let inspector_type = use_signal(SelectorCategory::default);
     let count_element = use_signal(|| 0);
-    let selected_elements = use_signal(HashSet::new);
-    let num_element_selected = use_signal(|| 0);
+    let selected_elements = use_signal_sync(HashSet::new);
+    let num_element_selected = use_signal_sync(|| 0);
     let element_style = use_signal(DeclarationBlock::default);
-    let selection_group = use_signal(|| 0);
     let color_history = use_signal(|| [HSLColor::default(); 10]);
     let color_switch = use_signal(|| false);
+    let elements_notify = use_signal(|| Arc::new(Notify::new()));
+    let elements_notify_confirm = use_signal_sync(|| None);
 
     use_context_provider(|| AppConfiguration {
         is_dirty,
@@ -127,9 +130,10 @@ fn App() -> Element {
         selected_elements,
         num_element_selected,
         element_style,
-        selection_group,
         color_history,
         color_switch,
+        elements_notify,
+        elements_notify_confirm,
     });
 
     rsx! {
