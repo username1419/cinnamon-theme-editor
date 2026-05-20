@@ -1,0 +1,71 @@
+name: DX
+
+on:
+  push:
+    branches-ignore:
+      - "dependabot/**"
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  check:
+    name: Check & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      # Fast type-check for web target without building
+      - name: cargo check (wasm)
+        run: cargo check --target wasm32-unknown-unknown
+
+      - name: cargo clippy
+        run: cargo clippy --target wasm32-unknown-unknown -- -D warnings
+
+      - name: cargo fmt
+        run: cargo fmt --check
+
+  build-desktop:
+    name: Build (Desktop)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev libgtk-3-dev \
+            libasound2-dev libudev-dev \
+            libayatana-appindicator3-dev libxdo-dev \
+            libglib2.0-dev pkg-config
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
+
+      - name: Install dioxus-cli
+        run: cargo binstall dioxus-cli --no-confirm
+
+      - name: dx build (desktop, release)
+        run: dx build --platform desktop --release
