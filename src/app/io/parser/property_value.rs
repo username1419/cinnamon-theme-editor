@@ -7,8 +7,9 @@ pub struct Value {
     unit: ValueUnit,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub enum ValueUnit {
+    #[default]
     None,
     Px,
     Em,
@@ -37,7 +38,8 @@ impl ValueUnit {
         category
     }
 
-    pub fn from_str(raw: &str) -> Self {
+    #[allow(dead_code)]
+    pub(crate) fn from_str(raw: &str) -> Self {
         let mut category = ValueUnit::None;
 
         for (pattern, cat) in ValueUnit::PATTERNS {
@@ -59,12 +61,6 @@ impl Display for ValueUnit {
                 .unwrap_or_default()
                 .0,
         )
-    }
-}
-
-impl Default for ValueUnit {
-    fn default() -> Self {
-        ValueUnit::None
     }
 }
 
@@ -161,8 +157,8 @@ impl Value {
     }
 }
 
-impl ToString for Value {
-    fn to_string(&self) -> String {
-        format!("{}{}", self.value, self.unit)
+impl Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{}{}", self.value, self.unit))
     }
 }

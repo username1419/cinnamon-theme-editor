@@ -74,7 +74,7 @@ impl Display for DeclarationBlock {
             "{}",
             self.declarations
                 .iter()
-                .map(|d| format!("{};", d.to_string()))
+                .map(|d| format!("{};", d))
                 .collect::<String>()
         ))
     }

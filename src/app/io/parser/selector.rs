@@ -1,5 +1,5 @@
 use crate::app::io::parser::basic_selector::BasicSelectorType;
-use std::{fmt::Display, str::FromStr};
+use std::fmt::Display;
 
 use super::basic_selector::BasicSelector;
 
@@ -10,7 +10,7 @@ pub enum SelectorType {
     Simple,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Default)]
 #[repr(i32)]
 pub enum SelectorCategory {
     Panel = 0,
@@ -21,6 +21,7 @@ pub enum SelectorCategory {
     Entry = 5,
     Sound = 6,
     GroupWindow = 7,
+    #[default]
     Other = 8,
 }
 
@@ -38,12 +39,6 @@ impl SelectorCategory {
         Self::GroupWindow,
         Self::Other,
     ];
-}
-
-impl Default for SelectorCategory {
-    fn default() -> Self {
-        Self::Other
-    }
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
@@ -70,16 +65,15 @@ impl Combinator {
     }
 }
 
-impl ToString for Combinator {
-    fn to_string(&self) -> String {
-        String::from_str(match self {
+impl Display for Combinator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
             Self::Descendant => " ",
             Self::Child => ">",
             Self::SubsequentSibling => "~",
             Self::NextSibling => "+",
             Self::None => "",
         })
-        .unwrap_or_default()
     }
 }
 
@@ -98,8 +92,8 @@ pub struct Selector {
 impl Selector {
     pub fn from_raw(raw: &str) -> Self {
         let raw = format!("{}{}", raw, char::MAX);
-        let selector_type = Self::get_type(&*raw);
-        let selector_category = Self::get_category(&*raw);
+        let selector_type = Self::get_type(&raw);
+        let selector_category = Self::get_category(&raw);
         let mut selectors = Vec::new();
         let mut chars = raw.chars().peekable();
         let mut raw = raw.to_string().clone();
@@ -243,11 +237,11 @@ impl Selector {
             }
 
             let default_selector_type = b.get_selector_type().clone();
-            *b = BasicSelector::from_raw(&*format!(".{}", b.get_raw()));
+            *b = BasicSelector::from_raw(&format!(".{}", b.get_raw()));
             b.set_default_selector_type(Some(default_selector_type));
         });
 
-        Selector::from_raw(&*self.to_string())
+        Selector::from_raw(&self.to_string())
     }
 
     /// Reverse process of Selector::to_webview_safe(). Will panic if this selector has not been
@@ -265,11 +259,11 @@ impl Selector {
                 BasicSelectorType::Class => ".",
                 BasicSelectorType::Id => "#",
             };
-            *b = BasicSelector::from_raw(&*format!("{}{}", prefix, b.get_raw().get(1..).unwrap()));
+            *b = BasicSelector::from_raw(&format!("{}{}", prefix, b.get_raw().get(1..).unwrap()));
             b.set_default_selector_type(None);
         });
 
-        Selector::from_raw(&*s.to_string())
+        Selector::from_raw(&s.to_string())
     }
 
     pub fn category(&self) -> &SelectorCategory {
@@ -277,7 +271,7 @@ impl Selector {
     }
 
     pub fn get_individual(&self, idx: usize) -> Option<(&BasicSelector, &Combinator)> {
-        self.selectors.iter().nth(idx).map(|(b, c)| (b, c))
+        self.selectors.get(idx).map(|(b, c)| (b, c))
     }
 
     pub fn get_last(&self) -> Option<(&BasicSelector, &Combinator)> {
@@ -290,7 +284,7 @@ impl Display for Selector {
         let s = self
             .selectors
             .iter()
-            .map(|(b, c)| format!("{}{}", b.to_string(), c.to_string()))
+            .map(|(b, c)| format!("{}{}", b, c))
             .collect::<String>();
 
         f.write_fmt(format_args!("{}", s))

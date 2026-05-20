@@ -1,7 +1,6 @@
 use std::io::Error;
 use std::process::Command;
 
-use dioxus::logger::tracing::field::debug;
 use dioxus::prelude::debug;
 
 pub struct CinnamonSettings {}
@@ -34,8 +33,8 @@ impl CinnamonSettings {
     pub fn get_enabled_panels() -> Result<Vec<(u8, u8, String)>, Error> {
         debug!("Retrieving 'panels-enabled' from dconf...");
         let conf = Self::get("panels-enabled");
-        if conf.is_err() {
-            return Err(conf.unwrap_err());
+        if let Err(err) = conf {
+            return Err(err);
         }
         let conf = conf.unwrap();
         debug!("dconf returns {}", conf);
@@ -62,8 +61,8 @@ impl CinnamonSettings {
     pub fn get_panels_height() -> Result<Vec<(u8, u8)>, Error> {
         debug!("Retrieving 'panels-height' from dconf...");
         let conf = Self::get("panels-height");
-        if conf.is_err() {
-            return Err(conf.unwrap_err());
+        if let Err(err) = conf {
+            return Err(err);
         }
         let conf = conf.unwrap();
         debug!("dconf returns {}", conf);

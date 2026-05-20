@@ -18,7 +18,7 @@ pub fn PropertyEditor() -> Element {
     let mut editing_style = config.element_style;
 
     let mut change = use_signal(|| true);
-    let mut current_col = use_signal(|| HSLColor::default());
+    let mut current_col = use_signal(HSLColor::default);
     use_effect(move || {
         let _ = selected.read();
         let conf = consume_context::<AppConfiguration>();
@@ -45,7 +45,7 @@ pub fn PropertyEditor() -> Element {
         debug!("finding bgcolor for elements: {:?}", selected.peek());
         let mut set = false;
         let attr = find_element_attribute("background-color");
-        if let Some(attr) = attr.get(0) {
+        if let Some(attr) = attr.first() {
             let col_str = attr.to_string();
             if let Some(hsl_col) = dbg!(HSLColor::from_css_property(col_str)) {
                 debug!("found color {:?}", hsl_col);

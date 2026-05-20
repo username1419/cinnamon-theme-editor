@@ -19,14 +19,14 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
     let mut toolbar_file_menu_hover = use_signal(|| false);
 
     let mut choose_theme_name_overlay_active = use_signal(|| false);
-    let mut input = use_signal(|| String::default());
+    let mut input = use_signal(String::default);
     let mut config = use_context::<AppConfiguration>();
 
-    let mut create_new_theme = move |name| {
+    let mut create_new_theme = move |name: String| {
         let theme_exists = is_theme_exist(&name);
         if theme_exists.is_err() || theme_exists.as_ref().is_ok_and(|e| e.eq(&true)) {
-            if theme_exists.is_err() {
-                error!("{}", theme_exists.unwrap_err());
+            if let Err(err) = theme_exists {
+                error!("{}", err);
             }
             error!("Theme already exists");
             return;
@@ -160,8 +160,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                 id: "placeholder-button2",
                 onclick: move |_| {
                     info!("placeholder-button2 triggered");
-                    todo!();
-                    ()
+                    let _ = std::panic::catch_unwind(|| todo!("placeholder-button2"));
                 },
                 text: "Placeholder 2",
             }
@@ -207,7 +206,7 @@ pub fn FileMenu(mouse_exit_timeout: Duration) -> Element {
                                 "onsumbit action for overlay-menu-theme-name-submenu form with value \"{}\"",
                                 input.read()
                             );
-                            let name = input.read().cloned();
+                            let name: String = input.read().cloned();
                             input.clear();
                             e.prevent_default();
                             async move {

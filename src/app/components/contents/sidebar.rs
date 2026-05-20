@@ -18,7 +18,7 @@ pub fn Sidebar() -> Element {
                     div {
                         id: "sidebar-category-{index}",
                         onclick: move |_| {
-                            selected_category.set(category.clone());
+                            selected_category.set(*category);
                         },
                         span { "{category:?}" }
                     }

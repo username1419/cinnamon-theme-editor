@@ -36,9 +36,9 @@ fn copy_recursive(src: &Path, dst: &Path) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn is_theme_exist(name: &String) -> Result<bool, Error> {
+pub fn is_theme_exist(name: &str) -> Result<bool, Error> {
     let mut file_path = env::home_dir().expect("Failed to find user's home directory.");
-    file_path.push(".themes/".to_string() + name.as_str());
+    file_path.push(".themes/".to_string() + name);
 
     fs::exists(&file_path)
 }
@@ -64,9 +64,7 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
     file_path.push(".themes/".to_string() + name.as_str());
     let theme_exists = is_theme_exist(&name);
     if theme_exists.is_err() || theme_exists.as_ref().is_ok_and(|e| e.eq(&true)) {
-        if theme_exists.is_err() {
-            return Err(theme_exists.unwrap_err());
-        }
+        theme_exists?;
         return Err(Error::new(
             std::io::ErrorKind::AlreadyExists,
             "Theme name already exists.",
@@ -94,7 +92,7 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
 pub fn open_existing(mut file_path: PathBuf) -> Result<StyleSheet, Error> {
     let name = file_path
         .iter()
-        .last()
+        .next_back()
         .unwrap_or_default()
         .to_str()
         .unwrap_or_default()

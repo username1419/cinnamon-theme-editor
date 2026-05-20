@@ -13,8 +13,11 @@ use crate::config::AppConfiguration;
 #[component]
 pub fn StyleInput() -> Element {
     let config = use_context::<AppConfiguration>();
+    #[allow(unused)]
     let default_style = config.default_style;
+    #[allow(unused)]
     let element_style = config.element_style;
+    #[allow(unused)]
     let editable_properties = [
         // https://jonathan.bergknoff.com/journal/modifying-theme-colors-linux-mint-cinnamon/
         ("background-color", 0, vec![]),
@@ -79,28 +82,27 @@ fn BackgroundColorInput() -> Element {
         let style = &*default_style.peek();
         let category_style = style.get(&*config.inspector_type.peek()).unwrap();
         let selected_elements = &*config.selected_elements.peek();
-        let style;
         if selected_elements.len() > 1 {
             // TODO: yea you heard 'im
             warn!("hey this isnt implemented yet");
             return HSLColor::default();
-        } else {
-            let element_name = selected_elements
-                .iter()
-                .next()
-                .unwrap()
-                .get_last()
-                .expect("Selector is not supposed to be empty.")
-                .0;
-            style = category_style.get_declaration(&Selector::from_raw(&element_name.get_raw()));
         }
+
+        let element_name = selected_elements
+            .iter()
+            .next()
+            .unwrap()
+            .get_last()
+            .expect("Selector is not supposed to be empty.")
+            .0;
+        let style = category_style.get_declaration(&Selector::from_raw(element_name.get_raw()));
 
         if let Some(style) = style {
             let attribute = style.find_attribute("background-color");
-            if let Some(attribute) = attribute {
-                if let Some(col) = HSLColor::from_css_property(attribute.to_string()) {
-                    return col;
-                }
+            if let Some(attribute) = attribute
+                && let Some(col) = HSLColor::from_css_property(attribute.to_string())
+            {
+                return col;
             }
         }
         HSLColor::default()
@@ -196,6 +198,7 @@ fn BackgroundColorInput() -> Element {
 }
 
 #[derive(Clone, PartialEq)]
+#[allow(dead_code)]
 enum TextType {
     /// label, the default unit used, should the unit be modified
     Number(Option<String>, ValueUnit, bool),
@@ -214,7 +217,7 @@ fn TextField(
             .iter()
             .map(|t| {
                 if let TextType::Number(_, unit, _) = t {
-                    Value::from_raw_single(&format!("0{}", unit.to_string()))
+                    Value::from_raw_single(&format!("0{}", unit))
                 } else {
                     Value::from_raw_single("")
                 }
@@ -223,7 +226,7 @@ fn TextField(
     });
 
     let discard_nondigit =
-        |str: String| -> String { str.chars().filter(|c| c.is_digit(10)).collect() };
+        |str: String| -> String { str.chars().filter(|c| c.is_ascii_digit()).collect() };
 
     use_effect(move || {
         let components = change_signal();

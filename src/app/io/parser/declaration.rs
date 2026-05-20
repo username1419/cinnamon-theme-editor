@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::{property::Property, property_value::Value};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -24,7 +26,7 @@ impl Declaration {
     pub fn new(property: Property, value: Vec<Value>) -> Self {
         let raw = format!(
             "{}:{}",
-            property.to_string(),
+            property,
             value
                 .iter()
                 .map(|v| v.to_string())
@@ -70,16 +72,16 @@ impl Declaration {
     }
 }
 
-impl ToString for Declaration {
-    fn to_string(&self) -> String {
-        format!(
+impl Display for Declaration {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
             "{}:{}",
-            self.property.to_string(),
+            self.property,
             self.value
                 .iter()
                 .map(|v| v.to_string())
                 .collect::<Vec<String>>()
                 .join(" ")
-        )
+        ))
     }
 }

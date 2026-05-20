@@ -4,7 +4,7 @@ use dioxus::{
     prelude::{component, rsx},
 };
 
-use crate::app::components::contents::inspector::inspector::Inspector;
+use crate::app::components::contents::inspector::inspector_component::Inspector;
 use crate::app::components::contents::sidebar::Sidebar;
 use crate::config::AppConfiguration;
 

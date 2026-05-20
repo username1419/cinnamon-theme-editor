@@ -1,5 +1,5 @@
 use dioxus::prelude::{debug, dioxus_stores, error};
-use std::{collections::HashMap, fs::read_to_string, path::PathBuf, str::FromStr};
+use std::{collections::HashMap, fmt::Display, fs::read_to_string, path::PathBuf, str::FromStr};
 
 use dioxus::stores::Store;
 use once_cell::sync::Lazy;
@@ -8,7 +8,7 @@ use regex::Regex;
 use super::parser::{declaration_block::DeclarationBlock, selector::*};
 
 /// Represents a CSS stylesheet.
-#[derive(Debug, Store, Clone)]
+#[derive(Debug, Store, Clone, Default)]
 pub struct StyleSheet {
     /// The stylesheet's source file path
     source: PathBuf,
@@ -22,16 +22,6 @@ static COMMENT_FILTER_REGEX: Lazy<Regex> = Lazy::new(|| {
     let pattern = r"/\*[^*]*\*+([^/*][^*]*\*+)*/";
     Regex::new(pattern).expect("Failed to compile regex")
 });
-
-impl Default for StyleSheet {
-    fn default() -> Self {
-        StyleSheet {
-            source: PathBuf::default(),
-            import: None,
-            rulesets: HashMap::default(),
-        }
-    }
-}
 
 impl StyleSheet {
     pub fn get_source(&self) -> &PathBuf {
@@ -63,10 +53,10 @@ impl StyleSheet {
                 .skip(1)
                 .take_while(|c| '\"'.ne(c))
                 .collect::<String>();
-            import = Some(
-                PathBuf::from_str(import_str.as_str())
-                    .expect(format!("Failed convert Path from String \"{}\"", import_str).as_str()),
-            );
+            import =
+                Some(PathBuf::from_str(import_str.as_str()).unwrap_or_else(|_| {
+                    panic!("Failed convert Path from String \"{}\"", import_str)
+                }));
             raw = raw
                 .chars()
                 .skip_while(|c| ';'.ne(c))
@@ -193,57 +183,49 @@ impl StyleSheet {
     pub fn to_export_string(&self) -> String {
         let stylesheet = self.to_export_safe();
         let mut out = String::new();
-        if let Some(import_path) = &self.import {
-            if let Some(import_str) = import_path.to_str() {
-                out.push_str(&*format!("@import url(\"{}\"); ", import_str));
-            }
+        if let Some(import_path) = &self.import
+            && let Some(import_str) = import_path.to_str()
+        {
+            out.push_str(&format!("@import url(\"{}\"); ", import_str));
         }
 
-        out.push_str(&*stylesheet.to_string());
+        out.push_str(&stylesheet.to_string());
 
         out
     }
 
     pub fn to_save_string(&self) -> String {
         let mut out = String::new();
-        if let Some(import_path) = &self.import {
-            if let Some(import_str) = import_path.to_str() {
-                out.push_str(&*format!("@import url(\"{}\"); ", import_str));
-            }
+        if let Some(import_path) = &self.import
+            && let Some(import_str) = import_path.to_str()
+        {
+            out.push_str(&format!("@import url(\"{}\"); ", import_str));
         }
 
-        out.push_str(&*self.to_string());
+        out.push_str(&self.to_string());
 
         out
     }
 
     pub fn to_string_categories(&self) -> HashMap<SelectorCategory, String> {
-        let categories = self.rulesets.iter().fold(
+        self.rulesets.iter().fold(
             HashMap::from_iter(
                 SelectorCategory::VALUES
-                    .clone()
                     .into_iter()
                     .zip(SelectorCategory::VALUES.iter().map(|_| String::new())),
             ),
             |mut cat, (selector, declaration_block)| {
                 let val = cat.get_mut(selector.category());
                 if let Some(val) = val {
-                    val.push_str(&*format!(
-                        "{}{{{}}}",
-                        selector.to_string(),
-                        declaration_block.to_string()
-                    ));
+                    val.push_str(&format!("{}{{{}}}", selector, declaration_block));
                 }
                 cat
             },
-        );
-
-        categories
+        )
     }
 
     pub fn to_categories(&self) -> HashMap<SelectorCategory, StyleSheet> {
         let mut categories = SelectorCategory::VALUES
-            .clone()
             .into_iter()
             .map(|category| {
                 (
@@ -278,18 +260,17 @@ impl StyleSheet {
     }
 }
 
-impl ToString for StyleSheet {
-    fn to_string(&self) -> String {
-        let mut out = String::new();
-        for (selector, declaration_block) in self.rulesets.iter() {
-            out.push_str(&*format!(
-                "{}{{{}}}",
-                selector.to_string(),
-                declaration_block.to_string()
-            ));
-        }
-
-        out
+impl Display for StyleSheet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(
+            &self
+                .rulesets
+                .iter()
+                .map(|(selector, declaration_block)| {
+                    format!("{}{{{}}}", selector, declaration_block)
+                })
+                .collect::<String>(),
+        )
     }
 }
 
