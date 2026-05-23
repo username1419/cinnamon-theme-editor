@@ -33,7 +33,6 @@ const COLOR_PICKER_STYLE: Asset = asset!("/assets/styling/color-picker.scss");
 const STYLE_INPUT_STYLE: Asset = asset!("/assets/styling/style_input.scss");
 const INSPECTOR_PANEL_STYLE: Asset = asset!("/assets/styling/inspector/panel.scss");
 
-#[cfg(debug_assertions)]
 fn main() {
     if cfg!(windows) {
         panic!("Unsupported on Windows");
