@@ -14,7 +14,7 @@ use crate::app::io::{
     parser::selector::{Selector, SelectorCategory},
 };
 use crate::app::{
-    components::contents::property_config::color_picker::HSLColor,
+    components::contents::property_config::color::HSLColor,
     io::parser::declaration_block::DeclarationBlock,
 };
 

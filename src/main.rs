@@ -9,7 +9,7 @@ use tokio::sync::Notify;
 pub mod app;
 pub mod config;
 pub mod helper;
-use crate::app::components::contents::property_config::color_picker::HSLColor;
+use crate::app::components::contents::property_config::color::HSLColor;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::SelectorCategory;
 use crate::config::MouseState;

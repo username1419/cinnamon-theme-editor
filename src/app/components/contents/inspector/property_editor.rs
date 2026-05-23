@@ -9,7 +9,8 @@ use dioxus::{
 };
 use tokio::task::spawn_blocking;
 
-use crate::app::components::contents::property_config::color_picker::{ColorPicker, HSLColor};
+use crate::app::components::contents::property_config::color::HSLColor;
+use crate::app::components::contents::property_config::color_picker::ColorPicker;
 use crate::app::components::contents::property_config::property_conf_utils::find_element_attribute;
 use crate::config::AppConfiguration;
 
