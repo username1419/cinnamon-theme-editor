@@ -28,17 +28,15 @@ pub fn PropertyEditor() -> Element {
 
         let mut color_switch = conf.color_switch;
         let mut history = conf.color_history;
-        if color_switch() {
-            let mut writelock = history.write();
-            let index = writelock.len() - 1;
-            writelock[index] = *current_col.peek();
-            writelock.rotate_right(1);
-            *color_switch.write() = false;
-            debug!(
-                "Added color {} to history",
-                current_col.peek().as_css_property()
-            );
-        }
+        let mut writelock = history.write();
+        let index = writelock.len() - 1;
+        writelock[index] = *current_col.peek();
+        writelock.rotate_right(1);
+        color_switch.set(true);
+        debug!(
+            "Added color {} to history",
+            current_col.peek().as_css_property()
+        );
 
         let notify = config.elements_notify.peek().clone();
         let confirm_notify = config.elements_notify_updated.peek().clone();
