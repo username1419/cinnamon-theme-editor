@@ -314,9 +314,18 @@ pub fn ColorPicker(
         if color_switch() {
             let color = color.peek();
             let bounds = *saturation_lightness_select_rect.peek();
+            let saturation = color.saturation as f64 / 100.0;
+            let lightness = color.lightness as f64 / 100.0;
+            // Inverse of the drag mapping in onmousemove (HSV value ↔ HSL lightness).
+            let value_denom = 1.0 - saturation / 2.0;
+            let normalized_y = if value_denom.abs() < f64::EPSILON {
+                0.0
+            } else {
+                (1.0 - lightness / value_denom).clamp(0.0, 1.0)
+            };
             let sl_coord = Point2D::new(
-                (100.0 - color.saturation as f64 / 100.0) * bounds.0,
-                (color.lightness as f64 / 100.0) * bounds.1,
+                (saturation * bounds.0).clamp(0.0, bounds.0),
+                (normalized_y * bounds.1).clamp(0.0, bounds.1),
             );
             debug!("setting cursor pos to {:?}", sl_coord);
             *cursor_pos.write() = sl_coord;
