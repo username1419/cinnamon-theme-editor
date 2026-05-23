@@ -1,5 +1,7 @@
 use crate::app::components::contents::property_config::style_input::StyleInput;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
+use crate::app::io::parser::property::Property;
+use crate::app::io::parser::property_value::Value;
 use dioxus::prelude::*;
 use dioxus::{
     core::Element,
@@ -18,7 +20,7 @@ pub fn PropertyEditor() -> Element {
     let selected = config.selected_elements;
     let mut editing_style = config.element_style;
 
-    let mut change = use_signal(|| true);
+    let mut change = use_signal(|| false);
     let mut current_col = use_signal(HSLColor::default);
     use_effect(move || {
         let _ = selected.read();
@@ -38,15 +40,11 @@ pub fn PropertyEditor() -> Element {
             );
         }
 
-        let notify = conf.elements_notify.peek().clone();
-        let confirm_notify = conf.elements_notify_confirm.peek().clone();
+        let notify = config.elements_notify.peek().clone();
+        let confirm_notify = config.elements_notify_updated.peek().clone();
         spawn_blocking(move || async move {
             notify.notified().await;
-            if let Some(confirm) = confirm_notify.clone()
-                && let Some(confirm) = confirm.upgrade()
-            {
-                confirm.notified().await;
-            }
+            confirm_notify.notified().await;
         });
 
         if !*change.peek() {
@@ -54,7 +52,6 @@ pub fn PropertyEditor() -> Element {
             *change.write() = true;
             return;
         }
-        *change.write() = false;
         debug!("finding bgcolor for elements: {:?}", selected.peek());
         let mut set = false;
         let attr = find_element_attribute("background-color");
@@ -63,6 +60,10 @@ pub fn PropertyEditor() -> Element {
             if let Some(hsl_col) = dbg!(HSLColor::from_css_property(col_str)) {
                 debug!("found color {:?}", hsl_col);
                 *current_col.write() = hsl_col;
+                editing_style.write().set_style_attribute(
+                    Property::from_raw("background-color"),
+                    Value::from_raw(&hsl_col.as_css_property()),
+                );
                 set = true;
             }
         }
@@ -70,6 +71,7 @@ pub fn PropertyEditor() -> Element {
         if !set {
             debug!("color not found, falling back to default");
             *current_col.write() = HSLColor::default();
+            editing_style.write().clear();
         }
     });
 
@@ -79,7 +81,9 @@ pub fn PropertyEditor() -> Element {
                 ColorPicker {
                     color: current_col,
                     on_color_change: move |col: HSLColor| {
-                        editing_style.write().append(DeclarationBlock::from_raw(format!("background-color: {}", col.as_css_property())));
+                        let mut wl = editing_style.write();
+                        wl.append(DeclarationBlock::from_raw(format!("background-color: {}", col.as_css_property())));
+                        drop(wl);
                     }
                 }
                 StyleInput {  }

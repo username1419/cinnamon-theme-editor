@@ -55,6 +55,11 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
     let _ancestry_attr = ancestry_attr.clone();
     let __ancestry_attr = ancestry_attr.clone();
 
+    use_hook(|| {
+        *consume_context::<AppConfiguration>().count_element.write() += 1;
+        debug!("registered element {}", own);
+    });
+
     use_future(move || {
         let _ancestry_attr = _ancestry_attr.clone();
         InspectorUtil::inspector_component_background_watcher(selected, _ancestry_attr, this_style)
@@ -63,7 +68,7 @@ pub fn CinnamonGenericContainer(props: CinnamonGenericContainerProps) -> Element
     rsx! {
         div {
             class: "CinnamonGenericContainer {class}",
-            style: "{style.read().to_string()};{props.style};",
+            style: "{style().to_string()};{props.style};",
             onclick: move |evt| InspectorUtil::inspector_component_onclick(
                 evt,
                 selected,

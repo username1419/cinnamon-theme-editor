@@ -66,6 +66,11 @@ pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
     let _ancestry_attr = ancestry_attr.clone();
     let __ancestry_attr = ancestry_attr.clone();
 
+    use_hook(|| {
+        *consume_context::<AppConfiguration>().count_element.write() += 1;
+        debug!("registered element {}", own);
+    });
+
     use_future(move || {
         let _ancestry_attr = _ancestry_attr.clone();
         InspectorUtil::inspector_component_background_watcher(selected, _ancestry_attr, this_style)
@@ -74,7 +79,7 @@ pub fn StBoxLayout(props: StBoxLayoutProps) -> Element {
     rsx! {
         div {
             class: "StBoxLayout {class}",
-            style: "{style.read().to_string()}",
+            style: "{style().to_string()}",
             onclick: move |evt| InspectorUtil::inspector_component_onclick(
                 evt,
                 selected,

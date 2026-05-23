@@ -118,6 +118,7 @@ fn App() -> Element {
     let color_switch = use_signal(|| false);
     let elements_notify = use_signal(|| Arc::new(Notify::new()));
     let elements_notify_confirm = use_signal_sync(|| None);
+    let elements_notify_updated = use_signal(|| Arc::new(Notify::new()));
 
     use_context_provider(|| AppConfiguration {
         is_dirty,
@@ -134,6 +135,7 @@ fn App() -> Element {
         color_switch,
         elements_notify,
         elements_notify_confirm,
+        elements_notify_updated,
     });
 
     rsx! {

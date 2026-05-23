@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, Weak},
+    sync::Arc,
 };
 
 use dioxus::{
@@ -27,7 +27,7 @@ pub struct AppConfiguration {
     /// Cursor position relative to viewport
     pub mouse_state: Signal<MouseState>,
     pub inspector_type: Signal<SelectorCategory>,
-    /// used to automatically assign inspector components' ids. do not use
+    /// used to track inspector components. do not edit
     pub count_element: Signal<u32>,
     pub element_style: Signal<DeclarationBlock>,
     /// Collection of css selectors all current selected elements use
@@ -36,8 +36,17 @@ pub struct AppConfiguration {
     pub num_element_selected: SyncSignal<u32>,
     pub color_history: Signal<[HSLColor; 10]>,
     pub color_switch: Signal<bool>,
+    /// Notification for internal registered selection events. Notifies waiters immediately after
+    /// an element is selected, and nothing has changed.
     pub elements_notify: Signal<Arc<Notify>>,
-    pub elements_notify_confirm: SyncSignal<Option<Weak<Notify>>>,
+    /// Notification for internal registered selection events. The first holds the listening queue
+    /// for non-clicked elements during update, the second `Notify` holds the notification listener
+    /// for the clicked element. **Do not** use outside
+    /// `app::components::contents::inspector::inspector_utils`
+    pub elements_notify_confirm: SyncSignal<Option<Arc<(Notify, Notify)>>>,
+    /// Notification for internal registered selection events. Notifies waiters immediately after
+    /// selected_elements has been updated to only contain currently selected elements.
+    pub elements_notify_updated: Signal<Arc<Notify>>,
 }
 
 #[derive(Debug)]
