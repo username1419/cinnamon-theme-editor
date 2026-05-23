@@ -1,10 +1,13 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use dioxus::{
     html::{geometry::Coordinates, input_data::MouseButtonSet},
-    signals::Signal,
-    stores::Store,
+    signals::{Signal, SyncSignal},
 };
+use tokio::sync::Notify;
 
 use crate::app::io::{
     parse::StyleSheet,
@@ -20,20 +23,30 @@ pub struct AppConfiguration {
     pub is_dirty: Signal<bool>,
     pub is_editing: Signal<bool>,
     pub default_style: Signal<HashMap<SelectorCategory, StyleSheet>>,
-    pub editing_stylesheet: Store<HashMap<SelectorCategory, StyleSheet>>,
+    pub editing_stylesheet: SyncSignal<HashMap<SelectorCategory, StyleSheet>>,
     /// Cursor position relative to viewport
     pub mouse_state: Signal<MouseState>,
     pub inspector_type: Signal<SelectorCategory>,
-    /// used to automatically assign inspector components' ids. do not use
+    /// used to track inspector components. do not edit
     pub count_element: Signal<u32>,
     pub element_style: Signal<DeclarationBlock>,
     /// Collection of css selectors all current selected elements use
-    pub selected_elements: Signal<HashSet<Selector>>,
+    pub selected_elements: SyncSignal<HashSet<Selector>>,
     /// Number of elements selected in the inspector.
-    pub num_element_selected: Signal<u32>,
-    pub selection_group: Signal<u32>,
+    pub num_element_selected: SyncSignal<u32>,
     pub color_history: Signal<[HSLColor; 10]>,
     pub color_switch: Signal<bool>,
+    /// Notification for internal registered selection events. Notifies waiters immediately after
+    /// an element is selected, and nothing has changed.
+    pub elements_notify: Signal<Arc<Notify>>,
+    /// Notification for internal registered selection events. The first holds the listening queue
+    /// for non-clicked elements during update, the second `Notify` holds the notification listener
+    /// for the clicked element. **Do not** use outside
+    /// `app::components::contents::inspector::inspector_utils`
+    pub elements_notify_confirm: SyncSignal<Option<Arc<(Notify, Notify)>>>,
+    /// Notification for internal registered selection events. Notifies waiters immediately after
+    /// selected_elements has been updated to only contain currently selected elements.
+    pub elements_notify_updated: Signal<Arc<Notify>>,
 }
 
 #[derive(Debug)]

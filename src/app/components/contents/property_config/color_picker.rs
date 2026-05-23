@@ -286,7 +286,7 @@ pub fn ColorPicker(
     let mut saturation_lightness_select_rect = use_signal(|| (0.0, 0.0));
     let mut cursor_pos: Signal<Point2D<f64, ElementSpace>> = use_signal(Point2D::origin);
     let history = config.color_history;
-    let color_switch = config.color_switch;
+    let mut color_switch = config.color_switch;
 
     let refresh_rate = time::Duration::from_secs_f64(1.0 / 60.0);
     let refresh_rate_slow = time::Duration::from_secs_f64(1.0 / 10.0);
@@ -314,10 +314,13 @@ pub fn ColorPicker(
         if color_switch() {
             let color = color.peek();
             let bounds = *saturation_lightness_select_rect.peek();
-            *cursor_pos.write() = Point2D::new(
-                color.saturation as f64 * bounds.0,
-                ((color.lightness * 2 - 1) as f64 / (1 - color.saturation) as f64) * bounds.1,
+            let sl_coord = Point2D::new(
+                (100.0 - color.saturation as f64 / 100.0) * bounds.0,
+                (color.lightness as f64 / 100.0) * bounds.1,
             );
+            debug!("setting cursor pos to {:?}", sl_coord);
+            *cursor_pos.write() = sl_coord;
+            color_switch.set(false);
         }
     });
 

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     app::io::parser::{declaration_block::DeclarationBlock, selector::Selector},
     config::AppConfiguration,
@@ -5,108 +7,142 @@ use crate::{
 use dioxus::{
     core::consume_context,
     html::{ModifiersInteraction, MouseEvent},
-    prelude::{debug, warn},
-    signals::{Memo, ReadableExt, Signal, WritableExt},
+    prelude::debug,
+    signals::{ReadableExt, Signal, SyncSignal, WritableExt, WritableHashSetExt},
 };
+use tokio::sync::Notify;
 
 pub struct InspectorUtil;
 impl InspectorUtil {
     pub fn inspector_component_onclick(
         evt: MouseEvent,
-        selected: Signal<bool>,
+        mut selected: SyncSignal<bool>,
         ancestry_attr: Selector,
-        mut is_multi_select: Signal<bool>,
-        mut this_selection_group: Signal<u32>,
     ) {
         let config = consume_context::<AppConfiguration>();
+        let notifier = config.elements_notify.peek();
+        let mut notify_confirm = config.elements_notify_confirm;
+        let notifier_updated = config.elements_notify_updated.peek().clone();
         let mut num_selected = config.num_element_selected;
-        let mut selection_group = config.selection_group;
-        let is_ctrl = evt.modifiers().ctrl();
-        *is_multi_select.write() = is_ctrl;
+        let mut selected_elements = config.selected_elements;
+        let element_style = config.element_style.peek().cloned();
+        let mut editing_stylesheet = config.editing_stylesheet;
+        let inspector_type = config.inspector_type.peek().cloned();
 
-        // Selecting a new element
-        if !is_ctrl {
-            // Single-select mode: start a new selection session
-            // This will trigger use_effect in other components to deselect
-            let new_group = selection_group() + 1;
-            *selection_group.write() = new_group;
-            if selected.peek().eq(&false) {
-                *this_selection_group.write() = new_group;
-                *num_selected.write() = 1;
+        let number_elements = *config.count_element.peek();
+        let is_ctrl = evt.modifiers().ctrl();
+        let is_selected = *selected.peek();
+
+        if is_ctrl {
+            debug!("control modifier is enabled");
+            if is_selected {
+                debug!("removing element from selected list");
+                editing_stylesheet
+                    .write()
+                    .get_mut(&inspector_type)
+                    .unwrap()
+                    .append_rule(ancestry_attr.clone(), element_style);
+                selected_elements.remove(&ancestry_attr);
+                *num_selected.write() -= 1;
+                selected.set(false);
+            } else {
+                debug!("adding element to selected list");
+                selected_elements.insert(ancestry_attr.clone());
+                *num_selected.write() += 1;
+                selected.set(true);
             }
         } else {
-            // Multi-select mode: join current session
-            *this_selection_group.write() = selection_group();
-            *num_selected.write() += 1;
+            debug!("control modifier is disabled");
+            let ancestry_attr = ancestry_attr.clone();
+            debug!("notifying all other inspector elements");
+            let confirm_notifier = Arc::new((Notify::new(), Notify::new()));
+            notify_confirm.set(Some(confirm_notifier.clone()));
+            notifier.notify_waiters();
+            tokio::spawn(async move {
+                for i in 0..number_elements {
+                    confirm_notifier.0.notify_one();
+                    confirm_notifier.1.notified().await;
+                    debug!("confirm notification received: {}", i + 1);
+                }
+                debug!("all components have been notified. continuing...");
+                notifier_updated.notify_waiters();
+
+                if is_selected {
+                    debug!("removing element from selected list");
+                    editing_stylesheet
+                        .write()
+                        .get_mut(&inspector_type)
+                        .unwrap()
+                        .append_rule(ancestry_attr.clone(), element_style);
+                    selected_elements.remove(&ancestry_attr);
+                    *num_selected.write() -= 1;
+                    selected.set(false);
+                } else {
+                    debug!("adding element to selected list");
+                    selected_elements.insert(ancestry_attr);
+                    *num_selected.write() += 1;
+                    selected.set(true);
+                }
+
+                debug!("dropping confirm notifier");
+                notify_confirm.set(None);
+                drop(confirm_notifier);
+            });
         }
 
         debug!("{} clicked", ancestry_attr.to_string());
         evt.stop_propagation();
     }
 
-    pub fn inspector_component_select_effect(
-        mut is_style_override: Signal<bool>,
-        mut this_style: Signal<DeclarationBlock>,
-        mut selected: Signal<bool>,
-        this_selection_group: Signal<u32>,
-        ancestry_attr: Selector,
-        dyn_style: Memo<DeclarationBlock>,
-    ) {
+    pub async fn inspector_component_background_watcher(
+        mut selected: SyncSignal<bool>,
+        selector: Selector,
+        mut current_style: Signal<DeclarationBlock>,
+    ) -> () {
         let config = consume_context::<AppConfiguration>();
 
-        if !*config.is_editing.peek() {
-            return;
-        }
-
-        let current_group = config.selection_group;
-        let mut editing_stylesheet = config.editing_stylesheet;
-        let mut editing_style = config.element_style;
-        let mut color_switch = config.color_switch;
-        let mut is_dirty = config.is_dirty;
+        let confirm = config.elements_notify_confirm;
+        let notifier = config.elements_notify.peek().cloned();
+        let mut num_selected = config.num_element_selected;
         let mut selected_elements = config.selected_elements;
-        let current_group = current_group();
-        let this_group = this_selection_group.peek();
-        let is_selected = selected();
+        let element_style = config.element_style;
+        let mut editing_stylesheet = config.editing_stylesheet;
+        let inspector_type = config.inspector_type;
+        let mut is_dirty = config.is_dirty;
 
-        let mut selected_elements_wl = selected_elements.write();
-
-        // If there's a new selection session and we're not part of it, deselect
-        if is_selected && current_group > 0 && this_group.ne(&current_group) {
-            debug!("Deselected element {}", ancestry_attr.to_string());
-            selected.set(false);
-            *color_switch.write() = true;
-            *this_style.write() = editing_style.peek().clone();
-            *is_style_override.write() = true;
-            editing_stylesheet
-                .write()
-                .get_mut(&*config.inspector_type.peek())
-                .unwrap()
-                .append_rule(ancestry_attr.clone(), dyn_style.peek().clone());
+        loop {
             debug!(
-                "Set element {} style as {}",
-                ancestry_attr.to_string(),
-                dyn_style.peek().to_string()
+                "{}: waiting for notification from selected element",
+                selector
             );
-            if selected_elements_wl.remove(&ancestry_attr) {
-                debug!("Removed element {} from selected_elements", ancestry_attr);
-            } else {
-                warn!(
-                    "Element {} not found in selected_elements, {:?}. Something went wrong.",
-                    ancestry_attr, *selected_elements_wl
-                );
-            }
-            if is_dirty.peek().eq(&false) {
-                *is_dirty.write() = true;
-            }
-        }
+            notifier.notified().await;
+            debug!("{}: received notification from selected element", selector);
 
-        if is_style_override.peek().eq(&true) && current_group > 0 && this_group.eq(&current_group)
-        {
-            selected.set(true);
-            *editing_style.write() = this_style.peek().cloned();
-            *is_style_override.write() = false;
-            selected_elements_wl.insert(ancestry_attr.clone());
-            debug!("Added element {} to selected_elements", ancestry_attr);
+            if *selected.peek() {
+                debug!("removing selection from selected elements list");
+                let style = element_style.peek().cloned();
+                current_style.set(style.clone());
+                editing_stylesheet
+                    .write()
+                    .get_mut(&inspector_type.peek().clone())
+                    .unwrap()
+                    .append_rule(selector.clone(), style);
+
+                *num_selected.write() -= 1;
+                selected_elements.remove(&selector);
+                selected.set(false);
+
+                if !*is_dirty.peek() {
+                    is_dirty.set(true);
+                }
+            }
+
+            if let Some(t) = confirm.peek().clone() {
+                let (confirm, notify) = t.as_ref();
+                debug!("notifying original");
+                confirm.notified().await;
+                notify.notify_last(); // WARN: sketchy
+            }
         }
     }
 }

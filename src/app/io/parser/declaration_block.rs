@@ -66,6 +66,10 @@ impl DeclarationBlock {
             .iter_mut()
             .find(|d| name.eq(d.get_property().get_raw()))
     }
+
+    pub fn clear(&mut self) {
+        self.declarations.clear();
+    }
 }
 
 impl Display for DeclarationBlock {
