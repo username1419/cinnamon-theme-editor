@@ -68,7 +68,7 @@ impl HSLColor {
         }
     }
 
-    pub fn to_normalized(&self) -> (f64, f64, f64, f64) {
+    pub fn as_normalized(&self) -> (f64, f64, f64, f64) {
         (
             self.hue as f64,
             (self.saturation as f64 / 100.0).clamp(0.0, 1.0),
@@ -77,8 +77,8 @@ impl HSLColor {
         )
     }
 
-    pub fn to_rgb(&self) -> (u8, u8, u8, u8) {
-        let (h, s, l, a) = self.to_normalized();
+    pub fn as_rgb(&self) -> (u8, u8, u8, u8) {
+        let (h, s, l, a) = self.as_normalized();
 
         let c = (1.0 - (2.0 * l - 1.0).abs()) * s;
         let x = c * (1.0 - ((h / 60.0) % 2.0 - 1.0).abs());
