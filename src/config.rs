@@ -51,6 +51,7 @@ pub struct AppConfiguration {
 pub struct PropertyConfiguration {
     pub color_history: Signal<[HSLColor; 10]>,
     pub color_switch: Signal<bool>,
+    pub current_bg_color: Signal<HSLColor>,
 }
 
 #[derive(Debug)]

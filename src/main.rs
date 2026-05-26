@@ -114,11 +114,13 @@ fn App() -> Element {
     let selected_elements = use_signal_sync(HashSet::new);
     let num_element_selected = use_signal_sync(|| 0);
     let element_style = use_signal(DeclarationBlock::default);
-    let color_history = use_signal(|| [HSLColor::default(); 10]);
-    let color_switch = use_signal(|| false);
     let elements_notify = use_signal(|| Arc::new(Notify::new()));
     let elements_notify_confirm = use_signal_sync(|| None);
     let elements_notify_updated = use_signal(|| Arc::new(Notify::new()));
+
+    let color_history = use_signal(|| [HSLColor::default(); 10]);
+    let color_switch = use_signal(|| false);
+    let current_bg_color = use_signal(HSLColor::default);
 
     use_context_provider(|| AppConfiguration {
         is_dirty,
@@ -139,6 +141,7 @@ fn App() -> Element {
     use_context_provider(|| PropertyConfiguration {
         color_history,
         color_switch,
+        current_bg_color,
     });
 
     rsx! {

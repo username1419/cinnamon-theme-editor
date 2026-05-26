@@ -5,7 +5,6 @@ pub mod property_conf_utils;
 pub mod style_input;
 
 use crate::app::components::contents::property_editor::style_input::StyleInput;
-use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::property::Property;
 use crate::app::io::parser::property_value::Value;
 use dioxus::prelude::*;
@@ -16,7 +15,6 @@ use dioxus::{
 use tokio::task::spawn_blocking;
 
 use crate::app::components::contents::property_editor::color::HSLColor;
-use crate::app::components::contents::property_editor::color_picker::ColorPicker;
 use crate::app::components::contents::property_editor::property_conf_utils::find_element_attribute;
 use crate::config::{AppConfiguration, PropertyConfiguration};
 
@@ -27,8 +25,9 @@ pub fn PropertyEditor() -> Element {
     let selected = config.selected_elements;
     let mut editing_style = config.element_style;
 
+    let property_config = use_context::<PropertyConfiguration>();
     let mut change = use_signal(|| false);
-    let mut current_col = use_signal(HSLColor::default);
+    let mut current_col = property_config.current_bg_color;
     use_effect(move || {
         let _ = selected.read();
         let conf = consume_context::<PropertyConfiguration>();
@@ -83,14 +82,6 @@ pub fn PropertyEditor() -> Element {
     rsx! {
         div { class: "property-editor",
             if num_selected() > 0 {
-                ColorPicker {
-                    color: current_col,
-                    on_color_change: move |col: HSLColor| {
-                        let mut wl = editing_style.write();
-                        wl.append(DeclarationBlock::from_raw(format!("background-color: {}", col.as_css_property())));
-                        drop(wl);
-                    }
-                }
                 StyleInput {  }
             } else {
                 span { "Select an element to begin" }
