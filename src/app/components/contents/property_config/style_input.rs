@@ -6,6 +6,7 @@ use dioxus::{
 
 use crate::app::components::contents::property_config::color::HSLColor;
 use crate::app::components::contents::property_config::color_picker::ColorPicker;
+use crate::app::components::contents::property_config::editor_section::EditorSection;
 use crate::app::io::parser::property::Property;
 use crate::app::io::parser::property_value::{Value, ValueUnit};
 use crate::app::io::parser::selector::Selector;
@@ -63,6 +64,10 @@ pub fn StyleInput() -> Element {
     rsx! {
         div {
             class: "style-input",
+            EditorSection {
+                class: "",
+                label: "Background",
+            }
         }
     }
 }

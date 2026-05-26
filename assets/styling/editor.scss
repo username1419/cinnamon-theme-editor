@@ -1,0 +1,35 @@
+@import 'colors.scss';
+
+.collapsible {
+  transition: height 200ms ease-in 0s;
+  width: 100%;
+  height: 100%;
+  border: 1px solid black;
+  border-top: none;
+  pointer-events: all;
+}
+
+.collapsible>* {
+  width: 100%;
+  height: 100%;
+}
+
+.collapsible-container {
+  background-color: darken($color: $window-color-main, $amount: 5);
+  width: 100%;
+  height: fit-content;
+  padding: 5px;
+}
+
+.collapsible-container:hover {
+  background-color: darken($color: $window-color-main, $amount: 15);
+}
+
+.collapsible-label {
+  display: inline-flex;
+  width: 100%;
+}
+
+.collapsible-label>span {
+  pointer-events: none;
+}
