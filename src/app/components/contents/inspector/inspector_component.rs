@@ -5,8 +5,7 @@ use dioxus::{
 };
 
 use crate::app::components::contents::inspector::panel::Panel;
-use crate::app::components::contents::inspector::property_editor::PropertyEditor;
-use crate::config::AppConfiguration;
+use crate::{app::components::contents::property_editor::PropertyEditor, config::AppConfiguration};
 
 #[component]
 pub fn Inspector() -> Element {

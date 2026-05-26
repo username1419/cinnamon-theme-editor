@@ -1,4 +1,4 @@
-use crate::app::components::contents::property_config::color::HSLColor;
+use crate::app::components::contents::property_editor::color::HSLColor;
 use dioxus::html::geometry::ElementSpace;
 use dioxus::html::geometry::euclid::Point2D;
 use dioxus::html::input_data::MouseButton;

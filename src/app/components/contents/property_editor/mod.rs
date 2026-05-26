@@ -1,4 +1,10 @@
-use crate::app::components::contents::property_config::style_input::StyleInput;
+pub(crate) mod color;
+pub mod color_picker;
+pub mod editor_section;
+pub mod property_conf_utils;
+pub mod style_input;
+
+use crate::app::components::contents::property_editor::style_input::StyleInput;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::property::Property;
 use crate::app::io::parser::property_value::Value;
@@ -9,9 +15,9 @@ use dioxus::{
 };
 use tokio::task::spawn_blocking;
 
-use crate::app::components::contents::property_config::color::HSLColor;
-use crate::app::components::contents::property_config::color_picker::ColorPicker;
-use crate::app::components::contents::property_config::property_conf_utils::find_element_attribute;
+use crate::app::components::contents::property_editor::color::HSLColor;
+use crate::app::components::contents::property_editor::color_picker::ColorPicker;
+use crate::app::components::contents::property_editor::property_conf_utils::find_element_attribute;
 use crate::config::AppConfiguration;
 
 #[component]
