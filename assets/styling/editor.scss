@@ -1,23 +1,34 @@
 @import 'colors.scss';
 
+// NOTE: its still fucked somehow but im not editing this no mo
+.collapsible-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+}
+
+.collapsible-wrapper.open {
+  grid-template-rows: 1fr;
+}
+
 .collapsible {
-  transition: height 200ms ease-in 0s;
+  transition: max-height 200ms ease-out 0s;
   width: 100%;
-  height: 100%;
+  max-height: 100%;
   border: 1px solid black;
   border-top: none;
   pointer-events: all;
+  overflow: clip;
 }
 
-.collapsible>* {
-  width: 100%;
-  height: 100%;
+.collapsible-container * {
+  min-height: 0%;
 }
 
 .collapsible-container {
   background-color: darken($color: $window-color-main, $amount: 5);
   width: 100%;
-  height: fit-content;
+  height: auto;
   padding: 5px;
 }
 

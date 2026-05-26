@@ -2,7 +2,7 @@
 
 .color-picker {
   user-select: none;
-  width: 100%;
+  width: calc(100% - 12px * 2);
   padding: 12px;
 }
 
