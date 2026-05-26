@@ -68,7 +68,7 @@ pub fn StyleInput() -> Element {
         div {
             class: "style-input",
             EditorSection {
-                class: "",
+                class: "background-color-input",
                 label: "Background",
                 ColorPicker {
                     color: current_color,

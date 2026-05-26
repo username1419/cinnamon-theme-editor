@@ -27,7 +27,7 @@ pub fn EditorSection(class: String, label: String, children: Element) -> Element
             div {
                 class: "collapsible-label",
                 span { "{label}" },
-                span { style: "right: 0%; margin-left: auto", if &style() == "display: none" { "+" } else { "-" } },
+                span { style: "right: 0%; margin-left: auto; margin-right: 4px", if &style() == "display: none" { "[+]" } else { "[—]" } },
             }
             div {
                 class: "collapsible-wrapper {opened}",
