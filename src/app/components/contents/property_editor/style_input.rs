@@ -4,20 +4,21 @@ use dioxus::{
     prelude::{component, rsx},
 };
 
-use crate::app::components::contents::property_config::color::HSLColor;
-use crate::app::components::contents::property_config::color_picker::ColorPicker;
+use crate::app::components::contents::property_editor::color::HSLColor;
+use crate::app::components::contents::property_editor::color_picker::ColorPicker;
+use crate::app::components::contents::property_editor::editor_section::EditorSection;
+use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::property::Property;
 use crate::app::io::parser::property_value::{Value, ValueUnit};
 use crate::app::io::parser::selector::Selector;
-use crate::config::AppConfiguration;
+use crate::config::{AppConfiguration, PropertyConfiguration};
 
 #[component]
 pub fn StyleInput() -> Element {
     let config = use_context::<AppConfiguration>();
     #[allow(unused)]
     let default_style = config.default_style;
-    #[allow(unused)]
-    let element_style = config.element_style;
+    let mut element_style = config.element_style;
     #[allow(unused)]
     let editable_properties = [
         // https://jonathan.bergknoff.com/journal/modifying-theme-colors-linux-mint-cinnamon/
@@ -60,9 +61,23 @@ pub fn StyleInput() -> Element {
         // NOTE: i aint doin box-shadow
     ];
 
+    let property_config = use_context::<PropertyConfiguration>();
+    let current_color = property_config.current_bg_color;
+
     rsx! {
         div {
             class: "style-input",
+            EditorSection {
+                class: "background-color-input",
+                label: "Background",
+                ColorPicker {
+                    color: current_color,
+                    on_color_change: move |col: HSLColor| {
+                        let mut wl = element_style.write();
+                        wl.append(DeclarationBlock::from_raw(format!("background-color: {}", col.as_css_property())));
+                    }
+                }
+            }
         }
     }
 }

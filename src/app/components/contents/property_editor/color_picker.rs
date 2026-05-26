@@ -1,4 +1,4 @@
-use crate::app::components::contents::property_config::color::HSLColor;
+use crate::app::components::contents::property_editor::color::HSLColor;
 use dioxus::html::geometry::ElementSpace;
 use dioxus::html::geometry::euclid::Point2D;
 use dioxus::html::input_data::MouseButton;
@@ -11,21 +11,22 @@ use tokio::time::{self, Instant};
 
 use crate::app::io::parser::property::Property;
 use crate::app::io::parser::property_value::Value;
-use crate::config::AppConfiguration;
+use crate::config::{AppConfiguration, PropertyConfiguration};
 
 #[component]
 pub fn ColorPicker(
     color: Signal<HSLColor>,
     on_color_change: Option<Callback<HSLColor>>,
 ) -> Element {
-    let config = use_context::<AppConfiguration>();
-    let mut editing_style = config.element_style;
+    let app_config = use_context::<AppConfiguration>();
+    let property_config = use_context::<PropertyConfiguration>();
+    let mut editing_style = app_config.element_style;
     let mut selected_color = color;
 
     let mut saturation_lightness_select_rect = use_signal(|| (0.0, 0.0));
     let mut cursor_pos: Signal<Point2D<f64, ElementSpace>> = use_signal(Point2D::origin);
-    let history = config.color_history;
-    let mut color_switch = config.color_switch;
+    let history = property_config.color_history;
+    let mut color_switch = property_config.color_switch;
 
     let refresh_rate = time::Duration::from_secs_f64(1.0 / 60.0);
     let refresh_rate_slow = time::Duration::from_secs_f64(1.0 / 10.0);
@@ -88,7 +89,7 @@ pub fn ColorPicker(
                         // ~4% CPU (Intel i5-13420H)
                         // ~7% GPU (GeForce RTX 4050 Mobile)
                         async move {
-                            if !config.mouse_state.peek().mouse_down.contains(MouseButton::Primary) {
+                            if !app_config.mouse_state.peek().mouse_down.contains(MouseButton::Primary) {
                                 return;
                             }
 

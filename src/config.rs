@@ -14,7 +14,7 @@ use crate::app::io::{
     parser::selector::{Selector, SelectorCategory},
 };
 use crate::app::{
-    components::contents::property_config::color::HSLColor,
+    components::contents::property_editor::color::HSLColor,
     io::parser::declaration_block::DeclarationBlock,
 };
 
@@ -34,8 +34,6 @@ pub struct AppConfiguration {
     pub selected_elements: SyncSignal<HashSet<Selector>>,
     /// Number of elements selected in the inspector.
     pub num_element_selected: SyncSignal<u32>,
-    pub color_history: Signal<[HSLColor; 10]>,
-    pub color_switch: Signal<bool>,
     /// Notification for internal registered selection events. Notifies waiters immediately after
     /// an element is selected, and nothing has changed.
     pub elements_notify: Signal<Arc<Notify>>,
@@ -47,6 +45,13 @@ pub struct AppConfiguration {
     /// Notification for internal registered selection events. Notifies waiters immediately after
     /// selected_elements has been updated to only contain currently selected elements.
     pub elements_notify_updated: Signal<Arc<Notify>>,
+}
+
+#[derive(Clone)]
+pub struct PropertyConfiguration {
+    pub color_history: Signal<[HSLColor; 10]>,
+    pub color_switch: Signal<bool>,
+    pub current_bg_color: Signal<HSLColor>,
 }
 
 #[derive(Debug)]

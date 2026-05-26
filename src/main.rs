@@ -9,10 +9,10 @@ use tokio::sync::Notify;
 pub mod app;
 pub mod config;
 pub mod helper;
-use crate::app::components::contents::property_config::color::HSLColor;
+use crate::app::components::contents::property_editor::color::HSLColor;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::SelectorCategory;
-use crate::config::MouseState;
+use crate::config::{MouseState, PropertyConfiguration};
 use crate::helper::Helper;
 use crate::{
     app::components::{
@@ -31,6 +31,7 @@ const TOOLBAR_STYLE: Asset = asset!("/assets/styling/toolbar.scss");
 const OVERLAY_STYLE: Asset = asset!("/assets/styling/overlay.scss");
 const COLOR_PICKER_STYLE: Asset = asset!("/assets/styling/color-picker.scss");
 const STYLE_INPUT_STYLE: Asset = asset!("/assets/styling/style_input.scss");
+const EDITOR_PANEL_STYLE: Asset = asset!("/assets/styling/editor.scss");
 const INSPECTOR_PANEL_STYLE: Asset = asset!("/assets/styling/inspector/panel.scss");
 
 fn main() {
@@ -113,11 +114,13 @@ fn App() -> Element {
     let selected_elements = use_signal_sync(HashSet::new);
     let num_element_selected = use_signal_sync(|| 0);
     let element_style = use_signal(DeclarationBlock::default);
-    let color_history = use_signal(|| [HSLColor::default(); 10]);
-    let color_switch = use_signal(|| false);
     let elements_notify = use_signal(|| Arc::new(Notify::new()));
     let elements_notify_confirm = use_signal_sync(|| None);
     let elements_notify_updated = use_signal(|| Arc::new(Notify::new()));
+
+    let color_history = use_signal(|| [HSLColor::default(); 10]);
+    let color_switch = use_signal(|| false);
+    let current_bg_color = use_signal(HSLColor::default);
 
     use_context_provider(|| AppConfiguration {
         is_dirty,
@@ -130,11 +133,15 @@ fn App() -> Element {
         selected_elements,
         num_element_selected,
         element_style,
-        color_history,
-        color_switch,
         elements_notify,
         elements_notify_confirm,
         elements_notify_updated,
+    });
+
+    use_context_provider(|| PropertyConfiguration {
+        color_history,
+        color_switch,
+        current_bg_color,
     });
 
     rsx! {
@@ -145,6 +152,7 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: OVERLAY_STYLE }
         document::Link { rel: "stylesheet", href: COLOR_PICKER_STYLE }
         document::Link { rel: "stylesheet", href: INSPECTOR_PANEL_STYLE }
+        document::Link { rel: "stylesheet", href: EDITOR_PANEL_STYLE }
         document::Link { rel: "stylesheet", href: STYLE_INPUT_STYLE }
 
         div {

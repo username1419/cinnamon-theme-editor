@@ -1,0 +1,46 @@
+@import 'colors.scss';
+
+// NOTE: its still fucked somehow but im not editing this no mo
+.collapsible-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+}
+
+.collapsible-wrapper.open {
+  grid-template-rows: 1fr;
+}
+
+.collapsible {
+  transition: max-height 200ms ease-out 0s;
+  width: 100%;
+  max-height: 100%;
+  border: 1px solid black;
+  border-top: none;
+  pointer-events: all;
+  overflow: clip;
+}
+
+.collapsible-container * {
+  min-height: 0%;
+}
+
+.collapsible-container {
+  background-color: darken($color: $window-color-main, $amount: 5);
+  width: 100%;
+  height: auto;
+  padding: 5px;
+}
+
+.collapsible-container:hover {
+  background-color: darken($color: $window-color-main, $amount: 15);
+}
+
+.collapsible-label {
+  display: inline-flex;
+  width: 100%;
+}
+
+.collapsible-label>span {
+  pointer-events: none;
+}
