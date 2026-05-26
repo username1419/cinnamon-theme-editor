@@ -18,7 +18,7 @@ use tokio::task::spawn_blocking;
 use crate::app::components::contents::property_editor::color::HSLColor;
 use crate::app::components::contents::property_editor::color_picker::ColorPicker;
 use crate::app::components::contents::property_editor::property_conf_utils::find_element_attribute;
-use crate::config::AppConfiguration;
+use crate::config::{AppConfiguration, PropertyConfiguration};
 
 #[component]
 pub fn PropertyEditor() -> Element {
@@ -31,7 +31,7 @@ pub fn PropertyEditor() -> Element {
     let mut current_col = use_signal(HSLColor::default);
     use_effect(move || {
         let _ = selected.read();
-        let conf = consume_context::<AppConfiguration>();
+        let conf = consume_context::<PropertyConfiguration>();
 
         let mut color_switch = conf.color_switch;
         let mut history = conf.color_history;

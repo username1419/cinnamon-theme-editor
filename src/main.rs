@@ -12,7 +12,7 @@ pub mod helper;
 use crate::app::components::contents::property_editor::color::HSLColor;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::SelectorCategory;
-use crate::config::MouseState;
+use crate::config::{MouseState, PropertyConfiguration};
 use crate::helper::Helper;
 use crate::{
     app::components::{
@@ -131,11 +131,14 @@ fn App() -> Element {
         selected_elements,
         num_element_selected,
         element_style,
-        color_history,
-        color_switch,
         elements_notify,
         elements_notify_confirm,
         elements_notify_updated,
+    });
+
+    use_context_provider(|| PropertyConfiguration {
+        color_history,
+        color_switch,
     });
 
     rsx! {
