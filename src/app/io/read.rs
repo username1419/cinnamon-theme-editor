@@ -1,3 +1,5 @@
+//! Reading themes from `$HOME/.themes/` and creating editable copies.
+
 use std::result::Result::Ok;
 
 use std::io::Error;
@@ -36,6 +38,7 @@ fn copy_recursive(src: &Path, dst: &Path) -> Result<(), Error> {
     Ok(())
 }
 
+/// Returns whether a theme directory named `name` exists under `$HOME/.themes/`.
 pub fn is_theme_exist(name: &str) -> Result<bool, Error> {
     let mut file_path = env::home_dir().expect("Failed to find user's home directory.");
     file_path.push(".themes/".to_string() + name);
@@ -89,6 +92,11 @@ pub fn create_as_edit(name: String, default: PathBuf) -> Result<StyleSheet, Erro
     result.map(|raw| StyleSheet::parse(file_path.to_path_buf(), raw))
 }
 
+/// Opens an existing theme for editing.
+///
+/// Expects `file_path` to be the theme directory (e.g. `$HOME/.themes/MyTheme`).
+/// Reads `.cinnamon-edit.css` if present; otherwise copies `cinnamon/cinnamon.css`
+/// into that sidecar file, then parses the result.
 pub fn open_existing(mut file_path: PathBuf) -> Result<StyleSheet, Error> {
     let name = file_path
         .iter()

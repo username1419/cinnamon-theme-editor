@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+/// One token in a multi-value CSS declaration (e.g. `13` + `px` in `13px`).
 #[derive(Clone, Debug, PartialEq)]
 pub struct Value {
     raw: String,
@@ -7,6 +8,7 @@ pub struct Value {
     unit: ValueUnit,
 }
 
+/// Unit suffix for numeric CSS values.
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum ValueUnit {
     #[default]
@@ -26,6 +28,7 @@ impl ValueUnit {
         ("%", ValueUnit::Percent),
     ];
 
+    /// Detects a unit from the suffix of `raw` (e.g. `13px` → [`ValueUnit::Px`]).
     pub fn match_end(raw: &str) -> Self {
         let mut category = ValueUnit::None;
 
@@ -65,7 +68,9 @@ impl Display for ValueUnit {
 }
 
 impl Value {
-    /// # Exmaples
+    /// Splits whitespace-separated value tokens, including parenthesized functions such as `rgb(...)`.
+    ///
+    /// # Examples
     /// ```
     /// let values = "13px 9px 13px 9px";
     /// let parsed = Value::from_raw(values);
@@ -107,7 +112,9 @@ impl Value {
         collection
     }
 
-    /// # Exmaples
+    /// Parses a single value token into numeric/keyword part and [`ValueUnit`].
+    ///
+    /// # Examples
     /// ```
     /// let value = Value::from_raw_single("13px");
     /// let check = Value {
@@ -140,18 +147,22 @@ impl Value {
         Self { raw, value, unit }
     }
 
+    /// Numeric or keyword portion without the unit suffix.
     pub fn get_value(&self) -> &String {
         &self.value
     }
 
+    /// Unit for this token.
     pub fn get_unit(&self) -> &ValueUnit {
         &self.unit
     }
 
+    /// Updates the value portion (does not rebuild `raw`; use display/serialization as needed).
     pub fn set_value(&mut self, value: String) {
         self.value = value;
     }
 
+    /// Updates the unit for this token.
     pub fn set_unit(&mut self, unit: ValueUnit) {
         self.unit = unit;
     }

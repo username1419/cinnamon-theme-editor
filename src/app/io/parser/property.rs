@@ -1,11 +1,13 @@
 use std::fmt::Display;
 
+/// A CSS property name with a coarse category used by the property editor UI.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Property {
     raw: String,
     category: PropertyCategory,
 }
 
+/// Broad grouping for properties (background, border, etc.).
 #[derive(Clone, Debug, PartialEq)]
 pub enum PropertyCategory {
     Background,
@@ -17,6 +19,7 @@ pub enum PropertyCategory {
 }
 
 impl PropertyCategory {
+    /// Infers a category from substrings in the property name (last matching pattern wins).
     pub fn try_match(raw: &str) -> Self {
         let mut category = PropertyCategory::Other;
 
@@ -39,10 +42,12 @@ impl PropertyCategory {
 }
 
 impl Property {
+    /// Creates a property with an explicit category.
     pub fn new(raw: String, category: PropertyCategory) -> Self {
         Self { raw, category }
     }
 
+    /// Parses a property name and assigns a category via [`PropertyCategory::try_match`].
     pub fn from_raw(raw: &str) -> Self {
         Self {
             raw: raw.trim().to_string(),
@@ -50,6 +55,7 @@ impl Property {
         }
     }
 
+    /// The property name as it appears in CSS.
     pub fn get_raw(&self) -> &String {
         &self.raw
     }
