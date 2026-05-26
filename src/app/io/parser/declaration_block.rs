@@ -4,6 +4,7 @@ use crate::app::io::parser::{property::Property, property_value::Value};
 
 use super::declaration::Declaration;
 
+/// A `{ ... }` block of CSS declarations for one selector.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct DeclarationBlock {
     raw: String,
@@ -11,6 +12,7 @@ pub struct DeclarationBlock {
 }
 
 impl DeclarationBlock {
+    /// Parses semicolon-separated declarations from the inside of a ruleset block.
     pub fn from_raw(raw: String) -> DeclarationBlock {
         let raw = raw.trim().to_string();
         let declarations = raw
@@ -48,6 +50,7 @@ impl DeclarationBlock {
         &self.raw
     }
 
+    /// Merges another block into this one, overwriting properties that appear in both.
     pub fn append(&mut self, declaration_block: DeclarationBlock) {
         for declaration in declaration_block.declarations {
             let (_, property, values) = declaration.decompose();
@@ -55,18 +58,21 @@ impl DeclarationBlock {
         }
     }
 
+    /// Returns the declaration whose property name equals `name`.
     pub fn find_attribute(&self, name: &str) -> Option<&Declaration> {
         self.declarations
             .iter()
             .find(|d| name.eq(d.get_property().get_raw()))
     }
 
+    /// Returns a mutable reference to the declaration whose property name equals `name`.
     pub fn findmut_attribute(&mut self, name: String) -> Option<&mut Declaration> {
         self.declarations
             .iter_mut()
             .find(|d| name.eq(d.get_property().get_raw()))
     }
 
+    /// Removes all declarations from this block.
     pub fn clear(&mut self) {
         self.declarations.clear();
     }

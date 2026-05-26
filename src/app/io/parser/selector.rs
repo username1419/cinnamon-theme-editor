@@ -3,6 +3,7 @@ use std::fmt::Display;
 
 use super::basic_selector::BasicSelector;
 
+/// CSS selector complexity: simple, compound, or complex (combinators).
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum SelectorType {
     Complex,
@@ -10,6 +11,7 @@ pub enum SelectorType {
     Simple,
 }
 
+/// UI grouping for Cinnamon theme selectors (panel, menu, window, etc.).
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Default)]
 #[repr(i32)]
 pub enum SelectorCategory {
@@ -26,6 +28,7 @@ pub enum SelectorCategory {
 }
 
 impl SelectorCategory {
+    /// All categories in display order (for sidebars and category split views).
     // i hate this
     // but we already have like 6 deps so we cant just use strum
     pub const VALUES: [SelectorCategory; 9] = [
@@ -41,6 +44,7 @@ impl SelectorCategory {
     ];
 }
 
+/// Combinator between two simple selectors in a complex selector.
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum Combinator {
     NextSibling,
@@ -51,6 +55,7 @@ pub enum Combinator {
 }
 
 impl Combinator {
+    /// Parses combinator text; whitespace maps to descendant. Panics on unknown tokens.
     pub fn try_match(combinator: &str) -> Self {
         if combinator.contains(char::MAX) {
             return Self::None;
@@ -77,6 +82,7 @@ impl Display for Combinator {
     }
 }
 
+/// A full CSS selector (possibly compound or complex) with an inferred UI category.
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Selector {
     /// The selector's raw contents
@@ -90,6 +96,7 @@ pub struct Selector {
 }
 
 impl Selector {
+    /// Parses a selector string into basic parts and combinators.
     pub fn from_raw(raw: &str) -> Self {
         let raw = format!("{}{}", raw, char::MAX);
         let selector_type = Self::get_type(&raw);
@@ -230,6 +237,8 @@ impl Selector {
         category
     }
 
+    /// Prefixes type selectors with `.` so the webview can match St widgets; records originals
+    /// for later [`Self::to_export_safe`].
     pub fn to_webview_safe(mut self) -> Self {
         self.selectors.iter_mut().for_each(|(b, _)| {
             if b.get_raw().starts_with('.') || b.get_raw().starts_with('*') {
@@ -266,14 +275,17 @@ impl Selector {
         Selector::from_raw(&s.to_string())
     }
 
+    /// Category assigned at parse time via [`Self::get_category`].
     pub fn category(&self) -> &SelectorCategory {
         &self.selector_category
     }
 
+    /// Returns the basic selector and following combinator at `idx`.
     pub fn get_individual(&self, idx: usize) -> Option<(&BasicSelector, &Combinator)> {
         self.selectors.get(idx).map(|(b, c)| (b, c))
     }
 
+    /// Returns the rightmost basic selector and its combinator.
     pub fn get_last(&self) -> Option<(&BasicSelector, &Combinator)> {
         self.selectors.last().map(|(b, c)| (b, c))
     }

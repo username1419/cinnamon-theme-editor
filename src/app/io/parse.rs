@@ -1,3 +1,5 @@
+//! Parsed representation of a Cinnamon/CSS theme file.
+
 use dioxus::prelude::{debug, dioxus_stores, error};
 use std::{collections::HashMap, fmt::Display, fs::read_to_string, path::PathBuf, str::FromStr};
 
@@ -24,22 +26,30 @@ static COMMENT_FILTER_REGEX: Lazy<Regex> = Lazy::new(|| {
 });
 
 impl StyleSheet {
+    /// Path to the stylesheet file this instance was loaded from or should be saved to.
     pub fn get_source(&self) -> &PathBuf {
         &self.source
     }
 
+    /// Path from the leading `@import` rule, if the stylesheet delegates to another file.
     pub fn get_fallback_source(&self) -> Option<&PathBuf> {
         self.import.as_ref()
     }
 
+    /// Returns the declaration block for `selector`, if that ruleset exists.
     pub fn get_declaration(&self, selector: &Selector) -> Option<&DeclarationBlock> {
         self.rulesets.get(selector)
     }
 
+    /// Returns the stored selector key and its declaration block for `selector`.
     pub fn get_ruleset(&self, selector: &Selector) -> Option<(&Selector, &DeclarationBlock)> {
         self.rulesets.get_key_value(selector)
     }
 
+    /// Parses CSS text into a [`StyleSheet`].
+    ///
+    /// Strips block comments, handles an optional leading `@import`, splits rulesets on `}`,
+    /// and merges duplicate selectors by appending declaration blocks.
     // TODO: using a token parser would be faster but i cant be fucked rn
     pub fn parse(source: PathBuf, raw: String) -> Self {
         // import statement
@@ -121,6 +131,11 @@ impl StyleSheet {
             .collect()
     }
 
+    /// Prepares this stylesheet for preview in the embedded webview.
+    ///
+    /// Converts selectors with [`Selector::to_webview_safe`] and, when an import path is set,
+    /// loads and parses `cinnamon/cinnamon.css` from that directory as a second stylesheet.
+    /// Returns `(edited_rules, imported_fallback)`.
     pub fn to_webview_safe(self) -> (StyleSheet, Option<StyleSheet>) {
         let mut rulesets = HashMap::new();
         for (selector, declaration_block) in self.rulesets {
@@ -180,6 +195,7 @@ impl StyleSheet {
         }
     }
 
+    /// Serializes the stylesheet for export, with selectors in Cinnamon-native form.
     pub fn to_export_string(&self) -> String {
         let stylesheet = self.to_export_safe();
         let mut out = String::new();
@@ -194,6 +210,7 @@ impl StyleSheet {
         out
     }
 
+    /// Serializes the stylesheet for saving during editing (selectors unchanged).
     pub fn to_save_string(&self) -> String {
         let mut out = String::new();
         if let Some(import_path) = &self.import
@@ -207,6 +224,7 @@ impl StyleSheet {
         out
     }
 
+    /// Groups rulesets by [`SelectorCategory`] as concatenated CSS text per category.
     pub fn to_string_categories(&self) -> HashMap<SelectorCategory, String> {
         self.rulesets.iter().fold(
             HashMap::from_iter(
@@ -224,6 +242,7 @@ impl StyleSheet {
         )
     }
 
+    /// Splits this stylesheet into one [`StyleSheet`] per [`SelectorCategory`].
     pub fn to_categories(&self) -> HashMap<SelectorCategory, StyleSheet> {
         let mut categories = SelectorCategory::VALUES
             .into_iter()
@@ -250,6 +269,7 @@ impl StyleSheet {
         categories
     }
 
+    /// Inserts or merges a ruleset: if `selector` already exists, declarations are appended.
     pub fn append_rule(&mut self, selector: Selector, declaration_block: DeclarationBlock) {
         let val = self.rulesets.get_mut(&selector);
         if let Some(val) = val {

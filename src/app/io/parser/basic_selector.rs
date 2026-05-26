@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+/// Kind of simple selector: type, class, id, or universal (`*`).
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum BasicSelectorType {
     Type,
@@ -9,6 +10,7 @@ pub enum BasicSelectorType {
 }
 
 impl BasicSelectorType {
+    /// Classifies a basic selector from its first character.
     pub fn get_type_of(selector: &String) -> BasicSelectorType {
         let mut binding = selector.chars().peekable();
         let ch = binding.peek().unwrap();
@@ -29,6 +31,7 @@ impl BasicSelectorType {
     }
 }
 
+/// `::before`, `::after`, or other pseudo-elements on a basic selector.
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum PseudoElement {
     Before,
@@ -72,7 +75,7 @@ pub enum PseudoClass {
     Enabled,
     /// Matches when element is disabled
     Disabled,
-    /// Matches when element is focused, eg. with <Tab> key
+    /// Matches when element is focused, e.g. via the Tab key
     Focus,
     /// Matches when a radio, checkbox, or option element is checked
     Checked,
@@ -174,6 +177,7 @@ impl PseudoClass {
     }
 }
 
+/// One simple selector (e.g. `.popup-menu-item:hover`) within a [`super::selector::Selector`].
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct BasicSelector {
     /// The selector's raw contents
@@ -191,6 +195,7 @@ pub struct BasicSelector {
 }
 
 impl BasicSelector {
+    /// Constructs a basic selector with explicit type and pseudo state.
     pub fn new(
         raw: String,
         selector_type: BasicSelectorType,
@@ -207,6 +212,7 @@ impl BasicSelector {
         }
     }
 
+    /// Parses a simple selector, including `:pseudo-class` and `::pseudo-element` suffixes.
     pub fn from_raw(basic_selector: &str) -> Self {
         let mut basic_selector = basic_selector;
         if let Some(c) = basic_selector.chars().peekable().peek()
@@ -271,18 +277,22 @@ impl BasicSelector {
         }
     }
 
+    /// Selector text as parsed (may include pseudo-classes/elements).
     pub fn get_raw(&self) -> &String {
         &self.raw
     }
 
+    /// Original type before [`crate::app::io::parser::selector::Selector::to_webview_safe`], if any.
     pub fn get_default_selector_type(&self) -> Option<&BasicSelectorType> {
         self.default_selector_type.as_ref()
     }
 
+    /// Stores or clears the pre-webview selector type for export round-tripping.
     pub fn set_default_selector_type(&mut self, default_selector_type: Option<BasicSelectorType>) {
         self.default_selector_type = default_selector_type;
     }
 
+    /// Current basic selector kind (after any webview conversion).
     pub fn get_selector_type(&self) -> &BasicSelectorType {
         &self.selector_type
     }
