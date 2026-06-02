@@ -1,10 +1,12 @@
 @import 'colors.scss';
+@import 'style_input.scss';
 
 // NOTE: its still fucked somehow but im not editing this no mo
 .collapsible-wrapper {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 200ms ease-out;
+  background-color: darken($color: $window-color-main, $amount: 5);
 }
 
 .collapsible-wrapper.open {
@@ -13,11 +15,11 @@
 
 .collapsible {
   transition: max-height 200ms ease-out 0s;
-  width: 100%;
+  width: calc(100% - 10px);
   max-height: 100%;
   border: 1px solid black;
   border-top: none;
-  pointer-events: all;
+  padding: 4px;
   overflow: clip;
 }
 
@@ -27,12 +29,12 @@
 
 .collapsible-container {
   background-color: darken($color: $window-color-main, $amount: 5);
-  width: 100%;
+  width: calc(100% - 10px);
   height: auto;
   padding: 5px;
 }
 
-.collapsible-container:hover {
+.collapsible-container:hover:not(:has(.collapsible-wrapper.collapsible-wrapper.open:hover)) {
   background-color: darken($color: $window-color-main, $amount: 15);
 }
 
@@ -43,4 +45,242 @@
 
 .collapsible-label>span {
   pointer-events: none;
+}
+
+// ----- BACKGROUND COLOR INPUT -----
+
+.background-color-input {
+  display: flex;
+  flex-direction: column;
+
+  & .property-input-base {
+    margin: auto 6px 4px auto;
+
+    & .value-input-field {
+      width: 4em;
+    }
+  }
+}
+
+// ----- BORDER, PADDING & MARGIN INPUT -----
+$spacing-input-label-color: darken($color: $window-color-main, $amount: 45);
+$spacing-input-center-bg: darken($color: $window-color-main, $amount: 8);
+
+// NOTE: hey edit this manually so this actually looks good
+// but it looks mostly fine though so just some minor changes
+//
+// NOTE: minor change my ass
+.border-input,
+.margin-input,
+.padding-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 4px 8px;
+
+  .property-input-base {
+    margin: 0;
+    width: calc(100% - 4px);
+  }
+
+  .value-input {
+    height: auto;
+    min-height: 1.75rem;
+
+    &>span {
+      flex: 0 0 auto;
+      min-width: 2.75em;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: lowercase;
+      color: $spacing-input-label-color;
+      margin-right: 4px;
+      align-content: center;
+    }
+  }
+
+  .value-input-field {
+    padding: 2px 4px;
+    background-color: $button-background-color;
+    font-size: 0.75rem;
+
+    &:focus {
+      outline: 1px solid darken($color: $button-background-color, $amount: 25);
+    }
+
+    &:has(+ select) {
+      width: min(calc(100% - $value-select-width), 1em);
+    }
+  }
+
+  select {
+    font-size: 0.7rem;
+    background-color: $button-background-color;
+  }
+}
+
+// Per-side border: width | style | color
+.border-input {
+  .border-side-input {
+    display: flex;
+    flex-direction: column;
+    border-top: $button-border-thick;
+    padding: 6px 2px;
+
+
+    &::before {
+      flex: 0 0 2.25em;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: $spacing-input-label-color;
+    }
+
+    .property-input {
+      gap: 6px 8px;
+      border-top: $button-border;
+      padding: 6px 2px;
+
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+
+      .value-input:last-child {
+        grid-column: 1 / -1;
+        grid-row: 2 / 2;
+
+        width: 100%;
+      }
+
+      .value-input-field {
+        margin: 0 0 0 auto;
+      }
+
+      .value-input:nth-child(1) .value-input-field {
+        width: 2em;
+      }
+
+      .value-input:nth-child(2) {
+        border-left: $button-border;
+
+        .value-input-field {
+          margin: 0;
+          max-width: 3em;
+        }
+
+        span {
+          margin-left: auto;
+        }
+      }
+    }
+  }
+
+  $border-side-names: Top, Right, Bottom, Left;
+
+  @for $i from 1 through 4 {
+    >.border-side-input:nth-child(#{$i})::before {
+      content: "#{nth($border-side-names, $i)}";
+    }
+  }
+
+  // Corner radius (TL, TR, BR, BL)
+  >.property-input-base:not(.border-side-input) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 10px;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: $button-border-thick;
+
+    &::before {
+      content: "Radius";
+      grid-column: 1 / -1;
+      margin-bottom: 2px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: $spacing-input-label-color;
+    }
+  }
+}
+
+// ----- PADDING, MARGIN INPUT EXCLUSIVE -----
+.margin-input,
+.padding-input {
+  >.property-input-base {
+    display: grid;
+    grid-template-columns: minmax(4.5em, 1fr) minmax(3.5em, auto) minmax(4.5em, 1fr);
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      ". top ."
+      "left center right"
+      ". bottom .";
+    justify-items: center;
+    align-items: center;
+    gap: 8px 6px;
+    margin: 4px auto 8px;
+    width: 90%;
+
+    &::after {
+      grid-area: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 3.5em;
+      min-height: 2em;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: $button-border;
+      background-color: $spacing-input-center-bg;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: $spacing-input-label-color;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .value-input {
+      justify-content: center;
+
+      &>span {
+        min-width: 0;
+        text-align: center;
+      }
+    }
+
+    .value-input:nth-child(1) {
+      grid-area: top;
+    }
+
+    .value-input:nth-child(2) {
+      grid-area: right;
+      margin-left: -20%;
+      width: 140%;
+      justify-content: left;
+    }
+
+    .value-input:nth-child(3) {
+      grid-area: bottom;
+    }
+
+    .value-input:nth-child(4) {
+      grid-area: left;
+      margin-right: -20%;
+      width: 140%;
+      justify-content: right;
+    }
+  }
+}
+
+.margin-input>.property-input-base::after {
+  content: "margin";
+}
+
+.padding-input>.property-input-base::after {
+  content: "padding";
 }
