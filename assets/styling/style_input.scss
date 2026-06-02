@@ -25,6 +25,12 @@
 
 .style-input {
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+div:has(> .style-input) {
+  overflow-y: scroll !important;
 }
 
 $button-padding-size: 2px;
