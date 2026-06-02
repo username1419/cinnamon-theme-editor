@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use tokio::task::spawn_blocking;
 
 use crate::config::AppConfiguration;
 
@@ -7,6 +6,7 @@ use crate::config::AppConfiguration;
 pub struct StatusbarProps {}
 
 #[component]
+#[allow(unused)]
 pub fn Statusbar(props: StatusbarProps) -> Element {
     rsx! {
         div {
