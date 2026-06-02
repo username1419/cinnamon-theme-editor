@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use tokio::task::spawn_blocking;
 
 use crate::config::AppConfiguration;
 
@@ -29,20 +30,27 @@ pub fn Statusbar(props: StatusbarProps) -> Element {
 fn SelectionViewer() -> Element {
     let config = use_context::<AppConfiguration>();
     let selected = config.selected_elements;
-    let selection_text = use_memo(move || {
+    let mut selection_text = use_signal(String::new);
+
+    use_effect(move || {
+        // NOTE: it doesnt check for selection update but i dont care
         let selected = selected();
         let selected_count = selected.iter().len();
-        let mut selected_list = selected
-            .iter()
-            .map(|e| e.to_string() + ", ")
-            .collect::<String>();
+        let mut selected_list = if selected_count == 0 {
+            String::new()
+        } else {
+            selected
+                .iter()
+                .map(|e| e.to_export_safe().to_string() + ", ")
+                .collect::<String>()
+        };
 
         if selected_list.len() > 18 {
             selected_list.truncate(18);
             selected_list.push_str("...");
         }
 
-        format!("Editing {} elements: {}", selected_count, selected_list)
+        *selection_text.write() = format!("Editing {} elements: {}", selected_count, selected_list);
     });
 
     rsx! {
