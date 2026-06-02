@@ -25,45 +25,15 @@
 
 .style-input {
   padding: 10px;
-  display: flex;
-
-  & span {
-    vertical-align: middle;
-  }
 }
 
 $button-padding-size: 2px;
-
-.background-color-display {
-  display: flex;
-  height: calc(100% - $button-padding-size / 4);
-  place-self: stretch;
-  pointer-events: none;
-}
-
-:has(> .background-color-edit-button) {
-  display: flex;
-  justify-self: stretch;
-}
-
-.background-color-edit-button {
-  border: $button-border;
-  background-color: $button-background-color;
-  width: 5vw;
-  align-self: stretch;
-  justify-self: end;
-  margin-left: auto;
-  padding: $button-padding-size;
-
-  &:hover {
-    background-color: darken($color: $button-background-color, $amount: 10);
-  }
-}
+$value-select-width: 4em;
 
 .property-input {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: calc(100% - 4px);
 }
 
 .property-input-base {
@@ -84,14 +54,20 @@ $button-padding-size: 2px;
   }
 
   & select {
-    width: 3em;
+    direction: rtl;
+    width: $value-select-width;
     border-radius: 0 6px 6px 0;
   }
 }
 
 .value-input-field {
-  width: 2em;
-  border-radius: 6px 0 0 6px;
   border: $button-border;
   text-align: end;
+  width: 100%;
+  border-radius: 6px;
+
+  &:has(+ select) {
+    width: calc(100% - $value-select-width);
+    border-radius: 6px 0 0 6px;
+  }
 }

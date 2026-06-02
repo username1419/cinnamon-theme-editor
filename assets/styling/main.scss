@@ -42,7 +42,7 @@ button {
     align-self: stretch;
     resize: horizontal;
     border-right: solid $sidebar-bg-color 1px;
-    overflow-y: hidden;
+    overflow-y: scroll;
     overflow-x: auto;
     flex: 1;
     position: relative;

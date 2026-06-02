@@ -7,11 +7,53 @@ use dioxus::{
 use crate::app::components::contents::property_editor::color::HSLColor;
 use crate::app::components::contents::property_editor::color_picker::ColorPicker;
 use crate::app::components::contents::property_editor::editor_section::EditorSection;
+use crate::app::components::contents::property_editor::property_conf_utils::find_element_attribute;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::property::Property;
 use crate::app::io::parser::property_value::{Value, ValueUnit};
 use crate::app::io::parser::selector::Selector;
 use crate::config::{AppConfiguration, PropertyConfiguration};
+
+fn load_property_values(properties: &[&str]) -> Vec<Value> {
+    properties
+        .iter()
+        .map(|prop| {
+            find_element_attribute(prop)
+                .into_iter()
+                .next()
+                .unwrap_or_else(|| Value::from_raw_single("0px"))
+        })
+        .collect()
+}
+
+fn append_properties(element_style: &mut DeclarationBlock, properties: &[&str], values: &[Value]) {
+    for (prop, val) in properties.iter().zip(values.iter()) {
+        element_style.append(DeclarationBlock::from_raw(format!("{prop}: {val}")));
+    }
+}
+
+fn number_fields(labels: &[&str]) -> Vec<TextType> {
+    labels
+        .iter()
+        .map(|label| TextType::Number(Some(label.to_string()), ValueUnit::Px, true))
+        .collect()
+}
+
+fn load_border_side_values(property: &str) -> Vec<Value> {
+    let mut values = find_element_attribute(property);
+    if values.is_empty() {
+        return vec![
+            Value::from_raw_single("0px"),
+            Value::from_raw_single("none"),
+            Value::from_raw_single("transparent"),
+        ];
+    }
+    while values.len() < 3 {
+        values.push(Value::from_raw_single(""));
+    }
+    values.truncate(3);
+    values
+}
 
 #[component]
 pub fn StyleInput() -> Element {
@@ -19,57 +61,17 @@ pub fn StyleInput() -> Element {
     #[allow(unused)]
     let default_style = config.default_style;
     let mut element_style = config.element_style;
-    #[allow(unused)]
-    let editable_properties = [
-        // https://jonathan.bergknoff.com/journal/modifying-theme-colors-linux-mint-cinnamon/
-        ("background-color", 0, vec![]),
-        (
-            "border-width",
-            4,
-            vec![
-                "border-bottom-width",
-                "border-left-width",
-                "border-right-width",
-                "border-top-width",
-            ],
-        ),
-        (
-            "border-radius",
-            4,
-            vec![
-                "border-top-left-radius",
-                "border-top-right-radius",
-                "border-bottom-right-radius",
-                "border-bottom-left-radius",
-            ],
-        ),
-        (
-            "margin",
-            4,
-            vec!["margin-top", "margin-right", "margin-bottom", "margin-left"],
-        ),
-        (
-            "padding",
-            4,
-            vec![
-                "padding-top",
-                "padding-right",
-                "padding-bottom",
-                "padding-left",
-            ],
-        ),
-        // NOTE: i aint doin box-shadow
-    ];
 
     let property_config = use_context::<PropertyConfiguration>();
     let current_color = property_config.current_bg_color;
+    let selected = config.selected_elements;
 
     rsx! {
         div {
             class: "style-input",
             EditorSection {
-                class: "background-color-input",
-                label: "Background",
+                class: "background-color-input".to_string(),
+                label: "Background".to_string(),
                 ColorPicker {
                     color: current_color,
                     on_color_change: move |col: HSLColor| {
@@ -77,6 +79,156 @@ pub fn StyleInput() -> Element {
                         wl.append(DeclarationBlock::from_raw(format!("background-color: {}", col.as_css_property())));
                     }
                 }
+                StylePropertyTextField {
+                    properties: &["background-color"],
+                    labels: &[],
+                    element_style,
+                    selected,
+                    use_text: true,
+                }
+            }
+            EditorSection {
+                class: "border-input".to_string(),
+                label: "Border".to_string(),
+                BorderSideTextField {
+                    property: "border-top",
+                    side_label: "top",
+                    element_style,
+                    selected,
+                }
+                BorderSideTextField {
+                    property: "border-right",
+                    side_label: "right",
+                    element_style,
+                    selected,
+                }
+                BorderSideTextField {
+                    property: "border-bottom",
+                    side_label: "bottom",
+                    element_style,
+                    selected,
+                }
+                BorderSideTextField {
+                    property: "border-left",
+                    side_label: "left",
+                    element_style,
+                    selected,
+                }
+                StylePropertyTextField {
+                    properties: &[
+                        "border-top-left-radius",
+                        "border-top-right-radius",
+                        "border-bottom-right-radius",
+                        "border-bottom-left-radius",
+                    ],
+                    labels: &["TL", "TR", "BR", "BL"],
+                    element_style,
+                    selected,
+                    use_text: false,
+                }
+            }
+            EditorSection {
+                class: "margin-input".to_string(),
+                label: "Margin".to_string(),
+                StylePropertyTextField {
+                    properties: &["margin-top", "margin-right", "margin-bottom", "margin-left"],
+                    labels: &["top", "right", "bottom", "left"],
+                    element_style,
+                    selected,
+                    use_text: false,
+                }
+            }
+            EditorSection {
+                class: "padding-input".to_string(),
+                label: "Padding".to_string(),
+                StylePropertyTextField {
+                    properties: &["padding-top", "padding-right", "padding-bottom", "padding-left"],
+                    labels: &["top", "right", "bottom", "left"],
+                    element_style,
+                    selected,
+                    use_text: false,
+                }
+            }
+        }
+    }
+}
+
+#[component]
+fn BorderSideTextField(
+    property: &'static str,
+    side_label: &'static str,
+    element_style: Signal<DeclarationBlock>,
+    selected: SyncSignal<std::collections::HashSet<Selector>>,
+) -> Element {
+    let mut change_signal = use_signal(|| load_border_side_values(property));
+
+    use_effect(move || {
+        let _ = selected.read();
+        change_signal.set(load_border_side_values(property));
+    });
+
+    let connected_values = vec![
+        TextType::Number(Some(String::from("width")), ValueUnit::Px, true),
+        TextType::Text(Some(String::from("type"))),
+        TextType::Text(Some(String::from("color"))),
+    ];
+
+    rsx! {
+        div {
+            class: "property-input-base border-side-input",
+            div {
+                class: "property-input border-side-input",
+                TextField {
+                    connected_values,
+                    change_signal,
+                    oninput: move |(vec, _modified): (Vec<Value>, usize)| {
+                        let css_value = vec
+                            .iter()
+                            .map(|v| v.to_string())
+                            .collect::<Vec<_>>()
+                            .join(" ");
+                        element_style.write().append(DeclarationBlock::from_raw(format!(
+                            "{property}: {css_value}"
+                        )));
+                        vec
+                    },
+                }
+            }
+        }
+    }
+}
+
+#[component]
+fn StylePropertyTextField(
+    properties: &'static [&'static str],
+    labels: &'static [&'static str],
+    element_style: Signal<DeclarationBlock>,
+    selected: SyncSignal<std::collections::HashSet<Selector>>,
+    use_text: bool,
+) -> Element {
+    let mut change_signal = use_signal(|| load_property_values(properties));
+
+    use_effect(move || {
+        let _ = selected.read();
+        change_signal.set(load_property_values(properties));
+    });
+
+    let connected_values = if use_text {
+        vec![TextType::Text(None)]
+    } else {
+        number_fields(labels)
+    };
+
+    rsx! {
+        div {
+            class: "property-input-base",
+            TextField {
+                connected_values,
+                change_signal,
+                oninput: move |(vec, _modified): (Vec<Value>, usize)| {
+                    append_properties(&mut element_style.write(), properties, &vec);
+                    vec
+                },
             }
         }
     }
@@ -221,7 +373,7 @@ enum TextType {
     Text(Option<String>),
 }
 
-/// hey btw the oninput function results are fed back into the TextField
+/// hey btw the oninput function returned values are fed back into the TextField
 #[component]
 fn TextField(
     connected_values: Vec<TextType>,
