@@ -10,6 +10,7 @@ pub mod app;
 pub mod config;
 pub mod helper;
 use crate::app::components::contents::property_editor::color::HSLColor;
+use crate::app::components::contents::statusbar::Statusbar;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::SelectorCategory;
 use crate::config::{MouseState, PropertyConfiguration};
@@ -178,6 +179,7 @@ fn App() -> Element {
             Titlebar {}
             Toolbar {}
             MainContent {}
+            Statusbar {}
         }
     }
 }
