@@ -241,11 +241,11 @@ impl Selector {
     /// for later [`Self::to_export_safe`].
     pub fn to_webview_safe(mut self) -> Self {
         self.selectors.iter_mut().for_each(|(b, _)| {
+            let default_selector_type = b.get_selector_type().clone();
             if b.get_raw().starts_with('.') || b.get_raw().starts_with('*') {
                 return;
             }
 
-            let default_selector_type = b.get_selector_type().clone();
             *b = BasicSelector::from_raw(&format!(".{}", b.get_raw()));
             b.set_default_selector_type(Some(default_selector_type));
         });
@@ -257,12 +257,17 @@ impl Selector {
     /// Selector::to_webview_safe()'ed
     pub fn to_export_safe(&self) -> Selector {
         let mut s = self.clone();
-        s.selectors.iter_mut().for_each(|(b, _)| {
+        s.selectors.iter_mut().skip(1).for_each(|(b, _)| {
             if !b.get_raw().starts_with('.') || b.get_raw().starts_with('*') {
                 return;
             }
 
-            let default_selector_type = b.get_default_selector_type().unwrap();
+            let default_selector_type = b.get_default_selector_type().unwrap_or_else(|| {
+                panic!(
+                    "Selector has not need Selector::to_webview_safe()'ed. Selector: {:#?}",
+                    self
+                )
+            });
             let prefix = match default_selector_type {
                 BasicSelectorType::Type | BasicSelectorType::Universal => "",
                 BasicSelectorType::Class => ".",
