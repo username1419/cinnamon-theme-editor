@@ -1,0 +1,49 @@
+@import 'colors.scss';
+
+$statusbar-color: #b8b8b8;
+$statusbar-border: solid gray 1px;
+
+.statusbar {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 1.5em;
+  border-top: $statusbar-border;
+  background-color: $statusbar-color;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.statusbar-part {
+  display: flex;
+  align-items: center;
+  width: calc(100% / 3);
+  padding: 2px 8px;
+}
+
+.statusbar-part.start {
+  justify-content: flex-start;
+}
+
+.statusbar-part.middle {
+  justify-content: center;
+}
+
+.statusbar-part.end {
+  justify-content: flex-end;
+}
+
+.selection-viewer {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.selection-viewer .selection-text {
+  font-size: $font-size;
+  color: darken($color: $window-color-main, $amount: 55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

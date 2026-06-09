@@ -56,7 +56,7 @@ fn SelectionViewer() -> Element {
     rsx! {
         div {
             class: "selection-viewer",
-            span { class: "content", "{selection_text}" }
+            span { class: "selection-text", "{selection_text}" }
         }
     }
 }
