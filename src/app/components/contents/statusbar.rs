@@ -33,12 +33,13 @@ fn SelectionViewer() -> Element {
     let config = use_context::<AppConfiguration>();
     let selected = config.selected_elements;
     let mut selection_text = use_signal(String::new);
+    let mut selected_list = use_signal(String::new);
 
     use_effect(move || {
         // NOTE: it doesnt check for selection update but i dont care
         let selected = selected();
         let selected_count = selected.iter().len();
-        let mut selected_list = if selected_count == 0 {
+        let mut _selected_list = if selected_count == 0 {
             String::new()
         } else {
             selected
@@ -47,18 +48,20 @@ fn SelectionViewer() -> Element {
                 .collect::<String>()
         };
 
-        if selected_list.len() > SELECTION_CHAR_LIMIT {
-            selected_list.truncate(SELECTION_CHAR_LIMIT);
-            selected_list.push_str("...");
+        if _selected_list.len() > SELECTION_CHAR_LIMIT {
+            _selected_list.truncate(SELECTION_CHAR_LIMIT);
+            _selected_list.push_str("...");
         }
 
-        *selection_text.write() = format!("Editing {} elements: {}", selected_count, selected_list);
+        *selection_text.write() =
+            format!("Editing {} elements: {}", selected_count, _selected_list);
+        *selected_list.write() = _selected_list;
     });
 
     rsx! {
         div {
             class: "selection-viewer",
-            span { class: "selection-text", "{selection_text}" }
+            span { class: "selection-text", title: "{selected_list}", "{selection_text}" }
         }
     }
 }
