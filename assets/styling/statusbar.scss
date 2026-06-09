@@ -20,19 +20,20 @@ $font-size: 0.75rem;
   align-items: center;
   width: calc(100% / 3);
   padding: 2px 8px;
+
+  &.start {
+    justify-content: flex-start;
+  }
+
+  &.middle {
+    justify-content: center;
+  }
+
+  &.end {
+    justify-content: flex-end;
+  }
 }
 
-.statusbar-part.start {
-  justify-content: flex-start;
-}
-
-.statusbar-part.middle {
-  justify-content: center;
-}
-
-.statusbar-part.end {
-  justify-content: flex-end;
-}
 
 .selection-viewer {
   display: inline-flex;
