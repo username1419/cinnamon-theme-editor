@@ -26,6 +26,8 @@ pub fn Statusbar(props: StatusbarProps) -> Element {
     }
 }
 
+const SELECTION_CHAR_LIMIT: usize = 35;
+
 #[component]
 fn SelectionViewer() -> Element {
     let config = use_context::<AppConfiguration>();
@@ -45,8 +47,8 @@ fn SelectionViewer() -> Element {
                 .collect::<String>()
         };
 
-        if selected_list.len() > 18 {
-            selected_list.truncate(18);
+        if selected_list.len() > SELECTION_CHAR_LIMIT {
+            selected_list.truncate(SELECTION_CHAR_LIMIT);
             selected_list.push_str("...");
         }
 
