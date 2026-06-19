@@ -10,6 +10,7 @@ pub mod app;
 pub mod config;
 pub mod helper;
 use crate::app::components::contents::property_editor::color::HSLColor;
+use crate::app::components::contents::statusbar::Statusbar;
 use crate::app::io::parser::declaration_block::DeclarationBlock;
 use crate::app::io::parser::selector::SelectorCategory;
 use crate::config::{MouseState, PropertyConfiguration};
@@ -32,6 +33,7 @@ const OVERLAY_STYLE: Asset = asset!("/assets/styling/overlay.scss");
 const COLOR_PICKER_STYLE: Asset = asset!("/assets/styling/color-picker.scss");
 const STYLE_INPUT_STYLE: Asset = asset!("/assets/styling/style_input.scss");
 const EDITOR_PANEL_STYLE: Asset = asset!("/assets/styling/editor.scss");
+const STATUSBAR_STYLE: Asset = asset!("/assets/styling/statusbar.scss");
 const INSPECTOR_PANEL_STYLE: Asset = asset!("/assets/styling/inspector/panel.scss");
 
 fn main() {
@@ -154,6 +156,7 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: INSPECTOR_PANEL_STYLE }
         document::Link { rel: "stylesheet", href: EDITOR_PANEL_STYLE }
         document::Link { rel: "stylesheet", href: STYLE_INPUT_STYLE }
+        document::Link { rel: "stylesheet", href: STATUSBAR_STYLE }
 
         div {
             class: "window",
@@ -178,6 +181,7 @@ fn App() -> Element {
             Titlebar {}
             Toolbar {}
             MainContent {}
+            Statusbar {}
         }
     }
 }
